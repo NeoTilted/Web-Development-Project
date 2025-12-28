@@ -26,10 +26,9 @@ h2 {
     z-index: 1000;
 }
 
-.logo {
+.logo img {
     height: 120px;
     width: auto;
-    object-fit: contain;
 }
 
 .btn-size {
