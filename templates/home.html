@@ -21,7 +21,7 @@
         </div>
         
         <!-- Hamburger Button (Always Visible) -->
-        <button class="btn btn-dark hamburger-btn btn-size" type="button" 
+        <button class="btn btn-dark hamburger-btn btn-size mr-1" type="button" 
                 aria-label="Toggle navigation" 
                 aria-controls="mobile-nav"
                 aria-expanded="false">
@@ -55,9 +55,9 @@
     
     <!-- Navigation Links -->
     <ul class="nav-list list-unstyled mb-0">
-        <li><a href="{{ url_for('home') }}" class="nav-link text-white">Home</a></li>
+        <li><a href="{{ url_for('home') }}" class="nav-link text-white active">Home</a></li>
         <li><a href="" class="nav-link text-white">Explore</a></li>
-        <li><a href="" class="nav-link text-white active">Friends</a></li>
+        <li><a href="" class="nav-link text-white">Friends</a></li>
         <li><a href="" class="nav-link text-white">Create</a></li>
         <li><a href="" class="nav-link text-white">Profile</a></li>
         <li><hr class="bg-light my-3"></li>
@@ -67,63 +67,6 @@
     </ul>
 </nav>
 
-<h1 class="display-4 mt-4">My Profile</h1>
+<h1 class="display-4 mt-4 text-center">Intergeneration Connection</h1>
 
-{% if current_user %}
-<div class="card">
-    <div class="card-header bg-primary text-white">
-        <h5 class="mb-0">Your Information</h5>
-    </div>
-    <div class="card-body">
-        <table class="table table-bordered">
-            <tr>
-                <th width="30%">User ID</th>
-                <td>{{ current_user.get_user_id() }}</td>
-            </tr>
-            <tr>
-                <th>Username</th>
-                <td>{{ current_user.get_username() }}</td>
-            </tr>
-            <tr>
-                <th>Account Type</th>
-                <td>
-                    {% if current_user.get_user_type() == 'S' %}
-                        <span class="badge badge-info">Senior</span>
-                    {% elif current_user.get_user_type() == 'Y' %}
-                        <span class="badge badge-success">Youth</span>
-                    {% else %}
-                        {{ current_user.get_user_type() }}
-                    {% endif %}
-                </td>
-            </tr>
-        </table>
-        
-        <!-- Additional profile info (optional) -->
-        <div class="mt-4">
-            <h5>Account Details</h5>
-            <p class="text-muted">
-                {% if current_user.get_user_type() == 'S' %}
-                    As a Senior member, you can connect with Youth members for mentorship.
-                {% else %}
-                    As a Youth member, you can connect with Senior members for guidance.
-                {% endif %}
-            </p>
-        </div>
-    </div>
-</div>
-{% else %}
-<div class="alert alert-warning" role="alert">
-    <h4 class="alert-heading">Not Logged In</h4>
-    <p>You need to log in to view your profile.</p>
-    <hr>
-    <p class="mb-0">
-        <a href="{{ url_for('login') }}" class="btn btn-primary">Go to Login</a>
-    </p>
-</div>
-{% endif %}
-
-<!-- Action Buttons -->
-<div class="mt-4">
-    <a href="{{ url_for('home') }}" class="btn btn-secondary">Refresh Profile</a>
-</div>
 {% endblock %}
