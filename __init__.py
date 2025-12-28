@@ -3,7 +3,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from login import UserLoginIn
 from createAccount import createAccount
 from database import DataBase
-from classes import User, Event
+from classes import User, Post, Event, Badge, Following, FollowRequest, PostPrompt, Comment, UserAction
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your-secret-key-here' 
@@ -30,7 +30,6 @@ def login():
                 session['user_type'] = user.get_user_type()
                 session['logged_in'] = True
                 
-                flash('Login successful!', 'success')
                 return redirect(url_for('home'))
             else:
                 flash('Invalid username or password', 'danger')
