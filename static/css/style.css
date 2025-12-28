@@ -1,0 +1,234 @@
+body {
+    background: linear-gradient(135deg, #f0f4f8, #d9e2ec);
+}
+
+.card {
+    border-radius: 12px;
+}
+
+h2 {
+    font-weight: 600;
+}
+
+.logo-name {
+    color: rgb(0, 41, 112);
+}
+
+.btn-primary {
+    width: 100%;
+    border-radius: 8px;
+}
+
+.nav-bar {
+    background-color: #15596e;
+    margin: -16px;
+    position: relative;
+    z-index: 1000;
+}
+
+.logo {
+    height: 120px;
+    width: auto;
+    object-fit: contain;
+}
+
+.btn-size {
+    width: 50px;
+    height: 50px;
+    font-size: 20px;
+}
+
+/* Search container - responsive */
+.search-container {
+    flex-grow: 1;
+    max-width: 500px;
+    margin: 0 20px;
+}
+
+.search-container .input-group {
+    width: 100%;
+}
+
+/* Hamburger button - always visible */
+.hamburger-btn {
+    display: inline-block !important;
+    background: none;
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    z-index: 1060;
+    position: relative;
+}
+
+.hamburger-btn:hover {
+    background-color: rgba(255,255,255,0.1);
+    transform: scale(1.05);
+}
+
+/* Off-canvas sidebar styles (right side) */
+#mobile-nav {
+    position: fixed;
+    top: 0;
+    right: -320px; /* Hidden off-screen to the right */
+    width: 300px;
+    height: 100vh;
+    background-color: #15596e;
+    padding: 20px;
+    z-index: 1050;
+    transition: right 0.3s ease-in-out;
+    box-shadow: -2px 0 15px rgba(0,0,0,0.3);
+    overflow-y: auto;
+}
+
+#mobile-nav.active {
+    right: 0; /* Slides in from right */
+}
+
+/* Overlay when menu is open */
+.sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1040;
+    display: none;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.sidebar-overlay.active {
+    display: block;
+    opacity: 1;
+}
+
+/* Navigation list in sidebar */
+.nav-list {
+    flex-direction: column !important;
+    margin-top: 40px !important;
+}
+
+.nav-list li {
+    margin-bottom: 8px;
+}
+
+.nav-link {
+    display: block;
+    padding: 12px 15px !important;
+    border-radius: 6px;
+    transition: all 0.2s;
+    font-size: 16px;
+}
+
+.nav-link:hover {
+    background-color: rgba(255,255,255,0.1);
+    text-decoration: none;
+    transform: translateX(5px);
+}
+
+.nav-link.active {
+    background-color: rgba(255,255,255,0.15);
+    font-weight: 600;
+    border-left: 3px solid white;
+}
+
+.nav-link.text-danger:hover {
+    background-color: rgba(255, 0, 0, 0.1);
+}
+
+/* Close button for sidebar */
+.menu-close-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: none;
+    border: none;
+    color: white;
+    font-size: 28px;
+    cursor: pointer;
+    padding: 0;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.2s;
+    z-index: 1051;
+}
+
+.menu-close-btn:hover {
+    background-color: rgba(255,255,255,0.1);
+}
+
+/* User info section */
+.user-info {
+    padding: 15px;
+    background-color: rgba(255,255,255,0.05);
+    border-radius: 8px;
+    margin-top: 30px;
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: rgba(255,255,255,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Prevent body scrolling when menu is open */
+body.menu-open {
+    overflow: hidden;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .search-container {
+        margin: 0 10px;
+        max-width: 300px;
+    }
+    
+    .logo {
+        height: 80px;
+    }
+    
+    .btn-size {
+        width: 45px;
+        height: 45px;
+        font-size: 18px;
+    }
+    
+    #mobile-nav {
+        width: 280px;
+    }
+}
+
+@media (max-width: 576px) {
+    
+    .logo {
+        height: 70px;
+    }
+    
+    .btn-size {
+        width: 40px;
+        height: 40px;
+        font-size: 16px;
+    }
+    
+    #mobile-nav {
+        width: 250px;
+    }
+}
+
+/* For very small screens */
+@media (max-width: 400px) {
+    #mobile-nav {
+        width: 100%;
+        right: -100%;
+    }
+}
