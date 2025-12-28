@@ -5,7 +5,9 @@
 <header class="nav-bar mb-2">
     <div class="d-flex justify-content-between align-items-center">
         <div class="d-flex logo">
-            <img src="{{ url_for('static', filename='img/Logo.png') }}" alt="Logo">
+            <a href="{{url_for ('home')}}" class="logo">
+                <img src="{{ url_for('static', filename='img/Logo.png') }}" alt="Logo">
+            </a>
         </div>
         
         <!-- Search Bar -->
