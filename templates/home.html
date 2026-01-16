@@ -2,34 +2,40 @@
 {% block title %}Bond Buddies - My Profile{% endblock %}
 
 {% block content %}
-<header class="nav-bar mb-2">
-    <div class="d-flex justify-content-between align-items-center">
-        <div class="d-flex logo">
-            <a href="{{url_for ('home')}}" class="logo">
-                <img src="{{ url_for('static', filename='img/Logo.png') }}" alt="Logo">
-            </a>
-        </div>
-        
-        <!-- Search Bar -->
-        <div class="search-container">
-            <form class="form-inline">
-                <div class="input-group">
-                    <input type="search" placeholder="Search" class="form-control">
-                    <div class="input-group-append">
-                        <button class="btn btn-outline-light" type="button">🔍</button>
-                    </div>
-                </div>
-            </form>
-        </div>
-        
-        <!-- Hamburger Button (Always Visible) -->
-        <button class="btn btn-dark hamburger-btn btn-size mr-1" type="button" 
-                aria-label="Toggle navigation" 
-                aria-controls="mobile-nav"
-                aria-expanded="false">
-            ☰
-        </button>
+<div class="container-fluid px-0">
+  <header class="nav-bar">
+
+  <div class="container-fluid px-0">
+    <div class="d-flex align-items-center justify-content-between nav-inner">
+
+      <!-- Left: Logo -->
+      <a href="{{ url_for('home') }}" class="logo-link">
+        <img src="{{ url_for('static', filename='img/Logo.png') }}" alt="Logo" class="logo-img">
+      </a>
+
+      <!-- Middle: Search -->
+      <div class="search-container">
+        <form class="form-inline m-0">
+          <div class="input-group">
+            <input type="search" placeholder="Search" class="form-control">
+            <div class="input-group-append">
+
+              <button class="btn btn-outline-light" type="button">🔍</button>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <!-- Right: Hamburger -->
+      <button class="btn btn-dark hamburger-btn btn-size" type="button"
+              aria-label="Toggle navigation"
+              aria-controls="mobile-nav"
+              aria-expanded="false">
+        ☰
+      </button>
+
     </div>
+  </div>
 </header>
 
 <!-- Overlay (hidden by default) -->
@@ -60,8 +66,10 @@
         <li><a href="{{ url_for('home') }}" class="nav-link text-white active">Home</a></li>
         <li><a href="" class="nav-link text-white">Explore</a></li>
         <li><a href="" class="nav-link text-white">Friends</a></li>
-        <li><a href="" class="nav-link text-white">Create</a></li>
-        <li><a href="" class="nav-link text-white">Profile</a></li>
+        <li><a href="/createPost" class="nav-link text-white">Create</a></li>
+        <!-- WONGDFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF-->
+        <li><a href="{{ url_for('profile') }}" class="nav-link text-white">Profile</a></li>
+        <!-- WONGDFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF-->
         <li><hr class="bg-light my-3"></li>
         <!-- Additional Links -->
         <li><a href="" class="nav-link text-white">Settings</a></li>
@@ -72,3 +80,5 @@
 <h1 class="display-4 mt-4 text-center">Intergeneration Connection</h1>
 
 {% endblock %}
+
+

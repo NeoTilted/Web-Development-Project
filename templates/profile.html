@@ -1,0 +1,384 @@
+{% extends "base.html" %}
+{% block title %}Bond Buddies - My Profile{% endblock %}
+
+{% block content %}
+<div class="profile-page">
+    <header class="nav-bar mb-2">
+        <div class="container-fluid px-0">
+            <div class="d-flex align-items-center justify-content-between nav-inner">
+
+                <!-- Left: Logo -->
+                <a href="{{ url_for('home') }}" class="logo-link">
+                    <img src="{{ url_for('static', filename='img/Logo.png') }}" alt="Logo" class="logo-img">
+                </a>
+
+                <!-- Middle: Search -->
+                <div class="search-container">
+                    <form class="form-inline m-0">
+                        <div class="input-group">
+                            <input type="search" placeholder="Search" class="form-control">
+                            <div class="input-group-append">
+
+                                <button class="btn btn-outline-light" type="button">🔍</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Right: Hamburger -->
+                <button class="btn btn-dark hamburger-btn btn-size" type="button" aria-label="Toggle navigation"
+                    aria-controls="mobile-nav" aria-expanded="false">
+                    ☰
+                </button>
+
+            </div>
+        </div>
+    </header>
+
+    <!-- Overlay (hidden by default) -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- Off-canvas Sidebar (right side) -->
+    <nav id="mobile-nav" aria-label="Main navigation">
+        <!-- Close button inside sidebar -->
+        <button class="menu-close-btn" aria-label="Close menu">
+            &times;
+        </button>
+
+        <!-- User Info (Optional - can add user avatar/name here) -->
+        <div class="user-info mb-4 d-none">
+            <div class="d-flex align-items-center">
+                <div class="user-avatar mr-2">
+                    <!-- Add user avatar here -->
+                </div>
+                <div>
+                    <h6 class="mb-0 text-white">Welcome, User</h6>
+                    <small class="text-light">user@example.com</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Links -->
+        <ul class="nav-list list-unstyled mb-0">
+            <li><a href="{{ url_for('home') }}" class="nav-link text-white active">Home</a></li>
+            <li><a href="" class="nav-link text-white">Explore</a></li>
+            <li><a href="" class="nav-link text-white">Friends</a></li>
+            <li><a href="/createPost" class="nav-link text-white">Create</a></li>
+            <!-- WONGDFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF-->
+            <li><a href="{{ url_for('profile') }}" class="nav-link text-white">Profile</a></li>
+            <!-- WONGDFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF-->
+            <li>
+                <hr class="bg-light my-3">
+            </li>
+            <!-- Additional Links -->
+            <li><a href="" class="nav-link text-white">Settings</a></li>
+            <li><a href="" class="nav-link text-danger">Logout</a></li>
+        </ul>
+
+    </nav>
+
+
+
+
+
+
+    <div class="container-fluid py-3">
+        <div class="row">
+
+            <!-- LEFT: Profile + Posts -->
+            <div class="col-12 col-lg-6">
+
+                <!-- Profile Header -->
+                <div class="card shadow-sm mb-3">
+                    <div class="card-body d-flex align-items-center flex-wrap">
+
+                        <img src="{{ current_user.get_avatar_url() or '/static/img/default-avatar.png' }}"
+                            class="rounded-circle border mr-3" style="width:150px;height:150px;object-fit:cover;"
+                            alt="avatar" />
+
+                        <div class="flex-grow-1">
+                            <h3 class="mb-1 d-flex align-items-center">
+                                {{ current_user.get_username() }}
+                                <span class="role-badge ml-2">
+                                    {{ current_user.get_user_type_label() }}
+                                </span>
+                            </h3>
+
+                            <p class="text-muted mb-2">
+                                {{ current_user.get_bio() or "No bio yet. Click Edit Profile to add one!" }}
+                            </p>
+
+                            <div>
+                                <span class="badge badge-light">Posts: {{ stats.post_count }}</span>
+                                <span class="badge badge-light">Badges: {{ stats.badge_count }}</span>
+                                <span class="badge badge-light">Followers: {{ stats.follower_count }}</span>
+                                <span class="badge badge-light">Following: {{ stats.following_count }}</span>
+                            </div>
+                        </div>
+
+                        <!-- Edit Profile Button (Bootstrap 4) -->
+                        <button class="btn btn-primary mt-2 mt-lg-0" data-toggle="modal"
+                            data-target="#editProfileModal">
+                            ✏️ Edit Profile
+                        </button>
+
+                    </div>
+                </div>
+
+                <!-- Posts Preview -->
+                <div class="d-flex justify-content-between align-items-center section-header">
+                    <h4 class="mb-0">Your Posts</h4>
+                    <a class="view-all-btn" href="#">View all</a>
+
+                </div>
+
+
+                {% if posts and posts|length > 0 %}
+                {% for p in posts[:2] %}
+                <div class="card shadow-sm mb-2">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <strong>{{ p[7] }}</strong>
+                                <div class="text-muted small">{{ p[3] }}</div>
+                            </div>
+                            <span class="badge badge-light">❤️ {{ p[4] }}</span>
+                        </div>
+                        <p class="mt-2 mb-0">{{ p[1] }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="alert alert-info">
+                    No posts yet. Create a post and your profile will show it here.
+                </div>
+                {% endif %}
+
+                <!-- Delete Account -->
+                <div class="card shadow-sm border-danger mt-3">
+                    <div class="card-body">
+                        <h5 class="text-danger">Delete Account</h5>
+                        <p class="text-muted mb-2">Type <b>delete</b> to confirm.</p>
+                        <form method="POST" action="{{ url_for('delete_account') }}" class="form-inline">
+                            <input class="form-control mr-2" name="confirm" placeholder="type delete" required>
+                            <button class="btn btn-danger" type="submit">Delete</button>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- RIGHT: Badges -->
+            <div class="col-12 col-lg-6 mobile-section-gap">
+
+
+                <div class="d-flex justify-content-between align-items-center section-header">
+                    <h3 class="mb-0">Badges</h3>
+                    <button type="button" class="view-all-btn" data-toggle="modal" data-target="#allBadgesModal">
+                        View all
+                    </button>
+
+
+                </div>
+
+                <div class="row">
+                    {% for b in badges[:4] %}
+                    {% set earned = b[-1] %}
+                    {% set current_progress = b[-3] if b[-3] is not none else 0 %}
+                    {% set required = b[5] %}
+
+                    <div class="col-12 col-sm-6 mb-3">
+                        <div class="card shadow-sm h-100">
+                            <div class="card-body text-center">
+
+                                {# Choose an icon per badge name #}
+                                {% set badge_icon_map = {
+                                'Talking is fun!': '💬',
+                                'Like a lover!': '❤️',
+                                'Friends': '👥',
+                                'Sharing is caring': '🔁'
+                                } %}
+
+                                {% set icon = badge_icon_map.get(b[1], '🏅') %}
+
+                                <div class="badge-icon-text {{ 'complete' if earned == 1 else 'incomplete' }}">
+                                    {{ icon }}
+                                </div>
+
+                                <h5 class="mt-2 mb-1">{{ b[1] }}</h5>
+                                <div class="text-muted small">{{ b[2] }}</div>
+
+                                <div class="mt-2">
+                                    {% if earned == 1 %}
+                                    <span class="badge badge-success">Completed</span>
+                                    {% else %}
+                                    <span class="badge badge-danger">Incomplete</span>
+                                    {% endif %}
+                                </div>
+
+                                <div class="small text-muted mt-2">
+                                    Progress: {{ current_progress }}/{{ required }}
+                                </div>
+
+                                <!-- Progress Bar (Bootstrap 4) -->
+                                <div class="progress mt-2" style="height:8px;">
+                                    <div class="progress-bar" role="progressbar" style="width:
+                       {% if required|int > 0 %}
+                         {{ ((current_progress | int) * 100) // (required | int) }}%
+                       {% else %}
+                         0%
+                       {% endif %}">
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    {% endfor %}
+                </div>
+
+                <div class="alert alert-light">
+                    Tip: badges update automatically when you like, comment, follow, or share posts.
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <!-- EDIT PROFILE MODAL (Bootstrap 4) -->
+    <div class="modal fade" id="editProfileModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+
+                <form method="POST" action="{{ url_for('edit_profile') }}" enctype="multipart/form-data">
+
+                    <div class="modal-header">
+                        <h5 class="modal-title">Edit Profile</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+
+                    <div class="modal-body">
+
+
+
+                        <div class="form-group">
+                            <label>Bio (max 30 chars)</label>
+                            <textarea class="form-control" name="bio" rows="3"
+                                maxlength="30">{{ current_user.get_bio() or '' }}</textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Avatar (png/jpg/jpeg/gif)</label>
+                            <input class="form-control-file" type="file" name="avatar" accept=".png,.jpg,.jpeg,.gif">
+                        </div>
+
+
+
+                    </div>
+
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+                        <button class="btn btn-primary" type="submit">Save</button>
+                    </div>
+
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% block scripts %}
+{{ super() }}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        document.body.classList.add('profile-flash-overlay');
+    });
+</script>
+{% endblock %}
+<!-- ALL BADGES MODAL (Bootstrap 4) -->
+<div class="modal fade" id="allBadgesModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">All Badges</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <div class="modal-body">
+
+                <div class="row">
+                    {% for b in badges %}
+                    {% set earned = b[-1] %}
+                    {% set current_progress = b[-3] if b[-3] is not none else 0 %}
+                    {% set required = b[5] %}
+
+                    {# icon map by badge name #}
+                    {% set badge_icon_map = {
+                    'Talking is fun!': '💬',
+                    'Like a lover!': '❤️',
+                    'Friends': '👥',
+                    'Sharing is caring': '🔁',
+                    'Event Enthusiast': '🎉',
+                    'Weekly Interaction': '📅',
+                    'Story Sharer': '📖',
+                    'Community Builder': '🏗️'
+                    } %}
+                    {% set icon = badge_icon_map.get(b[1], '🏅') %}
+
+                    <div class="col-12 col-sm-6 col-lg-4 mb-3">
+                        <div class="card shadow-sm h-100">
+                            <div class="card-body text-center">
+
+                                <div class="badge-icon-text {{ 'complete' if earned == 1 else 'incomplete' }}">
+                                    {{ icon }}
+                                </div>
+
+                                <h6 class="mt-2 mb-1">{{ b[1] }}</h6>
+                                <div class="text-muted small">{{ b[2] }}</div>
+
+                                <div class="mt-2">
+                                 {% if earned == 1 %}
+  <span class="badge badge-success">Completed</span>
+{% else %}
+  <span class="badge badge-danger">Incomplete</span>
+{% endif %}
+                                </div>
+
+                                <div class="small text-muted mt-2">
+                                    Progress: {{ current_progress }}/{{ required }}
+                                </div>
+
+                                <div class="progress mt-2" style="height:8px;">
+                                    <div class="progress-bar" role="progressbar" style="width:
+                         {% if required|int > 0 %}
+                           {{ ((current_progress|int) * 100) // (required|int) }}%
+                         {% else %}
+                           0%
+                         {% endif %};">
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}

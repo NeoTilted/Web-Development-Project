@@ -13,7 +13,7 @@
         {% block navbar %}
         {% endblock %}
         <!-- Add flash messages display -->
-        <div class="container mt-3">
+        <div>
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
                     {% for category, message in messages %}
@@ -28,10 +28,10 @@
             {% endwith %}
         </div>
         
-        <div class="container-fluid">
-            {% block content %}
-            {% endblock %}
-        </div>
+        <div class="container-fluid px-0">
+  {% block content %}{% endblock %}
+</div>
+
 
     {% block scripts %}
         <!-- jQuery 3.5., Popper 1.16.1, Bootstrap 4.5.2 JavaScript -->

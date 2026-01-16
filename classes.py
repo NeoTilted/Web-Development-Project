@@ -25,6 +25,13 @@ class User:
         return self.__password
     def get_user_type(self):
         return self.__user_type
+    #WONNNNNNNNNGGGGGGGGGGGGGGGGGGFFFFFFFFFFFFFFFFF (SENIOR/YOUTH)
+    def get_user_type_label(self):
+        if self.__user_type == 'S':
+         return 'Senior'
+        elif self.__user_type == 'Y':
+         return 'Youth'
+        return ''
     def get_email(self):
         return self.__email
     def get_birth_date(self):
