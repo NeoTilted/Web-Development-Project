@@ -1,0 +1,578 @@
+body {
+    background: linear-gradient(135deg, #f0f4f8, #d9e2ec);
+}
+
+.card {
+    border-radius: 12px;
+}
+
+h2 {
+    font-weight: 600;
+    text-align: center;
+}
+
+.center-box {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    background-color: #f0f2f5;
+}
+
+.upload-card {
+    background-color: #ffffff;
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    text-align: center;
+    width: 350px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Hide the real file input */
+#fileInput {
+        display: none;
+    }
+
+                /* Custom choose file button */
+.custom-file-btn {
+    display: inline-block;
+    padding: 12px 25px;
+    background-color: #0d6efd; /* Blue background */
+    color: #fff; /* White text */
+    border-radius: 8px; /* Rounded corners */
+    cursor: pointer;
+    text-align: center;
+    transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.custom-file-btn:hover {
+    background-color: #0b5ed7; /* Darker blue */
+    transform: translateY(-1px); /* subtle lift effect */
+}
+/* File name text */
+#file-name {
+    display: block;
+    margin-top: 10px;
+    font-size: 0.9rem;
+    color: #555;
+    word-break: break-all;
+}
+
+.btn-post {
+    margin-top: 20px;
+    font-size: 0.9rem;  /* smaller button */
+    padding: 5px 20px;
+}
+
+#preview {
+    display: none;
+    margin-top: 15px;
+    max-width: 100%;
+    border-radius: 10px;
+    object-fit: contain;
+    transition: all 0.3s ease;
+}
+
+.form-label{
+    text-align: center;
+}
+
+.logo-name {
+    color: rgb(0, 41, 112);
+}
+
+.btn-primary {
+    width: 100%;
+    border-radius: 8px;
+}
+
+/* Full width header */
+html, body {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+
+.nav-bar {
+  background-color: #15596e;
+  width: 100vw;
+  margin: 0;
+  padding: 12px 16px;
+  position: relative;
+  left: 0;
+  right: 0;
+}
+
+
+/* Keep inner spacing consistent */
+.nav-inner{
+  padding-left: 12px;
+  padding-right: 12px;
+}
+
+/* Logo: big on desktop, shrink on mobile */
+.logo-link{
+  display: flex;
+  align-items: center;
+}
+
+.logo-img{
+  height: 90px;
+  width: auto;
+  object-fit: contain;
+}
+
+@media (max-width: 768px){
+  .logo-img{ height: 65px; }
+}
+
+@media (max-width: 576px){
+  .logo-img{ height: 50px; }
+}
+
+/* Search sizing stays nice */
+.search-container{
+  flex: 1;
+  max-width: 650px;
+  margin: 0 16px;
+}
+
+@media (max-width: 576px){
+  .search-container{
+    max-width: 260px;
+    margin: 0 10px;
+  }
+}
+
+
+
+.logo{
+  display:flex;
+  align-items:center;
+  height:auto;
+}
+
+/* WONNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNGGGGGGGGGGGGGGGG (LOGO) */
+
+.btn-size {
+    width: 50px;
+    height: 50px;
+    font-size: 20px;
+}
+
+/* Search container - responsive */
+.search-container {
+    flex-grow: 1;
+    max-width: 500px;
+    margin: 0 20px;
+}
+
+.search-container .input-group {
+    width: 100%;
+}
+
+/* Hamburger button - always visible */
+/* Hamburger default */
+.hamburger-btn {
+  position: relative;
+  z-index: 1060;
+}
+
+/* When menu is open, push hamburger behind sidebar */
+/* Hamburger button – same colour as header */
+.hamburger-btn {
+  background-color: #15596e;      /* header colour */
+  border: 1px solid rgba(255,255,255,0.4);
+  color: white;
+  width: 48px;
+  height: 48px;
+  font-size: 20px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+  z-index: 1060;
+}
+
+/* Hover effect */
+.hamburger-btn:hover {
+  background-color: #0f4d5f;      /* slightly darker header shade */
+  transform: scale(1.05);
+}
+
+/* Hide hamburger when menu is open */
+body.menu-open .hamburger-btn {
+  opacity: 0;
+  pointer-events: none;
+  z-index: 1030;
+}
+
+
+
+/* Off-canvas sidebar styles (right side) */
+#mobile-nav {
+    position: fixed;
+    top: 0;
+    right: -320px; /* Hidden off-screen to the right */
+    width: 300px;
+    height: 100vh;
+    background-color: #15596e;
+    padding: 20px;
+    z-index: 1050;
+    transition: right 0.3s ease-in-out;
+    box-shadow: -2px 0 15px rgba(0,0,0,0.3);
+    overflow-y: auto;
+}
+
+#mobile-nav.active {
+    right: 0; /* Slides in from right */
+}
+
+/* Overlay when menu is open */
+.sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1040;
+    display: none;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.sidebar-overlay.active {
+    display: block;
+    opacity: 1;
+}
+
+/* Navigation list in sidebar */
+.nav-list {
+    flex-direction: column !important;
+    margin-top: 40px !important;
+}
+
+.nav-list li {
+    margin-bottom: 8px;
+}
+
+.nav-link {
+    display: block;
+    padding: 12px 15px !important;
+    border-radius: 6px;
+    transition: all 0.2s;
+    font-size: 16px;
+}
+
+.nav-link:hover {
+    background-color: rgba(255,255,255,0.1);
+    text-decoration: none;
+    transform: translateX(5px);
+}
+
+.nav-link.active {
+    background-color: rgba(255,255,255,0.15);
+    font-weight: 600;
+    border-left: 3px solid white;
+}
+
+.nav-link.text-danger:hover {
+    background-color: rgba(255, 0, 0, 0.1);
+}
+
+/* Close button for sidebar */
+.menu-close-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: none;
+    border: none;
+    color: white;
+    font-size: 28px;
+    cursor: pointer;
+    padding: 0;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.2s;
+    z-index: 1051;
+}
+
+.menu-close-btn:hover {
+    background-color: rgba(255,255,255,0.1);
+}
+
+/* User info section */
+.user-info {
+    padding: 15px;
+    background-color: rgba(255,255,255,0.05);
+    border-radius: 8px;
+    margin-top: 30px;
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: rgba(255,255,255,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Prevent body scrolling when menu is open */
+body.menu-open {
+    overflow: hidden;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .search-container {
+        margin: 0 10px;
+        max-width: 300px;
+    }
+    
+    .logo {
+        height: 80px;
+    }
+    
+    .btn-size {
+        width: 45px;
+        height: 45px;
+        font-size: 18px;
+    }
+    
+    #mobile-nav {
+        width: 280px;
+    }
+}
+
+@media (max-width: 576px) {
+    
+    .logo {
+        height: 70px;
+    }
+    
+    .btn-size {
+        width: 40px;
+        height: 40px;
+        font-size: 16px;
+    }
+    
+    #mobile-nav {
+        width: 250px;
+    }
+}
+
+/* For very small screens */
+@media (max-width: 400px) {
+    #mobile-nav {
+        width: 85vw;
+        right: -85vw;
+    }
+}
+
+/* WONGGGGGGGGDFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF (LINE) */
+.section-header {
+  position: relative;
+  padding-bottom: 8px;
+  margin-bottom: 14px;
+}
+
+.section-header::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 4px;
+  background-color: #2ec4c7;  /* cyan */
+  border-radius: 2px;
+}
+
+
+/* WONGGGGGGGGDFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF (VIEW ALL BUTTON) */ 
+.view-all-btn {
+  background-color: #2ec4c7;      /* cyan */
+  color: white;
+  border-radius: 999px;           /* pill shape */
+  padding: 6px 14px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  border: none;
+  transition: background-color 0.2s ease, transform 0.15s ease;
+}
+
+.view-all-btn:hover {
+  background-color: #26b0b3;
+  color: white;
+  transform: translateY(-1px);
+  text-decoration: none;
+}
+
+/* WONGGGGGGGGDFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF (BADGES AND POST COLOUR NAME) */ 
+.section-header h3,
+.section-header h4 {
+  color: #15596e;
+  font-weight: 600;
+}
+
+/* WONGGGGGGGGDFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF (MOBILE GAP) */ 
+@media (max-width: 991px) {
+  .mobile-section-gap {
+    margin-top: 20px;
+  }
+}
+
+/* WONGGGGGGGGDFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF (profile update flash) */ 
+/* Profile page: make flash messages overlay header */
+/* ONLY on profile page: make flash messages overlay header (no pushing down) */
+/* Profile page: flash message overlays header */
+body.profile-flash-overlay .flash-overlay {
+  position: fixed;
+  top: 10px;                  /* overlaps header */
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(700px, calc(100% - 24px));
+  z-index: 9999;              /* ABOVE nav-bar */
+  pointer-events: none;       /* clicks pass through */
+}
+
+/* Allow clicking close (X) */
+body.profile-flash-overlay .flash-overlay .alert {
+  pointer-events: auto;
+  margin-bottom: 0;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+}
+
+/* WONGGGGGGGGDFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF (S OR Y) */ 
+.role-badge {
+  background-color: #2ec4c7; /* cyan */
+  color: white;
+  font-size: 0.75rem;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-weight: 600;
+}
+
+/* WONGGGGGGGGDFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF (BADGES) */ 
+/* Big badge icons */
+.badge-icon-text {
+  font-size: 3.5rem;     /* 👈 BIG */
+  line-height: 1;
+  transition: filter 0.2s ease, opacity 0.2s ease, transform 0.2s ease;
+}
+
+/* Incomplete badge = dark / grey */
+.badge-icon-text.incomplete {
+  filter: grayscale(100%) brightness(40%);
+  opacity: 0.6;
+}
+
+/* Completed badge = bright */
+.badge-icon-text.complete {
+  filter: none;
+  opacity: 1;
+  transform: scale(1.05);
+}
+
+.badge-icon-text.complete {
+  text-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+/* WONGGGGGGGGDFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF (view wall BACKGROUND COLOUR) */ 
+/* ALL BADGES MODAL – match header colour */
+#allBadgesModal .modal-content {
+  background-color: #15596e;
+  color: #ffffff;
+  border-radius: 12px;
+  border: none;
+}
+
+/* Header + footer inside modal */
+#allBadgesModal .modal-header,
+#allBadgesModal .modal-footer {
+  border: none;
+  background-color: #15596e;
+}
+
+/* Close (X) button */
+#allBadgesModal .close {
+  color: #ffffff;
+  opacity: 1;
+}
+#allBadgesModal .close:hover {
+  color: #e0e0e0;
+}
+
+/* Badge cards inside modal */
+#allBadgesModal .card {
+  background-color: #ffffff;
+  border-radius: 10px;
+}
+
+/* Badge text colours inside card */
+#allBadgesModal .card-body {
+  color: #333;
+}
+
+#allBadgesModal .modal-title {
+  font-weight: 700;
+}
+
+
+/* WONGGGGGGGGDFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF (view all CYAN WORDS COLOUR) */ 
+/* ===== ALL BADGES MODAL – CYAN ACCENTS ===== */
+
+/* Modal title */
+#allBadgesModal .modal-title {
+  color: #2ec4c7;          /* cyan */
+  font-weight: 700;
+}
+
+/* Close (X) button */
+#allBadgesModal .close {
+  color: #2ec4c7;          /* cyan X */
+  opacity: 1;
+  text-shadow: none;
+}
+
+#allBadgesModal .close:hover {
+  color: #8be3e6;          /* lighter cyan on hover */
+}
+
+/* Footer close button */
+#allBadgesModal .btn-secondary {
+  background-color: #2ec4c7;   /* cyan */
+  border: none;
+  color: #ffffff;
+  font-weight: 600;
+  border-radius: 999px;
+  padding: 6px 18px;
+}
+
+#allBadgesModal .btn-secondary:hover {
+  background-color: #25b0b3;
+}
+
+/* WONGGGGGGGGDFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF (view all CYAN lines COLOUR) */ 
+/* Cyan divider line under modal header */
+#allBadgesModal .modal-header {
+  border-bottom: 4px solid #2ec4c7; /* cyan line */
+  padding-bottom: 12px;
+  margin-bottom: 8px;
+  
+}
+
