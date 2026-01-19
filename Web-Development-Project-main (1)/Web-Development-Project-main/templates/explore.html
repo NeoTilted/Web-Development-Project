@@ -1,0 +1,286 @@
+{% extends "base.html" %}
+{% block title %}Bond Buddies - My Profile{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <header class="nav-bar">
+
+        <div class="container-fluid px-0">
+            <div class="d-flex align-items-center justify-content-between nav-inner">
+
+                <!-- Left: Logo -->
+                <a href="{{ url_for('home') }}" class="logo-link">
+                    <img src="{{ url_for('static', filename='img/Logo.png') }}" alt="Logo" class="logo-img">
+                </a>
+
+                <!-- Middle: Search -->
+                <div class="search-container">
+                    <form class="form-inline m-0">
+                        <div class="input-group">
+                            <input type="search" placeholder="Search" class="form-control">
+                            <div class="input-group-append">
+
+                                <button class="btn btn-outline-light" type="button">🔍</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Right: Hamburger -->
+                <button class="btn btn-dark hamburger-btn btn-size" type="button" aria-label="Toggle navigation"
+                    aria-controls="mobile-nav" aria-expanded="false">
+                    ☰
+                </button>
+
+            </div>
+        </div>
+    </header>
+</div>
+
+<!-- Overlay (hidden by default) -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<!-- Off-canvas Sidebar (right side) -->
+<nav id="mobile-nav" aria-label="Main navigation">
+    <!-- Close button inside sidebar -->
+    <button class="menu-close-btn" aria-label="Close menu">
+        &times;
+    </button>
+    
+    <!-- User Info (Optional - can add user avatar/name here) -->
+    <div class="user-info mb-4 d-none">
+        <div class="d-flex align-items-center">
+            <div class="user-avatar mr-2">
+                <!-- Add user avatar here -->
+            </div>
+            <div>
+                <h6 class="mb-0 text-white">Welcome, User</h6>
+                <small class="text-light">user@example.com</small>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Navigation Links -->
+    <ul class="nav-list list-unstyled mb-0">
+        <li><a href="{{ url_for('home') }}" class="nav-link text-white">Home</a></li>
+        <li><a href="{{ url_for('explore') }}" class="nav-link text-white active">Explore</a></li>
+        <li><a href="" class="nav-link text-white">Friends</a></li>
+        <li><a href="{{ url_for('createPost') }}" class="nav-link text-white">Create</a></li>
+        <li><a href="" class="nav-link text-white">Profile</a></li>
+        <li><hr class="bg-light my-3"></li>
+        <!-- Additional Links -->
+        <li><a href="" class="nav-link text-white">Settings</a></li>
+        <li><a href="" class="nav-link text-danger">Logout</a></li>
+    </ul>
+</nav>
+
+<!-- Template with better structure -->
+<div class="container">
+    <form method="GET" id="filterForm">
+        <div class="row bg-white text-center align-items-center">
+            <!-- Fix: Use unique IDs and names for each filter -->
+            <div class="col" style="border:black solid 1px">
+                <input type="checkbox" id="senior" name="filters" value="senior" 
+                       {% if 'senior' in request.args.getlist('filters') %}checked{% endif %}>
+                <label for="senior">Senior Post</label>
+            </div>
+            <div class="col" style="border:black solid 1px">
+                <input type="checkbox" id="junior" name="filters" value="junior"
+                       {% if 'junior' in request.args.getlist('filters') %}checked{% endif %}>
+                <label for="junior">Junior Post</label>
+            </div>
+            <div class="col" style="border:black solid 1px">
+                <input type="checkbox" id="trending" name="filters" value="trending"
+                       {% if 'trending' in request.args.getlist('filters') %}checked{% endif %}>
+                <label for="trending">Trending</label>
+            </div>
+            <div class="col" style="border:black solid 1px">
+                <input type="checkbox" id="hot" name="filters" value="hot"
+                       {% if 'hot' in request.args.getlist('filters') %}checked{% endif %}>
+                <label for="hot">Hot</label>
+            </div>
+        </div>
+        
+        <!-- Hidden fields for other filter parameters (if any) -->
+        <input type="hidden" name="page" value="{{ request.args.get('page', 1) }}">
+        <input type="hidden" name="sort" value="{{ request.args.get('sort', 'newest') }}">
+    </form>
+</div>
+
+<!-- Content area that will be updated -->
+<!-- In the content area of explore.html -->
+<div id="contentArea">
+    {% if posts %}
+    {% for post_info in posts %}
+        {% set post = post_info.post %}
+        {% set username = post_info.username %}
+        {% set comment_count = post_info.comment_count %}
+        {% set image_url = post_info.image_url %}  <!-- Add this -->
+        
+        <div class="card mb-3">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-2">
+                    <div class="mr-2">
+                        <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center" 
+                             style="width: 40px; height: 40px;">
+                            {{ username[0]|upper if username else '?' }}
+                        </div>
+                    </div>
+                    <div>
+                        <h6 class="mb-0">{{ username }}</h6>
+                        <small class="text-muted">
+                           {{ post.get_formatted_timestamp() }}
+                        </small>
+                    </div>
+                </div>
+                
+                <!-- Display post content if exists -->
+                {% if post.get_content() %}
+                    <p class="card-text">{{ post.get_content() }}</p>
+                {% endif %}
+                
+                <!-- Display image if exists -->
+                {% if post_info.image_url %}
+                    <div class="mb-3 text-center">
+                        <img src="{{ url_for('static', filename='uploads/' + image_url) }}" 
+                             alt="Post image" 
+                             class="img-fluid rounded" 
+                             style="max-height: 400px; object-fit: cover;">
+                    </div>
+                {% endif %}
+                
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <button class="btn btn-sm btn-outline-primary">
+                            <span class="mr-1">❤️</span> {{ post.get_likes() }}
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary ml-2">
+                            <span class="mr-1">💬</span> {{ comment_count }}
+                        </button>
+                        <button class="btn btn-sm btn-outline-info ml-2">
+                            <span class="mr-1">↪️</span> Share
+                        </button>
+                    </div>
+                    <div>
+                        {% if post.get_post_category() %}
+                            <span class="badge badge-info">
+                                {{ post.get_post_category()|title }}
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+    {% else %}
+        <div class="alert alert-info">
+            No posts found. Try different filters or check back later!
+        </div>
+    {% endif %}
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const filterForm = document.getElementById('filterForm');
+    const checkboxes = filterForm.querySelectorAll('input[name="filters"]');
+    let debounceTimer;
+    
+    function applyFilters() {
+        clearTimeout(debounceTimer);
+        
+        // Debounce to prevent too many rapid requests
+        debounceTimer = setTimeout(() => {
+            const formData = new FormData(filterForm);
+            const params = new URLSearchParams();
+            
+            // Collect all checked filters
+            const checkedFilters = [];
+            checkboxes.forEach(checkbox => {
+                if (checkbox.checked) {
+                    checkedFilters.push(checkbox.value);
+                }
+            });
+            
+            // Add filters as multiple parameters
+            checkedFilters.forEach(filter => {
+                params.append('filters', filter);
+            });
+            
+            // Add other form parameters
+            const otherParams = new URLSearchParams(new FormData(filterForm));
+            otherParams.forEach((value, key) => {
+                if (key !== 'filters') {
+                    params.append(key, value);
+                }
+            });
+            
+            // Update URL without reload
+            const newUrl = `${window.location.pathname}?${params.toString()}`;
+            window.history.pushState({}, '', newUrl);
+            
+            // Show loading indicator
+            document.getElementById('contentArea').innerHTML = `
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            `;
+            
+            // Fetch and update content WITH AJAX header
+            fetch(newUrl, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+                .then(response => {
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    return response.text();
+                })
+                .then(html => {
+                    // Parse the response to extract only the contentArea
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const newContent = doc.getElementById('contentArea').innerHTML;
+                    
+                    // Update content with animation
+                    const contentArea = document.getElementById('contentArea');
+                    contentArea.style.opacity = '0';
+                    setTimeout(() => {
+                        contentArea.innerHTML = newContent;
+                        contentArea.style.opacity = '1';
+                        contentArea.style.transition = 'opacity 0.3s ease-in-out';
+                    }, 150);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('contentArea').innerHTML = `
+                        <div class="alert alert-danger">
+                            Error loading filtered results. Please try again.
+                        </div>
+                    `;
+                });
+        }, 500); // 500ms debounce delay
+    }
+    
+    // Add event listeners to all checkboxes
+    checkboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', applyFilters);
+    });
+    
+    // Handle browser back/forward buttons
+    window.addEventListener('popstate', function() {
+        // Update checkboxes based on URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const activeFilters = urlParams.getAll('filters');
+        
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = activeFilters.includes(checkbox.value);
+        });
+        
+        // Re-fetch content
+        applyFilters();
+    });
+});
+</script>
+{% endblock %}
