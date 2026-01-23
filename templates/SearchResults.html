@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% block title %}Search Results{% endblock %}
+
+{% block content %}
+<!-- HEADER SECTION: Main navigation with logo, search, and mobile menu -->
+<div class="profile-page">
+    <header class="nav-bar mb-2">
+        <div class="container-fluid px-0">
+            <div class="d-flex align-items-center justify-content-between nav-inner">
+
+                <!-- Left: Logo -->
+                <a href="{{ url_for('home') }}" class="logo-link">
+                    <img src="{{ url_for('static', filename='img/Logo.png') }}" alt="Logo" class="logo-img">
+                </a>
+
+                <!-- Middle: Search -->
+                <div class="search-container">
+                    <form class="form-inline m-0">
+                        <div class="input-group">
+                            <input type="search" placeholder="Search" class="form-control">
+                            <div class="input-group-append">
+
+                                <button class="btn btn-outline-light" type="button">🔍</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Right: Hamburger -->
+                <button class="btn btn-dark hamburger-btn btn-size" type="button" aria-label="Toggle navigation"
+                    aria-controls="mobile-nav" aria-expanded="false">
+                    ☰
+                </button>
+
+            </div>
+        </div>
+</div>
+</header>
+
+
+<!-- MAIN CONTENT: Displays search results -->
+<div class="container mt-4">
+    <!-- PAGE TITLE: Shows the search query -->
+    <h4>Results for "{{ query }}"</h4>
+    <hr>
+    
+    <!-- SEARCH RESULTS CONTAINER -->
+    <div class="row">
+        {% if users %}
+            <!-- USER RESULTS LOOP: Display each matching user -->
+            {% for user in users %}
+            <div class="col-12 mb-3"> 
+                <!-- USER CARD: Individual user result card -->
+                <div class="card p-3 shadow-sm">
+                    <div class="d-flex justify-content-between align-items-center">
+  <div class="pr-5">
+    <h5 class="mb-2" style="letter-spacing: 0.5px;">{{ user.get_username() }}</h5>
+    <span class="text-muted">
+      {% if user.get_user_type() == 'S' %}Senior
+      {% elif user.get_user_type() == 'Y' %}Youth
+      {% else %}{{ user.get_user_type() }}
+      {% endif %}
+    </span>
+  </div>
+
+  <div class="d-flex gap-2">
+    <a href="{{ url_for('profile', user_id=user.get_user_id()) }}" class="btn btn-outline-secondary btn-sm">
+      View Profile
+    </a>
+
+    <button
+      class="btn btn-sm btn-primary follow-btn"
+      data-user-id="{{ user.get_user_id() }}">
+      Follow
+    </button>
+  </div>
+</div>
+
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <!-- NO RESULTS MESSAGE: Displayed when search returns empty -->
+            <p class="ml-3">No users found.</p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- MOBILE NAVIGATION OVERLAY: Background dimmer for mobile menu -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<!-- MOBILE SIDEBAR NAVIGATION: Hidden menu for mobile devices -->
+<nav id="mobile-nav" aria-label="Main navigation">
+    <!-- CLOSE BUTTON: Closes the mobile menu -->
+    <button class="menu-close-btn" aria-label="Close menu">&times;</button>
+    
+    <!-- NAVIGATION LINKS: App navigation menu -->
+    <ul class="nav-list list-unstyled mb-0">
+        <li><a href="{{ url_for('home') }}" class="nav-link text-white">Home</a></li>
+        <li><a href="" class="nav-link text-white">Explore</a></li>
+        <li><a href="" class="nav-link text-white">Friends</a></li>
+        <li><a href="" class="nav-link text-white">Create</a></li>
+        <li><a href="" class="nav-link text-white">Profile</a></li>
+        <li><hr class="bg-light my-3"></li> <!-- Separator line -->
+        
+        <!-- APP SETTINGS AND LOGOUT -->
+        <li><a href="" class="nav-link text-white">Settings</a></li>
+        <li><a href="{{ url_for('logout') }}" class="nav-link text-danger">Logout</a></li>
+    </ul>
+</nav>
+
+<script>
+document.querySelectorAll(".follow-btn").forEach(btn => {
+  btn.addEventListener("click", async () => {
+    const userId = btn.getAttribute("data-user-id");
+
+    // Check status first (optional)
+    const r = await fetch(`/api/check_follow/${userId}`);
+    const j = await r.json();
+
+    if (j.is_following) {
+      const u = await fetch(`/api/unfollow/${userId}`, { method: "POST" });
+      const uj = await u.json();
+      if (uj.success) btn.textContent = "Follow";
+    } else {
+      const f = await fetch(`/api/follow/${userId}`, { method: "POST" });
+      const fj = await f.json();
+      if (fj.success) btn.textContent = "Unfollow";
+    }
+  });
+});
+</script>
+
+{% endblock %}
