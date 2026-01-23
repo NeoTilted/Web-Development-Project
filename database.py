@@ -1229,4 +1229,6 @@ class DataBase:
         conn.close()
         return stats
     
-    
+    #Changes - 16 Jan
+    #added image_url to posts table
+    #added attribute image_url to insert_photos, get_random_posts, update_posts, get_posts_with_images and get_user_stats method

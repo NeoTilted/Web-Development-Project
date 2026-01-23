@@ -1,13 +1,14 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session
+from flask import Flask, render_template, request, redirect, url_for, flash, session, send_from_directory
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from login import UserLoginIn
 from createAccount import createAccount
 from database import DataBase
 from classes import User, Event, Post
-
-from flask import send_from_directory
+import re
+import sqlite3
 import os, uuid
+import database
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your-secret-key-here' 
@@ -148,11 +149,61 @@ def createPost():
 
     return render_template('createPost.html')
 
+def get_db_connection():
+    conn = sqlite3.connect('BondBuddies.db')
+    conn.row_factory = sqlite3.Row  # allows post['content'] instead of post[1]
+    return conn
 
+@app.route('/api/edit_post/<int:post_id>', methods=['GET', 'POST'])
+def edit_post_route(post_id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    conn = get_db_connection()
+    post = conn.execute('SELECT * FROM posts WHERE post_id=?', (post_id,)).fetchone()
+
+    if not post:
+        conn.close()
+        return redirect(url_for('profile'))
+
+    # Ensure the user owns the post
+    if post['user_id'] != session['user_id']:
+        conn.close()
+        return redirect(url_for('profile'))
+
+    if request.method == 'POST':
+        # Get updated data from form
+        content = request.form['content']
+        category = request.form['category']
+
+        # Handle image upload
+        file = request.files.get('image')
+        if file and file.filename != '':
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        else:
+            filename = post['image_url']  # keep existing if no new file
+
+        # Update only relevant columns
+        conn.execute('''
+            UPDATE posts
+            SET content = ?, post_category = ?, image_url = ?
+            WHERE post_id = ?
+        ''', (content, category, filename, post_id))
+        conn.commit()
+        conn.close()
+        return redirect(url_for('profile'))
+
+    # GET request: render edit page
+    conn.close()
+    return render_template('editPost.html', post=post)
+
+@app.route('/events')
+def events():
+    return render_template('events.html')
 
 #WONGDFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-import re
-from werkzeug.security import generate_password_hash
+
 
 def is_valid_email(email: str) -> bool:
     if not email:
@@ -189,8 +240,6 @@ def profile():
 
 
 #WONGDFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-import re
-
 @app.route('/profile/edit', methods=['POST'])
 def edit_profile():
     if 'user_id' not in session or 'logged_in' not in session:
@@ -414,8 +463,167 @@ def search():
             users.append(User.from_database_row(row))
     
     return render_template('SearchResults.html', users=users, query=query)
-if __name__ == '__main__':
-    app.run(debug=True)
+
+
+# API endpoint to follow a user
+@app.route('/api/follow/<int:user_id>', methods=['POST'])
+def api_follow_user(user_id):
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'error': 'Not logged in'}), 401
+    
+    follower_id = session['user_id']
+    
+    if follower_id == user_id:
+        return jsonify({'success': False, 'error': 'Cannot follow yourself'}), 400
+    
+    # Check if already following
+    if db.check_follow_status(follower_id, user_id):
+        return jsonify({'success': False, 'error': 'Already following'}), 400
+    
+    try:
+        # Create follow relationship directly
+        success = db.create_follow(follower_id, user_id)
+        
+        if success:
+            # Track action for badges
+            db.update_badge_progress(follower_id, 3, 1)  # Badge ID 3 is "Friends" badge
+            return jsonify({'success': True})
+        else:
+            return jsonify({'success': False, 'error': 'Failed to follow user'}), 500
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+# API endpoint to unfollow a user
+@app.route('/api/unfollow/<int:user_id>', methods=['POST'])
+def api_unfollow_user(user_id):
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'error': 'Not logged in'}), 401
+    
+    follower_id = session['user_id']
+    
+    try:
+        success = db.unfollow_user(follower_id, user_id)
+        
+        if success:
+            return jsonify({'success': True})
+        else:
+            return jsonify({'success': False, 'error': 'Not following this user'}), 400
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+# API endpoint to check follow status
+@app.route('/api/check_follow/<int:user_id>', methods=['GET'])
+def check_follow_status(user_id):
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'error': 'Not logged in'}), 401
+    
+    follower_id = session['user_id']
+    is_following = db.check_follow_status(follower_id, user_id)
+    
+    return jsonify({'success': True, 'is_following': is_following})
+
+
+
+# ==================== POST API ENDPOINTS ====================
+
+# API endpoint to delete a post
+@app.route('/api/delete_post/<int:post_id>', methods=['POST'])
+def delete_post_route(post_id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    post = db.get_post_by_id(post_id)
+    if not post:
+        return redirect(url_for('profile'))
+
+    if post[2] != session['user_id']:
+        return redirect(url_for('profile'))
+
+    db.delete_post(post_id)
+    return redirect(url_for('profile'))
+
+# API endpoint to like a post
+@app.route('/api/like_post/<int:post_id>', methods=['POST'])
+def like_post(post_id):
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'error': 'Not logged in'}), 401
+    
+    user_id = session['user_id']
+    
+    try:
+        # Check if already liked
+        conn = sqlite3.connect(db.db_name)
+        cursor = conn.cursor()
+        
+        cursor.execute('UPDATE posts SET likes = likes + 1 WHERE post_id = ?', (post_id,))
+        conn.commit()
+        
+        # Track action for badges
+        cursor.execute('''
+        INSERT INTO user_actions (user_id, action_type, target_id)
+        VALUES (?, 'like_post', ?)
+        ''', (user_id, post_id))
+        
+        # Check and award badges
+        db.check_and_award_badges(user_id)
+        
+        conn.close()
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+    
+def create_follow(self, follower_id, followed_id):
+    """Create follow relationship directly (no approval)"""
+    conn = sqlite3.connect(self.db_name)
+    cursor = conn.cursor()
+    try:
+        cursor.execute("""
+            INSERT INTO following (follower_id, followed_id)
+            VALUES (?, ?)
+        """, (follower_id, followed_id))
+
+        # Track action for badges
+        cursor.execute("""
+            INSERT INTO user_actions (user_id, action_type, target_id)
+            VALUES (?, 'follow_user', ?)
+        """, (follower_id, followed_id))
+
+        # Notify the person being followed
+        follower_name = self.get_username_by_id(follower_id)
+        cursor.execute("""
+            INSERT INTO notifications (user_id, notification_type, message, related_id)
+            VALUES (?, 'follow', ? || ' followed you', ?)
+        """, (followed_id, follower_name, follower_id))
+
+        conn.commit()
+        return True
+    except sqlite3.IntegrityError:
+        return False
+    finally:
+        conn.close()
+        
+@app.route("/followers")
+def followers_page():
+    if 'user_id' not in session or 'logged_in' not in session:
+        flash('Please login first', 'warning')
+        return redirect(url_for('login'))
+
+    user_id = session["user_id"]
+    followers = db.get_followers(user_id)
+    return render_template("followers.html", followers=followers)
+
+@app.route("/following")
+def following_page():
+    if 'user_id' not in session or 'logged_in' not in session:
+        flash('Please login first', 'warning')
+        return redirect(url_for('login'))
+
+    user_id = session["user_id"]
+    following = db.get_following(user_id)
+    return render_template("following.html", following=following)
+
 
 if __name__ == '__main__':
     app.run(debug=True)

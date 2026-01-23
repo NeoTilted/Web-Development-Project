@@ -15,26 +15,57 @@ h2 {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100%;
+    height: calc(100% - 114px);
     background-color: #f0f2f5;
 }
 
 .upload-card {
+    min-height: 400px;
+    min-width: 300px;
+
     background-color: #ffffff;
-    padding: 30px;
+    padding: 40px;
     border-radius: 15px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
     text-align: center;
-    width: 500px;
+    width: 850px;              /* ðŸ‘ˆ bigger */
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: stretch;
 }
 
 /* Hide the real file input */
 #fileInput {
         display: none;
     }
+
+/* Keep filename above button */
+#fileName {
+    font-size: 0.9rem;
+    color: #555;
+    word-break: break-all;
+}
+
+
+#content {
+    resize: none;
+    height: 220px;   /* ðŸ‘ˆ wider card = taller textarea looks right */
+}
+
+#preview {
+    max-width: 100%;
+    max-height: 260px;
+    border-radius: 10px;
+    object-fit: contain;
+}
+
+#preview.hidden {
+    display: none;
+}
+
+#preview.visible {
+    display: block;
+}
 
                 /* Custom choose file button */
 .custom-file-btn {
@@ -52,6 +83,22 @@ h2 {
     background-color: #0b5ed7; /* Darker blue */
     transform: translateY(-1px); /* subtle lift effect */
 }
+
+.file-upload-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.file-upload-wrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;   /* ðŸ‘ˆ vertical center */
+    align-items: center;
+    height: 100%;
+    min-height: 300px;         /* ðŸ‘ˆ ensures vertical centering space */
+}
+
 /* File name text */
 #file-name {
     display: block;
@@ -67,13 +114,11 @@ h2 {
     padding: 5px 20px;
 }
 
-#preview {
-    display: none;
-    margin-top: 15px;
-    max-width: 100%;
-    border-radius: 10px;
-    object-fit: contain;
-    transition: all 0.3s ease;
+/* Post button always at bottom */
+.post-btn-wrapper {
+    display: flex;
+    justify-content: center;
+    margin-top: 30px;
 }
 
 .form-label{
@@ -93,6 +138,8 @@ h2 {
 html, body {
   margin: 0 !important;
   padding: 0 !important;
+  max-height: 100%;
+  height: 100%;
 }
 
 body {
@@ -186,7 +233,7 @@ body {
 }
 
 /* When menu is open, push hamburger behind sidebar */
-/* Hamburger button – same colour as header */
+/* Hamburger button â€“ same colour as header */
 .hamburger-btn {
   background-color: #15596e;      /* header colour */
   border: 1px solid rgba(255,255,255,0.4);
@@ -405,23 +452,22 @@ body.menu-open {
 
 /* WONGGGGGGGGDFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF (VIEW ALL BUTTON) */ 
 .view-all-btn {
-  background: #25c7c7; /* cyan background */
-  color: #15596e;      /* HEADER COLOR TEXT */
-  border-radius: 999px;
+  background-color: #2ec4c7;      /* cyan */
+  color: white;
+  border-radius: 999px;           /* pill shape */
   padding: 6px 14px;
   font-size: 0.85rem;
-  font-weight: 700;
+  font-weight: 500;
   border: none;
-  transition: 0.2s ease;
+  transition: background-color 0.2s ease, transform 0.15s ease;
 }
 
-/* Hover effect */
 .view-all-btn:hover {
-  background: #1fb0b0;
-  color: #ffffff; /* white on hover */
+  background-color: #26b0b3;
+  color: white;
   transform: translateY(-1px);
+  text-decoration: none;
 }
-
 
 /* WONGGGGGGGGDFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF (BADGES AND POST COLOUR NAME) */ 
 .section-header h3,
@@ -471,7 +517,7 @@ body.profile-flash-overlay .flash-overlay .alert {
 /* WONGGGGGGGGDFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF (BADGES) */ 
 /* Big badge icons */
 .badge-icon-text {
-  font-size: 3.5rem;     /* 👈 BIG */
+  font-size: 3.5rem;     /* ðŸ‘ˆ BIG */
   line-height: 1;
   transition: filter 0.2s ease, opacity 0.2s ease, transform 0.2s ease;
 }
@@ -494,7 +540,7 @@ body.profile-flash-overlay .flash-overlay .alert {
 }
 
 /* WONGGGGGGGGDFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF (view wall BACKGROUND COLOUR) */ 
-/* ALL BADGES MODAL – match header colour */
+/* ALL BADGES MODAL â€“ match header colour */
 #allBadgesModal .modal-content {
   background-color: #15596e;
   color: #ffffff;
@@ -535,7 +581,7 @@ body.profile-flash-overlay .flash-overlay .alert {
 
 
 /* WONGGGGGGGGDFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF (view all CYAN WORDS COLOUR) */ 
-/* ===== ALL BADGES MODAL – CYAN ACCENTS ===== */
+/* ===== ALL BADGES MODAL â€“ CYAN ACCENTS ===== */
 
 /* Modal title */
 #allBadgesModal .modal-title {
@@ -558,7 +604,7 @@ body.profile-flash-overlay .flash-overlay .alert {
 #allBadgesModal .btn-secondary {
   background-color: #2ec4c7;   /* cyan */
   border: none;
-  color: #15596e;
+  color: #ffffff;
   font-weight: 600;
   border-radius: 999px;
   padding: 6px 18px;
@@ -575,157 +621,4 @@ body.profile-flash-overlay .flash-overlay .alert {
   padding-bottom: 12px;
   margin-bottom: 8px;
   
-}
-
-/* ===== ALL POSTS MODAL – match ALL BADGES MODAL styling ===== */
-#allPostsModal .modal-content {
-  background-color: #15596e;   /* header colour */
-  color: #ffffff;
-  border-radius: 12px;
-  border: none;
-}
-
-#allPostsModal .modal-header,
-#allPostsModal .modal-footer {
-  border: none;
-  background-color: #15596e;   /* header colour */
-}
-
-/* Title cyan */
-#allPostsModal .modal-title {
-  color: #2ec4c7;              /* cyan */
-  font-weight: 700;
-}
-
-/* X button cyan */
-#allPostsModal .close {
-  color: #2ec4c7;
-  opacity: 1;
-  text-shadow: none;
-}
-
-#allPostsModal .close:hover {
-  color: #8be3e6;
-}
-
-/* Cyan divider line under header */
-#allPostsModal .modal-header {
-  border-bottom: 4px solid #2ec4c7;
-  padding-bottom: 12px;
-  margin-bottom: 8px;
-}
-
-/* Cards inside modal look like badges modal */
-#allPostsModal .card {
-  background-color: #ffffff;
-  border-radius: 10px;
-}
-
-#allPostsModal .card-body {
-  color: #333;
-}
-
-/* Footer close button = cyan pill (same as badges modal close button) */
-#allPostsModal .btn-secondary {
-  background-color: #2ec4c7;
-  border: none;
-  color: #15596e;
-  font-weight: 600;
-  border-radius: 999px;
-  padding: 6px 18px;
-}
-
-#allPostsModal .btn-secondary:hover {
-  background-color: #25b0b3;
-}
-
-
-
-/* Base role badge */
-.role-badge {
-  padding: 4px 10px;
-  border-radius: 999px;
-  font-size: 0.8rem;
-  font-weight: 600;
-}
-
-/* Youth = green */
-.youth-badge {
-  background-color: #2ecc71; /* green */
-  color: white;
-}
-
-/* Senior = original cyan / header tone */
-.senior-badge {
-  background-color: #25c7c7; /* your cyan */
-  color: white;
-}
-
-
-/* ===== EDIT PROFILE MODAL – match View All modals ===== */
-#editProfileModal .modal-content {
-  background-color: #15596e;   /* header colour */
-  color: #ffffff;
-  border-radius: 12px;
-  border: none;
-}
-
-#editProfileModal .modal-header,
-#editProfileModal .modal-footer {
-  border: none;
-  background-color: #15596e;
-}
-
-/* Cyan title */
-#editProfileModal .modal-title {
-  color: #25c7c7;
-  font-weight: 700;
-}
-
-/* Cyan X */
-#editProfileModal .close {
-  color: #25c7c7;
-  opacity: 1;
-  text-shadow: none;
-  font-size: 1.4rem;
-}
-#editProfileModal .close:hover {
-  color: #1fb0b0;
-}
-
-/* Cyan line under title */
-#editProfileModal .modal-header {
-  border-bottom: 4px solid #25c7c7;
-  padding-bottom: 12px;
-  margin-bottom: 8px;
-}
-
-/* Inputs look clean on dark modal */
-#editProfileModal label {
-  color: #ffffff;
-  font-weight: 600;
-}
-
-#editProfileModal .form-control,
-#editProfileModal .form-control-file {
-  border-radius: 10px;
-}
-
-/* Buttons: cyan pill, TEXT = header colour */
-#editProfileModal .btn-secondary,
-#editProfileModal .btn-primary {
-  background: #25c7c7 !important;
-  color: #15596e !important;      /* header colour text */
-  border: none !important;
-  border-radius: 999px;
-  font-weight: 800;
-  padding: 6px 18px;
-  transition: 0.2s ease;
-}
-
-#editProfileModal .btn-secondary:hover,
-#editProfileModal .btn-primary:hover {
-  background: #1fb0b0 !important;
-  color: #15596e !important;
-  transform: translateY(-1px);
 }

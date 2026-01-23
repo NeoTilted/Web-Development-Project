@@ -3,80 +3,62 @@
 
 {% block content %}
 <div class="container-fluid px-0">
-  <header class="nav-bar">
+    <header class="nav-bar">
+      <div class="container-fluid px-0">
+        <div class="d-flex align-items-center justify-content-between nav-inner">
+          <!-- Logo -->
+          <a href="{{ url_for('home') }}" class="logo-link"><img src="{{ url_for('static', filename='img/Logo.png') }}" alt="Logo" class="logo-img" /></a>
 
-  <div class="container-fluid px-0">
-    <div class="d-flex align-items-center justify-content-between nav-inner">
-
-      <!-- Left: Logo -->
-      <a href="{{ url_for('home') }}" class="logo-link">
-        <img src="{{ url_for('static', filename='img/Logo.png') }}" alt="Logo" class="logo-img">
-      </a>
-
-      <!-- Middle: Search -->
-      <div class="search-container">
-        <form class="form-inline m-0">
-          <div class="input-group">
-            <input type="search" placeholder="Search" class="form-control">
-            <div class="input-group-append">
-
-              <button class="btn btn-outline-light" type="button">🔍</button>
-            </div>
+          <!-- Search -->
+          <div class="search-container">
+            <form class="form-inline m-0">
+              <div class="input-group">
+                <input type="search" placeholder="Search" class="form-control" />
+                <div class="input-group-append">
+                  <a href="{{ url_for('events') }}" class="btn btn-outline-light" title="Random Event">🎲</a>
+                  <button class="btn btn-outline-light" type="button">🔍</button>
+                </div>
+              </div>
+            </form>
           </div>
-        </form>
-      </div>
 
-      <!-- Right: Hamburger -->
-      <button class="btn btn-dark hamburger-btn btn-size" type="button"
-              aria-label="Toggle navigation"
-              aria-controls="mobile-nav"
-              aria-expanded="false">
-        ☰
-      </button>
-
-    </div>
-  </div>
-</div>
-</header>
-
-<!-- Overlay (hidden by default) -->
-<div class="sidebar-overlay" id="sidebarOverlay"></div>
-
-<!-- Off-canvas Sidebar (right side) -->
-<nav id="mobile-nav" aria-label="Main navigation">
-    <!-- Close button inside sidebar -->
-    <button class="menu-close-btn" aria-label="Close menu">
-        &times;
-    </button>
-    
-    <!-- User Info (Optional - can add user avatar/name here) -->
-    <div class="user-info mb-4 d-none">
-        <div class="d-flex align-items-center">
-            <div class="user-avatar mr-2">
-                <!-- Add user avatar here -->
-            </div>
-            <div>
-                <h6 class="mb-0 text-white">Welcome, User</h6>
-                <small class="text-light">user@example.com</small>
-            </div>
+          <!-- Hamburger -->
+          <button class="btn btn-dark hamburger-btn btn-size" type="button">☰</button>
         </div>
-    </div>
-    
-    <!-- Navigation Links -->
+      </div>
+    </header>
+  </div>
+
+  <!-- Overlay -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <!-- Sidebar -->
+  <nav id="mobile-nav">
+    <button class="menu-close-btn">&times;</button>
     <ul class="nav-list list-unstyled mb-0">
-        <li><a href="{{ url_for('home') }}" class="nav-link text-white active">Home</a></li>
-        <li><a href="{{ url_for('explore') }}" class="nav-link text-white">Explore</a></li>
-        <li><a href="" class="nav-link text-white">Friends</a></li>
-        <li><a href="/createPost" class="nav-link text-white">Create</a></li>
-        <!-- WONGDFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF-->
-        <li><a href="{{ url_for('profile') }}" class="nav-link text-white">Profile</a></li>
-        <!-- WONGDFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF-->
-        <li><hr class="bg-light my-3"></li>
-        <!-- Additional Links -->
-        <li><a href="" class="nav-link text-white">Settings</a></li>
-        <li><a href="" class="nav-link text-danger">Logout</a></li>
+      <li>
+        <a href="{{ url_for('home') }}" class="nav-link text-white active">Home</a>
+      </li>
+      <li>
+        <a href="{{ url_for('explore') }}" class="nav-link text-white">Explore</a>
+      </li>
+      <li>
+        <a href="" class="nav-link text-white">Friends</a>
+      </li>
+      <li>
+        <a href="{{ url_for('createPost') }}" class="nav-link text-white">Create</a>
+      </li>
+      <li>
+        <a href="{{ url_for('profile') }}" class="nav-link text-white">Profile</a>
+      </li>
+      <li>
+        <hr class="bg-light my-3" />
+      </li>
+      <li>
+        <a href="#" class="nav-link text-danger">Logout</a>
+      </li>
     </ul>
-</nav>
+  </nav>
 
 <h1 class="display-4 mt-4 text-center">Intergeneration Connection</h1>
 

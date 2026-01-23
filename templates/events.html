@@ -1,161 +1,117 @@
 {% extends "base.html" %}
-{% block title %}Bond Buddies - My Profile{% endblock %}
-
 {% block content %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Events</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            background-color: #f0f0f0;
-        }
-        .search-box {
-            background-color: white;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .search-input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 16px;
-        }
-        .create-event-btn {
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 5px;
-            font-size: 16px;
-            cursor: pointer;
-            width: 100%;
-            margin-bottom: 15px;
-        }
-        .event-form {
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        .form-label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        .form-input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 16px;
-        }
-        .form-textarea {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 16px;
-            min-height: 80px;
-            resize: vertical;
-        }
-        .badge-notice {
-            background-color: #fff3cd;
-            border-left: 4px solid #ffc107;
-            padding: 12px;
-            margin: 20px 0;
-            border-radius: 4px;
-            font-size: 14px;
-        }
-        .post-btn {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 5px;
-            font-size: 16px;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 10px;
-        }
-    </style>
-    <header class="nav-bar mb-2">
-    <div class="d-flex justify-content-between align-items-center">
-        <div class="d-flex logo">
-            <a href="{{url_for ('home')}}" class="logo">
-                <img src="{{ url_for('static', filename='img/Logo.png') }}" alt="Logo">
-            </a>
-        </div>
-        
-        <!-- Search Bar -->
-        <div class="search-container">
-            <form class="form-inline">
-                <div class="input-group">
-                    <input type="search" placeholder="Search" class="form-control">
-                    <div class="input-group-append">
-    <a href="{{ url_for('events') }}" class="btn btn-outline-light" title="Random Event">
-        🎲
-    </a>
-                        <button class="btn btn-outline-light" type="button">🔍</button>
-                    </div>
+
+<!-- PAGE WRAPPER -->
+<div class="evt-create">
+
+<div class="container-fluid px-0">
+    <header class="nav-bar">
+      <div class="container-fluid px-0">
+        <div class="d-flex align-items-center justify-content-between nav-inner">
+          <!-- Logo -->
+          <a href="{{ url_for('home') }}" class="logo-link"><img src="{{ url_for('static', filename='img/Logo.png') }}" alt="Logo" class="logo-img" /></a>
+
+          <!-- Search -->
+          <div class="search-container">
+            <form class="form-inline m-0">
+              <div class="input-group">
+                <input type="search" placeholder="Search" class="form-control" />
+                <div class="input-group-append">
+                  <a href="{{ url_for('events') }}" class="btn btn-outline-light" title="Random Event">🎲</a>
+                  <button class="btn btn-outline-light" type="button">🔍</button>
                 </div>
+              </div>
             </form>
+          </div>
+
+          <!-- Hamburger -->
+          <button class="btn btn-dark hamburger-btn btn-size" type="button">☰</button>
         </div>
-        
-        <!-- Hamburger Button (Always Visible) -->
-        <button class="btn btn-dark hamburger-btn btn-size mr-1" type="button" 
-                aria-label="Toggle navigation" 
-                aria-controls="mobile-nav"
-                aria-expanded="false">
-            ☰
-        </button>
-    </div>
-</header>
-</head>
-<body>
+      </div>
+    </header>
+  </div>
+
+  <!-- Overlay -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <!-- Sidebar -->
+  <nav id="mobile-nav">
+    <button class="menu-close-btn">&times;</button>
+    <ul class="nav-list list-unstyled mb-0">
+      <li>
+        <a href="{{ url_for('home') }}" class="nav-link text-white">Home</a>
+      </li>
+      <li>
+        <a href="{{ url_for('explore') }}" class="nav-link text-white">Explore</a>
+      </li>
+      <li>
+        <a href="" class="nav-link text-white">Friends</a>
+      </li>
+      <li>
+        <a href="{{ url_for('createPost') }}" class="nav-link text-white">Create</a>
+      </li>
+      <li>
+        <a href="{{ url_for('profile') }}" class="nav-link text-white">Profile</a>
+      </li>
+      <li>
+        <hr class="bg-light my-3" />
+      </li>
+      <li>
+        <a href="#" class="nav-link text-danger">Logout</a>
+      </li>
+    </ul>
+  </nav>
+
+  <!-- =========================
+       PAGE CONTENT
+       ========================= -->
+  <main class="evt-page-content">
+
     <!-- Create Event Button -->
-    <button class="create-event-btn">Create Event</button>
+    <button class="evt-create-event-btn">Create Event</button>
 
     <!-- Event Form -->
-    <div class="event-form">
-        <div class="form-group">
-            <label class="form-label">Name of event:</label>
-            <input type="text" class="form-input">
-        </div>
+    <div class="evt-event-form">
 
-        <div class="form-group">
-            <label class="form-label">Location of event:</label>
-            <input type="text" class="form-input">
-        </div>
+      <div class="evt-form-group">
+        <label class="evt-form-label" for="event-name">Name of event:</label>
+        <input type="text"
+               id="event-name"
+               class="evt-form-input">
+      </div>
 
-        <div class="form-group">
-            <label class="form-label">Itinerary of event:</label>
-            <textarea class="form-textarea"></textarea>
-        </div>
+      <div class="evt-form-group">
+        <label class="evt-form-label" for="event-location">Location of event:</label>
+        <input type="text"
+               id="event-location"
+               class="evt-form-input">
+      </div>
 
-        <div class="form-group">
-            <label class="form-label">Time of event:</label>
-            <input type="text" class="form-input">
-        </div>
+      <div class="evt-form-group">
+        <label class="evt-form-label" for="event-itinerary">Itinerary of event:</label>
+        <textarea id="event-itinerary"
+                  class="evt-form-textarea"></textarea>
+      </div>
 
-        <!-- Badge Notice -->
-        <div class="badge-notice">
-            Hosting/attending 5 events will grant users a badge!!!
-        </div>
+      <div class="evt-form-group">
+        <label class="evt-form-label" for="event-time">Time of event:</label>
+        <input type="text"
+               id="event-time"
+               class="evt-form-input">
+      </div>
 
-        <!-- Post Button -->
-        <button class="post-btn">Post</button>
+      <!-- Badge Notice -->
+      <div class="evt-badge-notice">
+        Hosting/attending 5 events will grant users a badge!!!
+      </div>
+
+      <!-- Post Button -->
+      <button class="evt-post-btn">Post</button>
+
     </div>
-</body>
-</html>
+
+  </main>
+
+</div>
+
 {% endblock %}
