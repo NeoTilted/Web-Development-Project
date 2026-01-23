@@ -1,0 +1,309 @@
+{% extends "base.html" %}
+{% block title %}Bond Buddies - My Profile{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+  <header class="nav-bar">
+
+  <div class="container-fluid px-0">
+    <div class="d-flex align-items-center justify-content-between nav-inner">
+
+      <!-- Left: Logo -->
+      <a href="{{ url_for('home') }}" class="logo-link">
+        <img src="{{ url_for('static', filename='img/Logo.png') }}" alt="Logo" class="logo-img">
+      </a>
+
+      <!-- Middle: Search -->
+      <div class="search-container">
+        <form class="form-inline m-0">
+          <div class="input-group">
+            <input type="search" placeholder="Search" class="form-control">
+            <div class="input-group-append">
+
+              <button class="btn btn-outline-light" type="button">🔍</button>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <!-- Right: Hamburger -->
+      <button class="btn btn-dark hamburger-btn btn-size" type="button"
+              aria-label="Toggle navigation"
+              aria-controls="mobile-nav"
+              aria-expanded="false">
+        ☰
+      </button>
+
+    </div>
+  </div>
+</div>
+</header>
+
+<!-- Overlay (hidden by default) -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<!-- Off-canvas Sidebar (right side) -->
+<nav id="mobile-nav" aria-label="Main navigation">
+    <!-- Close button inside sidebar -->
+    <button class="menu-close-btn" aria-label="Close menu">
+        &times;
+    </button>
+    
+    <!-- User Info (Optional - can add user avatar/name here) -->
+    <div class="user-info mb-4 d-none">
+        <div class="d-flex align-items-center">
+            <div class="user-avatar mr-2">
+                <!-- Add user avatar here -->
+            </div>
+            <div>
+                <h6 class="mb-0 text-white">Welcome, User</h6>
+                <small class="text-light">user@example.com</small>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Navigation Links -->
+    <ul class="nav-list list-unstyled mb-0">
+        <li><a href="{{ url_for('home') }}" class="nav-link text-white active">Home</a></li>
+        <li><a href="{{ url_for('explore') }}" class="nav-link text-white">Explore</a></li>
+        <li><a href="" class="nav-link text-white">Friends</a></li>
+        <li><a href="/createPost" class="nav-link text-white">Create</a></li>
+        <!-- WONGDFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF-->
+        <li><a href="{{ url_for('profile') }}" class="nav-link text-white">Profile</a></li>
+        <!-- WONGDFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF-->
+        <li><hr class="bg-light my-3"></li>
+        <!-- Additional Links -->
+        <li><a href="" class="nav-link text-white">Settings</a></li>
+        <li><a href="" class="nav-link text-danger">Logout</a></li>
+    </ul>
+</nav>
+
+<h1 class="display-4 mt-4 text-center">Intergeneration Connection</h1>
+
+<!-- Feed Section - Simple and clean -->
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <!-- Feed Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4>Feed from People You Follow</h4>
+                {% if feed_posts %}
+                <span class="badge badge-primary">{{ feed_posts|length }} posts</span>
+                {% endif %}
+            </div>
+            
+            <!-- Feed Posts -->
+            {% if feed_posts %}
+                {% for post in feed_posts %}
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-body">
+                        <!-- Post Header -->
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="mr-3">
+                                {% if post.avatar_url %}
+                                <img src="{{ url_for('static', filename='uploads/' + post.avatar_url) }}" 
+                                     class="rounded-circle" 
+                                     alt="{{ post.username }}" 
+                                     style="width: 40px; height: 40px; object-fit: cover;"
+                                     onerror="this.src='https://ui-avatars.com/api/?name={{ post.username }}&background=random&size=40'">
+                                {% else %}
+                                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center"
+                                     style="width: 40px; height: 40px; font-size: 0.9rem;">
+                                    {{ post.username[0]|upper }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <h6 class="mb-0" style="font-weight: 600;">{{ post.username }}</h6>
+                                <small class="text-muted">
+                                    {{ post.timestamp }}
+                                </small>
+                            </div>
+                        </div>
+                        
+                        <!-- Post Content -->
+                        <p class="card-text" style="font-size: 1rem; line-height: 1.5;">{{ post.content }}</p>
+                        
+                        <!-- Post Image (if exists) -->
+                        {% if post.image_url %}
+                        <div class="mt-3">
+                            <img src="{{ url_for('static', filename='uploads/' + post.image_url) }}" 
+                                 class="img-fluid rounded" 
+                                 alt="Post image"
+                                 style="max-width: 100%; height: auto;">
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Post Footer -->
+                        <div class="mt-3 pt-3 border-top d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center">
+                                <button class="heart-btn" data-post-id="{{ post.post_id }}">
+                                    <i class="far fa-heart heart-icon"></i>
+                                    {% if post.likes > 0 %}
+                                    <span class="like-count">{{ post.likes }}</span>
+                                    {% endif %}
+                                </button>
+                                <a href="{{ url_for('profile', user_id=post.user_id) }}" 
+                                   class="btn btn-sm btn-outline-secondary ml-2">
+                                    View Profile
+                                </a>
+                            </div>
+                            {% if post.category %}
+                            <span class="badge badge-info">
+                                {{ post.category|capitalize }}
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <!-- Placeholder when no posts -->
+                <div class="card shadow-sm">
+                    <div class="card-body text-center py-5">
+                        <div class="mb-4">
+                            <i class="fas fa-users fa-3x text-muted"></i>
+                        </div>
+                        <h5 class="text-muted mb-3">Nothing new from Followed Users</h5>
+                        <p class="text-muted mb-4">Follow some users to see their posts here!</p>
+                        <div>
+                            <a href="{{ url_for('search') }}" class="btn btn-primary mr-2">
+                                <i class="fas fa-search mr-1"></i> Find People to Follow
+                            </a>
+                            <a href="/createPost" class="btn btn-outline-primary">
+                                <i class="fas fa-plus mr-1"></i> Create a Post
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Heart Button Styles -->
+<style>
+.heart-btn {
+    background: none;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    color: #666;
+    transition: all 0.2s ease;
+}
+
+.heart-btn:hover {
+    color: #e74c3c;
+}
+
+.heart-icon {
+    font-size: 1.2rem;
+    margin-right: 5px;
+    transition: all 0.2s ease;
+}
+
+.heart-icon.liked {
+    color: #e74c3c;
+}
+
+.like-count {
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.heart-btn:hover .heart-icon {
+    color: #e74c3c;
+    transform: scale(1.1);
+}
+
+.heart-btn:hover .like-count {
+    color: #e74c3c;
+}
+</style>
+
+<!-- Add JavaScript for mobile navigation -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const hamburgerBtn = document.getElementById('hamburgerBtn');
+    const closeMenuBtn = document.getElementById('closeMenuBtn');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+    const mobileNav = document.getElementById('mobile-nav');
+    
+    if (hamburgerBtn) {
+        hamburgerBtn.addEventListener('click', function() {
+            mobileNav.classList.add('active');
+            sidebarOverlay.classList.add('active');
+            this.setAttribute('aria-expanded', 'true');
+        });
+    }
+    
+    if (closeMenuBtn) {
+        closeMenuBtn.addEventListener('click', function() {
+            mobileNav.classList.remove('active');
+            sidebarOverlay.classList.remove('active');
+            hamburgerBtn.setAttribute('aria-expanded', 'false');
+        });
+    }
+    
+    if (sidebarOverlay) {
+        sidebarOverlay.addEventListener('click', function() {
+            mobileNav.classList.remove('active');
+            sidebarOverlay.classList.remove('active');
+            hamburgerBtn.setAttribute('aria-expanded', 'false');
+        });
+    }
+    
+    // Heart button functionality
+    document.querySelectorAll('.heart-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const postId = this.getAttribute('data-post-id');
+            const heartIcon = this.querySelector('.heart-icon');
+            const likeCount = this.querySelector('.like-count');
+            
+            // Toggle like state visually
+            if (heartIcon.classList.contains('liked')) {
+                // Unlike
+                heartIcon.classList.remove('liked');
+                heartIcon.classList.remove('fas');
+                heartIcon.classList.add('far');
+                
+                if (likeCount) {
+                    const newCount = parseInt(likeCount.textContent) - 1;
+                    if (newCount > 0) {
+                        likeCount.textContent = newCount;
+                    } else {
+                        likeCount.remove();
+                    }
+                }
+            } else {
+                // Like
+                heartIcon.classList.add('liked');
+                heartIcon.classList.remove('far');
+                heartIcon.classList.add('fas');
+                
+                if (likeCount) {
+                    likeCount.textContent = parseInt(likeCount.textContent) + 1;
+                } else {
+                    const newSpan = document.createElement('span');
+                    newSpan.className = 'like-count';
+                    newSpan.textContent = '1';
+                    this.appendChild(newSpan);
+                }
+            }
+            
+            // Send API request
+            fetch(`/api/like_post/${postId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }).catch(error => console.error('Error:', error));
+        });
+    });
+});
+</script>
+{% endblock %}
+
+
