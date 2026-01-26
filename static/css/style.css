@@ -1,5 +1,52 @@
+/* Remove default body margin/padding */
+html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    max-height: 100%;
+    height: 100%;
+}
+
 body {
+    overflow-x: hidden;
     background: linear-gradient(135deg, #f0f4f8, #d9e2ec);
+}
+
+/* FIX: Make nav-inner container handle the horizontal padding */
+.nav-inner {
+    padding-left: 16px;
+    padding-right: 16px;
+    margin: 0 auto;
+    width: 100%;
+    max-width: 100%; /* Changed from fixed padding to full width */
+    box-sizing: border-box;
+}
+
+/* FIX: Ensure logo-link container doesn't add extra space */
+.logo-link {
+    display: flex;
+    align-items: center;
+    margin: 0;
+}
+
+/* FIX: Make sure search container doesn't cause overflow */
+.search-container {
+    flex-grow: 1;
+    max-width: 650px;
+    margin: 0 16px;
+    box-sizing: border-box;
+}
+
+/* Additional fix for very small screens */
+@media (max-width: 400px) {
+    .nav-inner {
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+    
+    .search-container {
+        margin: 0 10px;
+        max-width: 260px;
+    }
 }
 
 .card {
@@ -621,4 +668,271 @@ body.profile-flash-overlay .flash-overlay .alert {
   padding-bottom: 12px;
   margin-bottom: 8px;
   
+}
+/* === FINAL HEADER OVERRIDES (prevents left/top gaps) === */
+.nav-bar{
+  background-color: #15596e;
+  /* Full-bleed even inside Bootstrap containers */
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+  margin-top: 0;
+  margin-bottom: 0;
+
+  /* Stable height + perfect vertical centering */
+  height: 96px;
+  padding: 0 16px;
+  box-sizing: border-box;
+
+  display: flex;
+  align-items: center;
+}
+
+/* Prevent Bootstrap px-* utilities inside the header from reintroducing side gaps */
+.nav-bar .px-4,
+.nav-bar .px-3,
+.nav-bar .px-2,
+.nav-bar .px-1 {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+/* Keep the logo visually centred on the header midline */
+.nav-bar .logo-link{
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.nav-bar .logo-img{
+  height: 72px;
+  width: auto;
+  object-fit: contain;
+}
+
+@media (max-width: 768px){
+  .nav-bar{ height: 80px; }
+  .nav-bar .logo-img{ height: 56px; }
+}
+
+@media (max-width: 576px){
+  .nav-bar{ height: 70px; }
+  .nav-bar .logo-img{ height: 46px; }
+}
+/* === REMOVE TOP GAP ABOVE HEADER (minimal, CSS-only) === */
+.container > .nav-bar,
+.container-fluid > .nav-bar,
+main > .nav-bar {
+  margin-top: -1.5rem !important;   /* cancels Bootstrap mt-4 (1.5rem) */
+}
+
+/* Safety: ensure header itself has no extra top spacing */
+.nav-bar {
+  margin-top: 0 !important;
+}
+/* === HEADER SIZE TUNING (NO GAPS) === */
+.nav-bar {
+  padding-top: 6px !important;
+  padding-bottom: 6px !important;
+}
+/* ==================== PROFILE PAGE SPECIFIC STYLES ==================== */
+
+/* Profile stats styling */
+.stats-section {
+    background-color: rgba(46, 196, 199, 0.1);
+    border-radius: 12px;
+    padding: 12px 0;
+    margin-top: 8px;
+}
+
+.stat-item {
+    border-right: 1px solid rgba(21, 89, 110, 0.2);
+    padding: 0 10px;
+}
+
+.stat-item:last-child {
+    border-right: none;
+}
+
+.stat-number {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #15596e;
+    line-height: 1.2;
+}
+
+.stat-label {
+    font-size: 0.85rem;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 2px;
+}
+
+/* Follow/Unfollow buttons */
+.follow-section {
+    margin-left: auto;
+    padding-left: 15px;
+}
+
+.follow-btn {
+    border-radius: 20px;
+    padding: 6px 18px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    min-width: 100px;
+    transition: all 0.2s ease;
+}
+
+.follow-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+/* Modal styling for follow/unfollow */
+#confirmModal .modal-content {
+    border-radius: 12px;
+    border: none;
+}
+
+#confirmModal .modal-header {
+    background: linear-gradient(135deg, #15596e, #2ec4c7);
+    border-radius: 12px 12px 0 0;
+}
+
+/* Delete account section */
+.delete-account-section {
+    border-left: 4px solid #dc3545;
+    padding-left: 15px;
+}
+
+#deleteConfirmInput {
+    border-color: #dc3545;
+}
+
+#deleteConfirmInput:focus {
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+/* Quick actions buttons */
+.btn-outline-primary, .btn-outline-success, .btn-outline-info, .btn-outline-warning {
+    border-radius: 8px;
+    padding: 10px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.btn-outline-primary:hover {
+    background-color: #0d6efd;
+    color: white;
+}
+
+.btn-outline-success:hover {
+    background-color: #198754;
+    color: white;
+}
+
+.btn-outline-info:hover {
+    background-color: #0dcaf0;
+    color: white;
+}
+
+.btn-outline-warning:hover {
+    background-color: #ffc107;
+    color: black;
+}
+
+/* Post preview cards */
+.feed-image {
+    max-height: 400px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin: 10px 0;
+}
+
+/* Heart button styling */
+.heart-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+}
+
+.heart-btn:hover {
+    background-color: rgba(255, 0, 0, 0.1);
+    transform: scale(1.1);
+}
+
+.like-count {
+    margin-left: 5px;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+/* Profile avatar styling */
+.rounded-circle {
+    border: 3px solid #2ec4c7;
+}
+
+/* Mobile optimizations */
+@media (max-width: 991px) {
+    .mobile-section-gap {
+        margin-top: 20px;
+    }
+    
+    .stats-section .row {
+        justify-content: space-around;
+    }
+    
+    .stat-item {
+        border-right: none;
+        margin-bottom: 10px;
+        flex: 0 0 45%;
+        max-width: 45%;
+    }
+    
+    .follow-section {
+        margin-left: 0;
+        padding-left: 0;
+        width: 100%;
+        margin-top: 10px;
+    }
+    
+    .follow-btn {
+        width: 100%;
+    }
+}
+
+@media (max-width: 576px) {
+    .stat-number {
+        font-size: 1.3rem;
+    }
+    
+    .stat-label {
+        font-size: 0.75rem;
+    }
+    
+    .nav-bar {
+        padding: 8px 12px !important;
+    }
+}
+
+/* Profile flash messages overlay - only for profile page */
+body.profile-flash-overlay .flash-overlay {
+    position: fixed;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(700px, calc(100% - 24px));
+    z-index: 9999;
+    pointer-events: none;
+}
+
+body.profile-flash-overlay .flash-overlay .alert {
+    pointer-events: auto;
+    margin-bottom: 0;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
 }
