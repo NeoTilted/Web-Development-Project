@@ -11,12 +11,17 @@
 
           <!-- Search -->
           <div class="search-container">
-            <form class="form-inline m-0">
+            <form class="form-inline m-0"
+                  action="{{ url_for('search') }}"
+                  method="GET">
               <div class="input-group">
-                <input type="search" placeholder="Search" class="form-control" />
+                <input type="search"
+                       name="query"
+                       placeholder="Search"
+                       class="form-control"
+                       value="{{ query if query is defined else '' }}" />
                 <div class="input-group-append">
-                  <a href="{{ url_for('events') }}" class="btn btn-outline-light" title="Random Event">🎲</a>
-                  <button class="btn btn-outline-light" type="button">🔍</button>
+                  <button class="btn btn-outline-light" type="submit">🔍</button>
                 </div>
               </div>
             </form>
@@ -40,10 +45,11 @@
         <a href="{{ url_for('home') }}" class="nav-link text-white active">Home</a>
       </li>
       <li>
-        <a href="{{ url_for('explore') }}" class="nav-link text-white">Explore</a>
+        <!-- CHANGED: href to # instead of url_for('explore') -->
+        <a href="#" class="nav-link text-white disabled" aria-disabled="true" tabindex="-1">Explore</a>
       </li>
       <li>
-        <a href="" class="nav-link text-white">Friends</a>
+        <a href="#" class="nav-link text-white">Friends</a>
       </li>
       <li>
         <a href="{{ url_for('createPost') }}" class="nav-link text-white">Create</a>
@@ -55,161 +61,148 @@
         <hr class="bg-light my-3" />
       </li>
       <li>
-        <a href="#" class="nav-link text-danger">Logout</a>
+        <!-- CHANGED: Added logout route -->
+        <a href="{{ url_for('logout') }}" class="nav-link text-danger">Logout</a>
       </li>
     </ul>
   </nav>
 
-<h1 class="display-4 mt-4 text-center">Intergeneration Connection</h1>
+<!-- ===================== HOME FEED (NEW LAYOUT) ===================== -->
+<main class="home-feed container py-4">
 
-<!-- Feed Section - Simple and clean -->
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <!-- Feed Header -->
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h4>Feed from People You Follow</h4>
-                {% if feed_posts %}
-                <span class="badge badge-primary">{{ feed_posts|length }} posts</span>
-                {% endif %}
+  <!-- Page Heading -->
+  <h1 class="display-4 text-center mb-4">Intergeneration Connection</h1>
+
+  <div class="row">
+
+    <!-- ===================== POSTS (Followed feed) ===================== -->
+    <div class="col-lg-7 mb-4">
+      <div class="d-flex align-items-center justify-content-between section-header">
+        <h3 class="mb-0">Posts</h3>
+
+        <!-- CHANGED: href to # instead of url_for('explore') -->
+        <a class="btn view-all-btn disabled" href="#" aria-disabled="true">Explore</a>
+      </div>
+
+      {% if feed_posts %}
+        {% for post in feed_posts %}
+          <div class="card feed-card mb-3 shadow-sm">
+            <div class="card-body">
+
+              <!-- Avatar + username + timestamp -->
+              <div class="d-flex align-items-center mb-3">
+                <div class="mr-3">
+                  <img
+                    {% if post.avatar_url %}
+                      src="{{ url_for('static', filename='uploads/' + post.avatar_url) }}"
+                    {% else %}
+                      src="https://ui-avatars.com/api/?name={{ post.username }}&background=random&size=40"
+                    {% endif %}
+                    alt="{{ post.username }} avatar"
+                    class="rounded-circle"
+                    style="width:40px;height:40px;object-fit:cover;"
+                    onerror="this.src='https://ui-avatars.com/api/?name={{ post.username }}&background=random&size=40'">
+                </div>
+
+                <div>
+                  <h6 class="mb-0" style="font-weight:600;">{{ post.username }}</h6>
+                  <small class="text-muted">{{ post.timestamp }}</small>
+                </div>
+              </div>
+
+              <!-- Post content -->
+              <p class="card-text" style="font-size: 1rem; line-height: 1.5;">
+                {{ post.content }}
+              </p>
+
+              <!-- Post image (optional) -->
+              {% if post.image_url %}
+                <div class="mt-3 text-center">
+                  <img
+                    src="{{ url_for('static', filename='uploads/' + post.image_url) }}"
+                    class="img-fluid rounded feed-image"
+                    alt="Post image"
+                    style="max-height: 400px; object-fit: cover;">
+                </div>
+              {% endif %}
+
+              <!-- Footer: heart + view profile beside each other -->
+              <div class="mt-3 pt-3 border-top">
+                <div class="d-flex align-items-center gap-3">
+
+                  <button class="heart-btn" data-post-id="{{ post.post_id }}" aria-label="Like post">
+                    ❤️
+                    {% if post.likes and post.likes > 0 %}
+                      <span class="like-count">{{ post.likes }}</span>
+                    {% endif %}
+                  </button>
+
+                  <a href="{{ url_for('profile', user_id=post.user_id) }}"
+                     class="btn btn-sm btn-outline-secondary">
+                    View Profile
+                  </a>
+
+                </div>
+              </div>
+
             </div>
-            
-            <!-- Feed Posts -->
-            {% if feed_posts %}
-                {% for post in feed_posts %}
-                <div class="card mb-4 shadow-sm">
-                    <div class="card-body">
-                        <!-- Post Header -->
-                        <div class="d-flex align-items-center mb-3">
-                            <div class="mr-3">
-                                {% if post.avatar_url %}
-                                <img src="{{ url_for('static', filename='uploads/' + post.avatar_url) }}" 
-                                     class="rounded-circle" 
-                                     alt="{{ post.username }}" 
-                                     style="width: 40px; height: 40px; object-fit: cover;"
-                                     onerror="this.src='https://ui-avatars.com/api/?name={{ post.username }}&background=random&size=40'">
-                                {% else %}
-                                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center"
-                                     style="width: 40px; height: 40px; font-size: 0.9rem;">
-                                    {{ post.username[0]|upper }}
-                                </div>
-                                {% endif %}
-                            </div>
-                            <div>
-                                <h6 class="mb-0" style="font-weight: 600;">{{ post.username }}</h6>
-                                <small class="text-muted">
-                                    {{ post.timestamp }}
-                                </small>
-                            </div>
-                        </div>
-                        
-                        <!-- Post Content -->
-                        <p class="card-text" style="font-size: 1rem; line-height: 1.5;">{{ post.content }}</p>
-                        
-                        <!-- Post Image (if exists) -->
-                        {% if post.image_url %}
-                        <div class="mt-3">
-                            <img src="{{ url_for('static', filename='uploads/' + post.image_url) }}" 
-                                 class="img-fluid rounded" 
-                                 alt="Post image"
-                                 style="max-width: 100%; height: auto;">
-                        </div>
-                        {% endif %}
-                        
-                        <!-- Post Footer -->
-                        <div class="mt-3 pt-3 border-top d-flex justify-content-between align-items-center">
-                            <div class="d-flex align-items-center">
-                                <button class="heart-btn" data-post-id="{{ post.post_id }}">
-                                    <i class="far fa-heart heart-icon"></i>
-                                    {% if post.likes > 0 %}
-                                    <span class="like-count">{{ post.likes }}</span>
-                                    {% endif %}
-                                </button>
-                                <a href="{{ url_for('profile', user_id=post.user_id) }}" 
-                                   class="btn btn-sm btn-outline-secondary ml-2">
-                                    View Profile
-                                </a>
-                            </div>
-                            {% if post.category %}
-                            <span class="badge badge-info">
-                                {{ post.category|capitalize }}
-                            </span>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-            {% else %}
-                <!-- Placeholder when no posts -->
-                <div class="card shadow-sm">
-                    <div class="card-body text-center py-5">
-                        <div class="mb-4">
-                            <i class="fas fa-users fa-3x text-muted"></i>
-                        </div>
-                        <h5 class="text-muted mb-3">Nothing new from Followed Users</h5>
-                        <p class="text-muted mb-4">Follow some users to see their posts here!</p>
-                        <div>
-                            <a href="{{ url_for('search') }}" class="btn btn-primary mr-2">
-                                <i class="fas fa-search mr-1"></i> Find People to Follow
-                            </a>
-                            <a href="/createPost" class="btn btn-outline-primary">
-                                <i class="fas fa-plus mr-1"></i> Create a Post
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            {% endif %}
-        </div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <div class="alert alert-light border">No posts yet. Follow users to see their posts here!</div>
+      {% endif %}
     </div>
-</div>
 
-<!-- Heart Button Styles -->
-<style>
-.heart-btn {
-    background: none;
-    border: none;
-    padding: 5px 10px;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    color: #666;
-    transition: all 0.2s ease;
-}
+    <!-- ===================== EVENTS (Coming soon) ===================== -->
+    <div class="col-lg-5 mb-4">
+      <div class="d-flex align-items-center justify-content-between section-header">
+        <h3 class="mb-0">Events</h3>
 
-.heart-btn:hover {
-    color: #e74c3c;
-}
+        <!-- Events not set up yet (prevents Flask BuildError) -->
+        <a class="btn view-all-btn disabled" href="#" aria-disabled="true">Create Events</a>
+      </div>
 
-.heart-icon {
-    font-size: 1.2rem;
-    margin-right: 5px;
-    transition: all 0.2s ease;
-}
+      {% if events is defined and events and events|length > 0 %}
+        {% for ev in events %}
+          <div class="card feed-card mb-3 shadow-sm">
+            <div class="card-body">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <h5 class="mb-1">{{ ev[1] }}</h5>
+                  <small class="text-muted">Organiser: {{ ev[11] }}</small>
+                </div>
+                <small class="text-muted">{{ ev[4] }}</small>
+              </div>
 
-.heart-icon.liked {
-    color: #e74c3c;
-}
+              {% if ev[5] %}
+                <div class="mt-2"><strong>📍</strong> {{ ev[5] }}</div>
+              {% endif %}
+              {% if ev[3] %}
+                <div class="mt-1"><strong>⏱</strong> {{ ev[3] }} mins</div>
+              {% endif %}
+              {% if ev[8] %}
+                <div class="mt-1"><strong>🎮</strong> {{ ev[8] }}</div>
+              {% endif %}
 
-.like-count {
-    font-size: 0.9rem;
-    color: #666;
-}
+              {% if ev[2] %}
+                <p class="mt-2 mb-0 text-muted small">{{ ev[2] }}</p>
+              {% endif %}
+            </div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <div class="alert alert-light border">No events yet. (Coming Soon)</div>
+      {% endif %}
+    </div>
 
-.heart-btn:hover .heart-icon {
-    color: #e74c3c;
-    transform: scale(1.1);
-}
+  </div>
+</main>
+<!-- =================== END HOME FEED =================== -->
 
-.heart-btn:hover .like-count {
-    color: #e74c3c;
-}
-</style>
-
-<!-- Add JavaScript for mobile navigation -->
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const hamburgerBtn = document.getElementById('hamburgerBtn');
-    const closeMenuBtn = document.getElementById('closeMenuBtn');
+    const hamburgerBtn = document.querySelector('.hamburger-btn');
+    const closeMenuBtn = document.querySelector('.menu-close-btn');
     const sidebarOverlay = document.getElementById('sidebarOverlay');
     const mobileNav = document.getElementById('mobile-nav');
     
@@ -241,39 +234,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.heart-btn').forEach(button => {
         button.addEventListener('click', function() {
             const postId = this.getAttribute('data-post-id');
-            const heartIcon = this.querySelector('.heart-icon');
             const likeCount = this.querySelector('.like-count');
-            
-            // Toggle like state visually
-            if (heartIcon.classList.contains('liked')) {
-                // Unlike
-                heartIcon.classList.remove('liked');
-                heartIcon.classList.remove('fas');
-                heartIcon.classList.add('far');
-                
-                if (likeCount) {
-                    const newCount = parseInt(likeCount.textContent) - 1;
-                    if (newCount > 0) {
-                        likeCount.textContent = newCount;
-                    } else {
-                        likeCount.remove();
-                    }
-                }
-            } else {
-                // Like
-                heartIcon.classList.add('liked');
-                heartIcon.classList.remove('far');
-                heartIcon.classList.add('fas');
-                
-                if (likeCount) {
-                    likeCount.textContent = parseInt(likeCount.textContent) + 1;
-                } else {
-                    const newSpan = document.createElement('span');
-                    newSpan.className = 'like-count';
-                    newSpan.textContent = '1';
-                    this.appendChild(newSpan);
-                }
-            }
             
             // Send API request
             fetch(`/api/like_post/${postId}`, {
@@ -281,10 +242,29 @@ document.addEventListener('DOMContentLoaded', function() {
                 headers: {
                     'Content-Type': 'application/json'
                 }
-            }).catch(error => console.error('Error:', error));
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update like count visually
+                    if (likeCount) {
+                        const currentCount = parseInt(likeCount.textContent);
+                        likeCount.textContent = currentCount + 1;
+                    } else {
+                        // Create like count if it doesn't exist
+                        const newSpan = document.createElement('span');
+                        newSpan.className = 'like-count';
+                        newSpan.textContent = '1';
+                        this.appendChild(newSpan);
+                    }
+                }
+            })
+            .catch(error => console.error('Error:', error));
         });
     });
 });
+</script>
+{% endblock %}
 </script>
 {% endblock %}
 
