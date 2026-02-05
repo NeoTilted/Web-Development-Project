@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>{% block title %}{% endblock %}</title>
+
+        <!-- Bootstrap 4.5.2 CSS -->
+        <link rel="stylesheet"href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    </head> 
+
+    <body>
+        {% block navbar %}
+        <!-- FLASH MESSAGES OVERLAY -->
+<div class="flash-overlay">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+          <i class="fas fa-{{ 'check-circle' if category == 'success' else 'exclamation-triangle' }} mr-2"></i>
+          {{ message }}
+          <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+</div>
+
+        {% endblock %}
+        <!-- Add flash messages display -->
+       
+        
+        <div class="container-fluid px-0">
+
+            {% block content %}
+            
+            {% endblock %}
+        </div>
+
+    {% block scripts %}
+        <!-- jQuery 3.5., Popper 1.16.1, Bootstrap 4.5.2 JavaScript -->
+        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" 21 integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+        <script 22 src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const hamburgerBtn = document.querySelector('.hamburger-btn');
+                const mobileNav = document.getElementById('mobile-nav');
+                const sidebarOverlay = document.getElementById('sidebarOverlay');
+                const closeBtn = document.querySelector('.menu-close-btn');
+                
+                if (!hamburgerBtn || !mobileNav || !sidebarOverlay) return;
+                
+                // Open menu function
+                function openMenu() {
+                    mobileNav.classList.add('active');
+                    sidebarOverlay.classList.add('active');
+                    hamburgerBtn.setAttribute('aria-expanded', 'true');
+                    document.body.classList.add('menu-open');
+                }
+                
+                // Close menu function
+                function closeMenu() {
+                    mobileNav.classList.remove('active');
+                    sidebarOverlay.classList.remove('active');
+                    hamburgerBtn.setAttribute('aria-expanded', 'false');
+                    document.body.classList.remove('menu-open');
+                }
+                
+                // Toggle menu on hamburger click
+                hamburgerBtn.addEventListener('click', openMenu);
+                
+                // Close menu on close button click
+                if (closeBtn) {
+                    closeBtn.addEventListener('click', closeMenu);
+                }
+                
+                // Close menu on overlay click
+                sidebarOverlay.addEventListener('click', closeMenu);
+                
+                // Close menu when clicking on a link (optional)
+                const navLinks = mobileNav.querySelectorAll('.nav-link');
+                navLinks.forEach(link => {
+                    link.addEventListener('click', closeMenu);
+                });
+                
+                // Close menu on escape key press
+                document.addEventListener('keydown', function (e) {
+                    if (e.key === 'Escape' && mobileNav.classList.contains('active')) {
+                        closeMenu();
+                    }
+                });
+                
+                // Close menu when clicking outside on larger screens
+                document.addEventListener('click', function(e) {
+                    if (mobileNav.classList.contains('active') && 
+                        !mobileNav.contains(e.target) && 
+                        !hamburgerBtn.contains(e.target)) {
+                        closeMenu();
+                    }
+                });
+            });
+        </script>
+        {% endblock %}
+
+  <!-- BADGE UNLOCKED MODAL (GLOBAL) -->
+<div class="modal fade" id="badgeUnlockedModal"
+     tabindex="-1" role="dialog" aria-hidden="true"
+     data-backdrop="static" data-keyboard="false">
+
+  <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 560px;">
+    <div class="modal-content bb-badge-modal">
+
+      <!-- top accent -->
+      <div class="bb-badge-accent"></div>
+
+      <div class="modal-body text-center p-4 position-relative">
+
+        <!-- close -->
+        <button type="button" class="close bb-badge-close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+
+        <!-- icon with glow -->
+        <div class="bb-badge-glow-wrap mx-auto mb-3">
+          <img id="badgeUnlockedIcon" class="bb-badge-icon" src="" alt="Badge icon">
+        </div>
+
+        <h4 class="mb-1 bb-badge-heading">Badge Unlocked!</h4>
+
+        <!-- badge name -->
+        <div id="badgeUnlockedTitle" class="bb-badge-title">Weekly Interaction</div>
+
+        <!-- optional: short status/subtitle -->
+        <div id="badgeUnlockedSubtitle" class="bb-badge-subtitle">🎉 Completed 🎉</div>
+
+        <!-- description line -->
+        <p id="badgeUnlockedDesc" class="bb-badge-desc mt-3 mb-0">
+          You unlocked a new badge. Keep going!
+        </p>
+
+        <button type="button" class="btn bb-badge-btn mt-4 px-4" data-dismiss="modal">
+          Yay!
+        </button>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+  // Call this anywhere after follow/like/etc
+  function showBadgeUnlocked({ iconSrc, title, subtitle }) {
+    document.getElementById('badgeUnlockedIcon').src = iconSrc;
+    document.getElementById('badgeUnlockedTitle').textContent = title;
+    document.getElementById('badgeUnlockedSubtitle').textContent = subtitle;
+    $('#badgeUnlockedModal').modal('show');
+  }
+</script>
+
+<script>
+  // If backend doesn't send iconSrc, we auto-map based on badge name
+  const BADGE_ICON_MAP = {
+    "Talking is fun!": "{{ url_for('static', filename='img/badges/talking.png') }}",
+    "Like a lover!": "{{ url_for('static', filename='img/badges/lover.png') }}",
+    "Friends": "{{ url_for('static', filename='img/badges/friends.png') }}",
+    "Sharing is caring": "{{ url_for('static', filename='img/badges/share.png') }}",
+    "Event Enthusiast": "{{ url_for('static', filename='img/badges/event.png') }}",
+    "Weekly Interaction": "{{ url_for('static', filename='img/badges/weekly.png') }}",
+    "Story Sharer": "{{ url_for('static', filename='img/badges/story.png') }}",
+    "Community Builder": "{{ url_for('static', filename='img/badges/community.png') }}"
+  };
+
+  function showBadgeUnlocked(payload) {
+    // payload can be:
+    // { iconSrc, title, subtitle, desc, badgeName }
+
+    const iconEl = document.getElementById("badgeUnlockedIcon");
+    const titleEl = document.getElementById("badgeUnlockedTitle");
+    const subEl   = document.getElementById("badgeUnlockedSubtitle");
+    const descEl  = document.getElementById("badgeUnlockedDesc");
+
+    // Choose badge name (best guess)
+    const badgeName =
+      payload.badgeName ||
+      payload.title?.replace(" Badge Unlocked!", "").trim() ||
+      payload.title ||
+      "New Badge";
+
+    // Icon source priority: iconSrc -> map by name
+    const iconSrc = payload.iconSrc || BADGE_ICON_MAP[badgeName] || "";
+
+    if (iconSrc) iconEl.src = iconSrc;
+
+    // Title/subtitle/desc
+    titleEl.textContent = badgeName;
+    subEl.textContent   = payload.subtitle || "Completed 🎉";
+    descEl.textContent  = payload.desc || `You unlocked "${badgeName}". Keep going!`;
+
+    $("#badgeUnlockedModal").modal("show");
+  }
+</script>
+
+
+    </body>
+    </html>
