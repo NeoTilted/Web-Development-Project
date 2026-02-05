@@ -1,0 +1,883 @@
+{# Bond Buddies Profile Page Template
+
+Formatted for readability and grouped by: navbar, profile header, posts preview, badges, modals. Jinja logic unchanged.
+#}
+{% extends "base.html" %}
+{% block title %}Bond Buddies - {% if viewing_own_profile %}My{% else %}User{% endif %} Profile{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+{% endblock %}
+
+{% block content %}
+<!-- HEADER SECTION: Main navigation with logo, search, and mobile menu -->
+<header class="nav-bar">
+    <div class="d-flex align-items-center justify-content-between w-100 px-3">
+        <!-- Added px-3 for consistent spacing -->
+        <!-- Logo -->
+        <a href="{{ url_for('home') }}" class="logo-link">
+            <img src="{{ url_for('static', filename='img/Logo.png') }}" alt="Logo" class="logo-img" />
+        </a>
+
+        <!-- Search -->
+        <div class="search-container flex-grow-1 mx-3">
+            <form class="form-inline d-flex justify-content-center" action="{{ url_for('search') }}" method="GET">
+                <div class="input-group w-100">
+                    <input type="search" name="query" value="{{ query }}" placeholder="Search" class="form-control">
+                    <div class="input-group-append">
+                        <button class="btn btn-outline-light" type="submit">🔍</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Mobile Menu Button -->
+        <button class="btn btn-dark hamburger-btn btn-size" type="button" id="hamburgerBtn">
+            ☰
+        </button>
+    </div>
+</header>
+<!-- Overlay -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<!-- Sidebar -->
+<nav id="mobile-nav">
+    <button class="menu-close-btn" id="closeMenuBtn">&times;</button>
+    <ul class="nav-list list-unstyled mb-0">
+        <li>
+            <a href="{{ url_for('home') }}" class="nav-link text-white">Home</a>
+        </li>
+        <li>
+            <a href="{{ url_for('home') }}" class="nav-link text-white">Explore</a>
+        </li>
+        <li>
+            <a href="/createPost" class="nav-link text-white">Create</a>
+        </li>
+        <li>
+            <a href="{{ url_for('profile', user_id=session['user_id']) }}"
+                class="nav-link text-white active">Profile</a>
+        </li>
+        <li>
+            <a href="{{ url_for('home') }}" class="nav-link text-white">Events</a>
+        </li>
+        <li>
+            <hr class="bg-light my-3" />
+
+        </li>
+        <li>
+            <a href="{{ url_for('logout') }}" class="nav-link text-danger">Logout</a>
+        </li>
+    </ul>
+</nav>
+
+<!-- FLASH MESSAGES -->
+
+
+<div class="container-fluid py-3">
+    <div class="row">
+        <!-- LEFT: Profile + Posts -->
+        <div class="col-12 col-lg-6">
+            <!-- Profile Header -->
+            <div class="card shadow-sm mb-3">
+                <div class="card-body d-flex align-items-center flex-wrap">
+                    {% set avatar = current_user.get_avatar_url() %}
+
+                    {% if avatar %}
+                    <img src="{{ url_for('static', filename='uploads/' ~ avatar) }}" class="rounded-circle border mr-3"
+                        style="width:150px;height:150px;object-fit:cover;" alt="User Avatar"
+                        onerror="this.src='{{ url_for('static', filename='img/human_icon.jpg') }}'">
+                    {% else %}
+                    <img src="{{ url_for('static', filename='img/human_icon.jpg') }}" class="rounded-circle border mr-3"
+                        style="width:150px;height:150px;object-fit:cover;" alt="Default Avatar">
+                    {% endif %}
+
+                    <div class="flex-grow-1">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h3 class="mb-0">{{ current_user.get_username() }}</h3>
+
+                            <!-- Follow/Unfollow Button - Right aligned (ONLY ONE BUTTON) -->
+                            {% if not viewing_own_profile %}
+                            <div class="follow-section">
+                                <button id="followBtn"
+                                    class="btn btn-sm {{ 'btn-outline-primary' if is_following else 'btn-primary' }}"
+                                    data-following="{{ '1' if is_following else '0' }}"
+                                    data-user-id="{{ profile_user_id }}">
+                                    {{ 'Unfollow' if is_following else 'Follow' }}
+                                </button>
+                            </div>
+                            {% endif %}
+
+                        </div>
+
+                        <!-- User Type Badge -->
+                        {% if current_user.get_user_type() %}
+                        <div class="mb-2">
+                            <span class="role-badge">
+                                {{ current_user.get_user_type_label() }}
+                            </span>
+                        </div>
+                        {% endif %}
+
+                        <p class="text-muted mb-2">
+                            {{ current_user.get_bio() or "No bio yet. Click Edit Profile to add one!" }}
+                        </p>
+
+                        <!-- USER STATISTICS (NO FOLLOW BUTTON ABOVE FOLLOWERS) -->
+                        <div class="stats-section mb-4">
+                            <div class="row text-center">
+                                <div class="col-3 stat-item">
+                                    <div class="stat-number">{{ stats.post_count }}</div>
+                                    <div class="stat-label">Posts</div>
+                                </div>
+                                <div class="col-3 stat-item">
+                                    <div class="stat-number">{{ stats.badge_count }}</div>
+                                    <div class="stat-label">Badges</div>
+                                </div>
+
+                                <!-- Followers count only (NO FOLLOW BUTTON) -->
+                                <div class="col-3 stat-item">
+                                    <div class="stat-number">{{ stats.follower_count }}</div>
+                                    <div class="stat-label">Followers</div>
+                                </div>
+
+                                <div class="col-3 stat-item">
+                                    <div class="stat-number">{{ stats.following_count }}</div>
+                                    <div class="stat-label">Following</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Edit Profile Button -->
+                    {% if viewing_own_profile %}
+                    <button class="btn btn-primary mt-2 mt-lg-0" data-toggle="modal" data-target="#editProfileModal">
+                        ✏️ Edit Profile
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Posts Preview -->
+            <div class="d-flex justify-content-between align-items-center section-header">
+                <h4 class="mb-0">
+                    {% if viewing_own_profile %}Your Latest Post{% else %}{{ current_user.get_username() }}'s Latest
+                    Post{% endif %}
+                </h4>
+                {% if viewing_own_profile and posts|length > 0 %}
+                <button type="button" class="view-all-btn header-text-btn" data-toggle="modal"
+                    data-target="#allPostsModal">
+                    View/Edit all posts
+                </button>
+
+                {% endif %}
+            </div>
+
+            {% if posts and posts|length > 0 %}
+            {% set p = posts[0] %}
+            <div class="card shadow-sm mb-2">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <strong>{{ p[8] or 'Post' }}</strong>
+
+                            <div class="text-muted small">{{ p[3] }}</div>
+                        </div>
+                        <span class="badge badge-light">❤️ {{ p[4] }}</span>
+                    </div>
+
+                    <p class="mt-2 mb-0">{{ p[1][:200] }}{% if p[1]|length > 200 %}...{% endif %}</p>
+
+                    {% if p[7] %}
+                    <img src="{{ url_for('static', filename='uploads/' ~ p[7]) }}" class="post-image img-fluid rounded"
+                        alt="Post image">
+
+                    {% endif %}
+
+                    {% if viewing_own_profile %}
+                    <div class="mt-3">
+                        <a href="{{ url_for('edit_post_route', post_id=p[0]) }}"
+                            class="btn btn-sm btn-outline-primary mr-2">
+                            🖉 Edit
+                        </a>
+                        <button type="button" class="btn btn-sm btn-danger" onclick="openDeleteModal('{{ p[0] }}')">
+                            Delete
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% else %}
+            <div class="alert alert-info text-center">
+
+                {% if viewing_own_profile %}
+                <a href="/createPost" class="btn btn-primary btn-sm">
+                    <strong> ➕ Create Your First Post</strong>
+                </a>
+                {% endif %}
+
+            </div>
+
+            {% endif %}
+        </div>
+
+        <!-- RIGHT: Badges -->
+        <div class="col-12 col-lg-6 mobile-section-gap">
+            <div class="d-flex justify-content-between align-items-center section-header">
+                <h3 class="mb-0">Badges</h3>
+                {% if badges and badges|length > 4 %}
+                <button type="button" class="view-all-btn header-text-btn" data-toggle="modal"
+                    data-target="#allBadgesModal">
+                    View all badges
+                </button>
+
+                {% endif %}
+            </div>
+
+            <div class="row">
+                {% if badges and badges is iterable and not badges is string %}
+                {% for b in badges[:4] %}
+                {% set earned = b[9] if b|length > 9 else 0 %}
+                {% set current_progress = b[7] if b|length > 7 else 0 %}
+                {% set required = b[5] if b|length > 5 else 1 %}
+
+                {% set badge_icons = {
+                'Talking is fun!': '💬',
+                'Like a lover!': '❤️',
+                'Friends': '👥',
+                'Sharing is caring': '🔁',
+                'Event Enthusiast': '🎉',
+                'Weekly Interaction': '📅',
+                'Story Sharer': '📖',
+                'Community Builder!!': '🏗️'
+                } %}
+
+                <div class="col-12 col-sm-6 mb-3">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body text-center">
+                            <div class="badge-icon-text {{ 'complete' if earned == 1 else 'incomplete' }}">
+                                {{ badge_icons.get(b[1] if b|length > 1 else '', '🏅') }}
+                            </div>
+
+                            <h5 class="mt-2 mb-1 badge-title">
+                                {{ b[1] }}
+                            </h5>
+
+
+                            {% if b|length > 2 %}
+                            <div class="badge-objective">
+                                🎯 {{ b[2] }}
+                            </div>
+
+                            {% endif %}
+
+                            <div class="mt-2">
+                                {% if earned == 1 %}
+                                <span class="badge badge-success">Completed</span>
+                                {% else %}
+                                <span class="badge badge-danger">Incomplete</span>
+                                {% endif %}
+                            </div>
+
+                            <div class="small text-muted mt-2">
+                                Progress: {{ current_progress }}/{{ required }}
+                            </div>
+
+                            <!-- Progress Bar -->
+                            <div class="progress mt-2" style="height:8px;">
+                                <div class="progress-bar" role="progressbar" style="width:
+                        {% if required|int > 0 %}
+                        {{ ((current_progress|int) * 100) // (required|int) }}%
+                        {% else %}
+                        0%
+                        {% endif %}">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="col-12">
+                    <div class="alert alert-light">
+                        No badges yet. Complete actions to earn badges!
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Quick Actions for own profile -->
+            {% if viewing_own_profile %}
+            <div class="d-flex justify-content-between align-items-center section-header"></div>
+            <div class="card shadow-sm mt-4">
+
+                <div class="card-body">
+
+                    <h5><i class="fas fa-bolt mr-2"></i>Quick Actions</h5>
+                    <div class="d-grid gap-2">
+                        <a href="/createPost" class="btn btn-outline-primary">
+                            <i class="fas fa-plus mr-1"></i> New Post
+                        </a>
+                        <a href="{{ url_for('search') }}" class="btn btn-outline-success">
+                            <i class="fas fa-search mr-1"></i> Find Friends
+                        </a>
+                        <button class="btn btn-outline-info" data-toggle="modal" data-target="#editProfileModal">
+                            <i class="fas fa-cog mr-1"></i> Settings
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Delete Account (for own profile only) -->
+            {% if viewing_own_profile %}
+            <div class="card shadow-sm border-danger mt-4">
+                <div class="card-body">
+                    <h5 class="text-danger">⚠️ Account Management</h5>
+
+                    <div class="d-grid gap-2 mb-3">
+                        <button class="btn btn-outline-warning" data-toggle="modal" data-target="#changePasswordModal">
+                            <i class="fas fa-key mr-1"></i> Change Password
+                        </button>
+                    </div>
+
+                    <p class="text-muted mb-2">
+                        This action is <strong>PERMANENT</strong>.
+                        Your profile, posts, badges, and friends will be <u><strong>deleted forever</strong></u>.
+                    </p>
+
+                    <form method="POST" action="{{ url_for('delete_account') }}" class="form-inline mt-2"
+                        onsubmit="return confirmDeleteAccount();">
+
+                        <input class="form-control mr-2" id="deleteConfirmInput" name="confirm"
+                            placeholder="type delete to confirm" required oninput="checkDeleteMatch()">
+
+                        <button class="btn btn-danger" id="deleteBtn" type="submit" disabled>
+                            Delete Forever
+                        </button>
+
+                    </form>
+
+                    <small id="deleteHint" class="text-muted d-block mt-2">
+                        You must type <b>delete</b> exactly to enable deletion.
+                    </small>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- EDIT PROFILE MODAL -->
+<div class="modal fade" id="editProfileModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <form method="POST" action="{{ url_for('edit_profile') }}" enctype="multipart/form-data">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Profile</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="teal-cyan-panel">✏️ Bio (max 30 characters)</label>
+                        <textarea class="form-control" name="bio" rows="3"
+                            maxlength="30">{{ current_user.get_bio() or '' }}</textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="avatar-label">Avatar (png/jpg/jpeg/gif)</label>
+
+                        <!-- Preview Image -->
+                        <div class="text-center mb-3">
+                            <img id="avatarPreview"
+                                src="{{ url_for('static', filename='uploads/' ~ current_user.get_avatar_url()) if current_user.get_avatar_url() else url_for('static', filename='img/human_icon.jpg') }}"
+                                class="border shadow-sm">
+                        </div>
+
+                        <!-- File Input -->
+                        <div class="file-upload-box">
+                            <input class="form-control-file" type="file" name="avatar" id="avatarInput"
+                                accept=".png,.jpg,.jpeg,.gif">
+                            <span id="fileNamePreview" class="file-name-preview"></span>
+                        </div>
+                    </div>
+                </div> <!-- ✅ CLOSE modal-body properly -->
+
+                <div class="modal-footer">
+                    <button class="btn btn-primary" type="submit">Save</button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<!-- ALL BADGES MODAL -->
+<div class="modal fade" id="allBadgesModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">All Badges</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    {% if badges and badges is iterable and not badges is string %}
+                    {% for b in badges %}
+                    {% set earned = b[9] if b|length > 9 else 0 %}
+                    {% set current_progress = b[7] if b|length > 7 else 0 %}
+                    {% set required = b[5] if b|length > 5 else 1 %}
+
+                    {% set badge_icons = {
+                    'Talking is fun!': '💬',
+                    'Like a lover!': '❤️',
+                    'Friends': '👥',
+                    'Sharing is caring': '🔁',
+                    'Event Enthusiast': '🎉',
+                    'Weekly Interaction': '📅',
+                    'Story Sharer': '📖',
+                    'Community Builder!!': '🏗️'
+                    } %}
+
+                    <div class="col-12 col-sm-6 col-lg-4 mb-3">
+                        <div class="card shadow-sm h-100">
+                            <div class="card-body text-center">
+                                <div class="badge-icon-text {{ 'complete' if earned == 1 else 'incomplete' }}">
+                                    {{ badge_icons.get(b[1] if b|length > 1 else '', '🏅') }}
+                                </div>
+                                <h6 class="mt-2 mb-1 badge-title">
+                                    {{ b[1] }}
+                                </h6>
+
+
+                                {% if b|length > 2 %}
+                                <div class="badge-objective">
+                                    🎯 {{ b[2] }}
+                                </div>
+
+                                {% endif %}
+
+                                <div class="mt-2">
+                                    {% if earned == 1 %}
+                                    <span class="badge badge-success">Completed</span>
+                                    {% else %}
+                                    <span class="badge badge-danger">Incomplete</span>
+                                    {% endif %}
+                                </div>
+
+                                <div class="small text-muted mt-2">
+                                    Progress: {{ current_progress }}/{{ required }}
+                                </div>
+
+                                <div class="progress mt-2" style="height:8px;">
+                                    <div class="progress-bar" role="progressbar" style="width:
+                                    {% if required|int > 0 %}
+                                    {{ ((current_progress|int) * 100) // (required|int) }}%
+                                    {% else %}
+                                    0%
+                                    {% endif %};">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ALL POSTS MODAL -->
+<div class="modal fade" id="allPostsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">All Your Posts</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                {% if posts and posts|length > 0 %}
+                {% for p in posts %}
+                <div class="card shadow-sm mb-3">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>{{ p[8] or 'Post' }}</strong>
+
+                                <div class="text-muted small">{{ p[3] }}</div>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                {% if viewing_own_profile %}
+                                <a href="{{ url_for('edit_post_route', post_id=p[0]) }}"
+                                    class="btn btn-sm btn-outline-primary mr-2">
+                                    🖉 Edit
+                                </a>
+                                <button type="button" class="btn btn-sm btn-danger mr-2"
+                                    onclick="openDeleteModal('{{ p[0] }}')">
+                                    Delete
+                                </button>
+                                {% endif %}
+                                <span class="badge badge-light" style="font-size:22px;">
+                                    ❤️ {{ p[4] }}
+                                </span>
+                            </div>
+                        </div>
+                        <p class="mt-2 mb-2">{{ p[1][:200] }}{% if p[1]|length > 200 %}...{% endif %}</p>
+                        {% if p[7] %}
+                        {% set img = p[7] | replace('\\', '/') %}
+                        {% set filename_only = img.split('/')[-1] %}
+                        <div class="mt-2 text-center">
+                            <img src="{{ url_for('static', filename='uploads/' ~ filename_only) }}"
+                                class="img-fluid rounded shadow-sm" style="max-height: 400px; object-fit: cover;">
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="alert alert-info">No posts yet.</div>
+                {% endif %}
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- DELETE CONFIRM MODAL -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-danger">Confirm Delete</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete this post?
+                <strong>This action cannot be undone.</strong>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <form id="deleteForm" method="POST">
+                    <button type="submit" class="btn btn-danger">Yes, Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CONFIRM MODAL for Follow/Unfollow -->
+<div class="modal fade" id="confirmModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="modalTitle"></h5>
+                <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <i class="fas fa-question-circle fa-3x text-primary mb-3"></i>
+                <h5 id="modalMessage"></h5>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn" id="confirmButton">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Mobile navigation toggle functionality
+    document.addEventListener('DOMContentLoaded', function () {
+        const hamburgerBtn = document.getElementById('hamburgerBtn');
+        const closeMenuBtn = document.getElementById('closeMenuBtn');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+        const mobileNav = document.getElementById('mobile-nav');
+
+        if (hamburgerBtn) {
+            hamburgerBtn.addEventListener('click', function () {
+                mobileNav.classList.add('active');
+                sidebarOverlay.classList.add('active');
+            });
+        }
+
+        if (closeMenuBtn) {
+            closeMenuBtn.addEventListener('click', function () {
+                mobileNav.classList.remove('active');
+                sidebarOverlay.classList.remove('active');
+            });
+        }
+
+        if (sidebarOverlay) {
+            sidebarOverlay.addEventListener('click', function () {
+                mobileNav.classList.remove('active');
+                sidebarOverlay.classList.remove('active');
+            });
+        }
+    });
+
+    // Follow/Unfollow popup functionality
+    let currentUserId = null;
+    let currentUsername = null;
+    let currentAction = null;
+
+    function showFollowPopup(username, userId) {
+        currentUserId = userId;
+        currentUsername = username;
+        currentAction = 'follow';
+
+        document.getElementById('modalTitle').textContent = 'Follow User';
+        document.getElementById('modalMessage').textContent = `Are you sure you want to follow ${username}?`;
+        document.getElementById('confirmButton').textContent = 'Follow';
+        document.getElementById('confirmButton').className = 'btn btn-success';
+
+        $('#confirmModal').modal('show');
+    }
+
+    function showUnfollowPopup(username, userId) {
+        currentUserId = userId;
+        currentUsername = username;
+        currentAction = 'unfollow';
+
+        document.getElementById('modalTitle').textContent = 'Unfollow User';
+        document.getElementById('modalMessage').textContent = `Are you sure you want to unfollow ${username}?`;
+        document.getElementById('confirmButton').textContent = 'Unfollow';
+        document.getElementById('confirmButton').className = 'btn btn-danger';
+
+        $('#confirmModal').modal('show');
+    }
+
+    // Handle confirm button
+    document.getElementById('confirmButton').addEventListener('click', function () {
+        if (!currentUserId) return;
+
+        const endpoint = currentAction === 'follow'
+            ? `/api/follow/${currentUserId}`
+            : `/api/unfollow/${currentUserId}`;
+
+        // Show loading
+        this.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Processing...';
+        this.disabled = true;
+
+        fetch(endpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                $('#confirmModal').modal('hide');
+
+                if (data.success) {
+
+                    // ✅ SHOW BADGE POPUP (only when backend says unlocked)
+                    if (data.badge_unlocked) {
+                        showBadgeUnlocked({
+                            iconSrc: data.iconSrc,
+                            title: data.title,
+                            subtitle: data.subtitle
+                        });
+                    }
+
+
+                    // Reload page to update button and stats
+
+                } else {
+
+                    alert(data.error || 'Action failed');
+                    this.innerHTML = currentAction === 'follow' ? 'Follow' : 'Unfollow';
+                    this.disabled = false;
+                }
+            })
+            .catch(error => {
+                $('#confirmModal').modal('hide');
+                alert('Network error. Please try again.');
+                this.innerHTML = currentAction === 'follow' ? 'Follow' : 'Unfollow';
+                this.disabled = false;
+            });
+    });
+
+    // Reset on modal close
+    $('#confirmModal').on('hidden.bs.modal', function () {
+        const btn = document.getElementById('confirmButton');
+        btn.innerHTML = 'Confirm';
+        btn.disabled = false;
+        currentUserId = null;
+        currentUsername = null;
+        currentAction = null;
+    });
+
+    // Delete account confirmation
+    let postToDelete = null;
+
+    function openDeleteModal(postId) {
+        document.getElementById('deleteForm').action = `/api/delete_post/${postId}`;
+        $('#allPostsModal').modal('hide');
+        $('#allPostsModal').on('hidden.bs.modal', function () {
+            $('#deleteConfirmModal').modal('show');
+            $(this).off('hidden.bs.modal');
+        });
+    }
+
+    function checkDeleteMatch() {
+        const input = document.getElementById("deleteConfirmInput");
+        const btn = document.getElementById("deleteBtn");
+        const hint = document.getElementById("deleteHint");
+
+        if (input.value.trim().toLowerCase() === "delete") {
+            btn.disabled = false;
+            hint.innerHTML = "✅ Confirmed. You may delete your account.";
+            hint.classList.remove("text-muted");
+            hint.classList.add("text-success");
+        } else {
+            btn.disabled = true;
+            hint.innerHTML = "You must type <b>delete</b> exactly to enable deletion.";
+            hint.classList.remove("text-success");
+            hint.classList.add("text-muted");
+        }
+    }
+
+    function confirmDeleteAccount() {
+        return confirm(
+            "⚠️ FINAL WARNING!\n\n" +
+            "This action is PERMANENT.\n" +
+            "Your account, posts, badges, and friends will be LOST FOREVER.\n\n" +
+            "Click OK to DELETE.\n" +
+            "Click Cancel to STOP."
+        );
+    }
+
+    // Initialize profile flash overlay
+
+
+</script>
+
+
+<!-- SCRIPT FOR FOLLOW -->
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const btn = document.getElementById("followBtn");
+        if (!btn) return;
+
+        btn.addEventListener("click", async function () {
+            const userId = btn.dataset.userId;
+            const isFollowing = btn.dataset.following === "1";
+
+            btn.disabled = true;
+            const oldText = btn.textContent;
+            btn.textContent = isFollowing ? "Unfollowing..." : "Following...";
+
+            const endpoint = isFollowing
+                ? `/api/unfollow/${userId}`
+                : `/api/follow/${userId}`;
+
+            try {
+                const res = await fetch(endpoint, { method: "POST" });
+                const data = await res.json();
+
+                if (!data.success) {
+                    alert(data.error || "Action failed");
+                    btn.textContent = oldText;
+                    btn.disabled = false;
+                    return;
+                }
+
+                // ✅ Decide new follow state
+                // Prefer backend truth if it returns it, else invert
+                const nowFollowing =
+                    (typeof data.following === "boolean") ? data.following : !isFollowing;
+
+                // ✅ Update dataset + button UI
+                btn.dataset.following = nowFollowing ? "1" : "0";
+
+                if (nowFollowing) {
+                    btn.textContent = "Unfollow";
+                    btn.classList.remove("btn-primary");
+                    btn.classList.add("btn-outline-primary");
+                } else {
+                    btn.textContent = "Follow";
+                    btn.classList.remove("btn-outline-primary");
+                    btn.classList.add("btn-primary");
+                }
+
+                // ✅ Badge popup if unlocked
+                if (data.badge_unlocked) {
+                    showBadgeUnlocked({
+                        iconSrc: data.iconSrc,          // backend icon path
+                        badgeName: data.badge_name,     // optional if you return it
+                        title: data.title,              // optional
+                        subtitle: data.subtitle,        // optional
+                        desc: data.desc || "You unlocked a new badge!"
+                    });
+                }
+
+                // ✅ Optional: update follower count instantly if you have an element
+                // Example: <span id="followerCount">12</span>
+                if (typeof data.follower_count === "number") {
+                    const followerEl = document.getElementById("followerCount");
+                    if (followerEl) followerEl.textContent = data.follower_count;
+                }
+
+            } catch (err) {
+                alert("Network error. Please try again.");
+                btn.textContent = oldText;
+            } finally {
+                btn.disabled = false;
+            }
+        });
+    });
+</script>
+
+
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const avatarInput = document.getElementById("avatarInput");
+        const avatarPreview = document.getElementById("avatarPreview");
+        const fileNamePreview = document.getElementById("fileNamePreview");
+
+        if (!avatarInput) return;
+
+        avatarInput.addEventListener("change", function () {
+            const file = this.files[0];
+
+            if (file) {
+                // Show file name
+                fileNamePreview.textContent = "📄 " + file.name;
+
+                // Preview image
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    avatarPreview.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            } else {
+                fileNamePreview.textContent = "";
+            }
+        });
+    });
+</script>
+
+
+
+
+{% endblock %}

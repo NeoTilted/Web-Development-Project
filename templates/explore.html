@@ -1,0 +1,239 @@
+{% extends "base.html" %}
+{% block title %}Bond Buddies - My Profile{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <header class="nav-bar">
+
+        <div class="container-fluid px-0">
+            <div class="d-flex align-items-center justify-content-between nav-inner">
+
+                <!-- Left: Logo -->
+                <a href="{{ url_for('home') }}" class="logo-link">
+                    <img src="{{ url_for('static', filename='img/Logo.png') }}" alt="Logo" class="logo-img">
+                </a>
+
+                <!-- Middle: Search -->
+                <div class="search-container">
+                    <form class="form-inline m-0">
+                        <div class="input-group">
+                            <input type="search" placeholder="Search" class="form-control">
+                            <div class="input-group-append">
+
+                                <button class="btn btn-outline-light" type="button">🔍</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Right: Hamburger -->
+                <button class="btn btn-dark hamburger-btn btn-size" type="button" aria-label="Toggle navigation"
+                    aria-controls="mobile-nav" aria-expanded="false">
+                    ☰
+                </button>
+
+            </div>
+        </div>
+    </header>
+</div>
+
+<!-- Overlay (hidden by default) -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<!-- Off-canvas Sidebar (right side) -->
+<nav id="mobile-nav" aria-label="Main navigation">
+    <!-- Close button inside sidebar -->
+    <button class="menu-close-btn" aria-label="Close menu">
+        &times;
+    </button>
+
+    <!-- User Info (Optional - can add user avatar/name here) -->
+    <div class="user-info mb-4 d-none">
+        <div class="d-flex align-items-center">
+            <div class="user-avatar mr-2">
+                <!-- Add user avatar here -->
+            </div>
+            <div>
+                <h6 class="mb-0 text-white">Welcome, User</h6>
+                <small class="text-light">user@example.com</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Links -->
+    <ul class="nav-list list-unstyled mb-0">
+        <li><a href="{{ url_for('home') }}" class="nav-link text-white">Home</a></li>
+        <li><a href="{{ url_for('explore') }}" class="nav-link text-white active">Explore</a></li>
+        <li><a href="" class="nav-link text-white">Friends</a></li>
+        <li><a href="{{ url_for('createPost') }}" class="nav-link text-white">Create</a></li>
+        <li><a href="" class="nav-link text-white">Profile</a></li>
+        <li>
+            <hr class="bg-light my-3">
+        </li>
+        <!-- Additional Links -->
+        <li><a href="" class="nav-link text-white">Settings</a></li>
+        <li><a href="" class="nav-link text-danger">Logout</a></li>
+    </ul>
+</nav>
+
+<!-- Template with better structure -->
+<div class="container my-3">
+    <form method="GET" id="filterForm" action="{{ url_for('explore') }}">
+        <div class="row bg-white text-center align-items-center h-100">
+            <!-- Senior Post Filter -->
+            <div class="col p-0">
+                <button type="button"
+                    class="filter-btn btn-block border-0 rounded-0 py-3 {% if 'senior' in request.args.getlist('filters') %}active{% endif %}"
+                    data-filter="senior">
+                    {% if 'senior' in request.args.getlist('filters') %}✓ {% endif %}Senior Post
+                </button>
+                <input type="checkbox" id="senior" name="filters" value="senior" {% if 'senior' in
+                    request.args.getlist('filters') %}checked{% endif %} style="display: none;">
+            </div>
+
+            <!-- Junior Post Filter -->
+            <div class="col p-0">
+                <button type="button"
+                    class="filter-btn btn-block border-0 rounded-0 py-3 {% if 'junior' in request.args.getlist('filters') %}active{% endif %}"
+                    data-filter="junior">
+                    {% if 'junior' in request.args.getlist('filters') %}✓ {% endif %}Junior Post
+                </button>
+                <input type="checkbox" id="junior" name="filters" value="junior" {% if 'junior' in
+                    request.args.getlist('filters') %}checked{% endif %} style="display: none;">
+            </div>
+
+            <!-- Trending Filter -->
+            <div class="col p-0">
+                <button type="button"
+                    class="filter-btn btn-block border-0 rounded-0 py-3 {% if 'trending' in request.args.getlist('filters') %}active{% endif %}"
+                    data-filter="trending">
+                    {% if 'trending' in request.args.getlist('filters') %}✓ {% endif %}Trending
+                </button>
+                <input type="checkbox" id="trending" name="filters" value="trending" {% if 'trending' in
+                    request.args.getlist('filters') %}checked{% endif %} style="display: none;">
+            </div>
+
+            <!-- Hot Filter -->
+            <div class="col p-0">
+                <button type="button"
+                    class="filter-btn btn-block border-0 rounded-0 py-3 {% if 'hot' in request.args.getlist('filters') %}active{% endif %}"
+                    data-filter="hot">
+                    {% if 'hot' in request.args.getlist('filters') %}✓ {% endif %}Hot
+                </button>
+                <input type="checkbox" id="hot" name="filters" value="hot" {% if 'hot' in
+                    request.args.getlist('filters') %}checked{% endif %} style="display: none;">
+            </div>
+        </div>
+
+        <!-- Hidden fields -->
+        <input type="hidden" name="page" value="{{ request.args.get('page', 1) }}">
+        <input type="hidden" name="sort" value="{{ request.args.get('sort', 'newest') }}">
+    </form>
+</div>
+
+<!-- Content area that will be updated -->
+<!-- In the content area of explore.html -->
+<div id="contentArea container">
+    <!-- explore_posts.html - This is the partial template for AJAX responses -->
+    {% if posts %}
+    {% for post_info in posts %}
+    {% set post = post_info.post %}
+    {% set username = post_info.username %}
+    {% set comment_count = post_info.comment_count %}
+    {% set image_url = post_info.image_url %}
+
+    <div class="card mb-3">
+        <div class="card-body">
+            <div class="d-flex align-items-center mb-2">
+                <div class="mr-2">
+                    <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center"
+                        style="width: 40px; height: 40px;">
+                        {{ username[0]|upper if username else '?' }}
+                    </div>
+                </div>
+                <div>
+                    <h6 class="mb-0">{{ username }}</h6>
+                    <small class="text-muted">
+                        {{ post.get_formatted_timestamp() }}
+                    </small>
+                </div>
+            </div>
+
+            <!-- Display post content if exists -->
+            {% if post.get_content() %}
+            <p class="card-text">{{ post.get_content() }}</p>
+            {% endif %}
+
+            <!-- Display image if exists -->
+            {% if image_url %}
+            <div class="mb-3 text-center">
+                <img src="{{ url_for('static', filename='uploads/' + image_url) }}" alt="Post image"
+                    class="img-fluid rounded" style="max-height: 400px; object-fit: cover;">
+            </div>
+            {% endif %}
+
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <button class="btn btn-sm btn-outline-primary">
+                        <span class="mr-1">❤️</span> {{ post.get_likes() }}
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary ml-2">
+                        <span class="mr-1">💬</span> {{ comment_count }}
+                    </button>
+                    <button class="btn btn-sm btn-outline-info ml-2">
+                        <span class="mr-1">↪️</span> Share
+                    </button>
+                </div>
+                <div>
+                    {% if post.get_post_category() %}
+                    <span class="badge badge-info">
+                        {{ post.get_post_category()|title }}
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="alert alert-info container">
+        No posts found. Try different filters or check back later!
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const filterForm = document.getElementById('filterForm');
+        const filterButtons = document.querySelectorAll('.filter-btn');
+
+        // Add click event to filter buttons
+        filterButtons.forEach(button => {
+            button.addEventListener('click', function () {
+                const filterValue = this.getAttribute('data-filter');
+                const checkbox = document.getElementById(filterValue);
+
+                // Toggle the checkbox
+                if (checkbox) {
+                    checkbox.checked = !checkbox.checked;
+
+                    // Update button appearance
+                    if (checkbox.checked) {
+                        this.classList.add('active');
+                        this.innerHTML = '✓ ' + this.textContent.replace('✓ ', '');
+                    } else {
+                        this.classList.remove('active');
+                        this.innerHTML = this.textContent.replace('✓ ', '');
+                    }
+
+                    // Submit the form
+                    setTimeout(() => {
+                        filterForm.submit();
+                    }, 200);
+                }
+            });
+        });
+    });
+</script>
+
+{% endblock %}
