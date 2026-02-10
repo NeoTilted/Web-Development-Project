@@ -1,144 +1,319 @@
-{% extends "base.html" %}
-{% block title %}Bond Buddies - My Profile{% endblock %}
+{% extends 'base.html' %}
+{% block title %}
+  Bond Buddies - Create Post
+{% endblock %}
 
 {% block content %}
-<!-- HEADER SECTION: Main navigation with logo, search, and mobile menu -->
-<header class="nav-bar">
-    <div class="d-flex align-items-center justify-content-between w-100 px-3">
-        <!-- Added px-3 for consistent spacing -->
-        <!-- Logo -->
-        <a href="{{ url_for('home') }}" class="logo-link">
-            <img src="{{ url_for('static', filename='img/Logo.png') }}" alt="Logo" class="logo-img" />
-        </a>
+  <div class="container-fluid px-0">
+    <header class="nav-bar">
+      <div class="container-fluid px-0">
+        <div class="d-flex align-items-center justify-content-between nav-inner">
+          <!-- Logo -->
+          <a href="{{ url_for('home') }}" class="logo-link"><img src="{{ url_for('static', filename='img/Logo.png') }}" alt="Logo" class="logo-img" /></a>
 
-        <!-- Search -->
-        <div class="search-container flex-grow-1 mx-3">
-            <form class="form-inline d-flex justify-content-center" action="{{ url_for('search') }}" method="GET">
-                <div class="input-group w-100">
-                    <input type="search" name="query" value="{{ query }}" placeholder="Search" class="form-control">
-                    <div class="input-group-append">
-                        <button class="btn btn-outline-light" type="submit">🔍</button>
-                    </div>
+          <!-- Search -->
+          <div class="search-container">
+            <form class="form-inline m-0"
+                  action="{{ url_for('search') }}"
+                  method="GET">
+              <div class="input-group">
+                <input type="search"
+                       name="query"
+                       placeholder="Search"
+                       class="form-control"
+                       value="{{ query if query is defined else '' }}" />
+                <div class="input-group-append">
+                  <button class="btn btn-outline-light" type="submit">🔍</button>
                 </div>
+              </div>
             </form>
+          </div>
+
+          <!-- Hamburger -->
+          <button class="btn btn-dark hamburger-btn btn-size" type="button">☰</button>
         </div>
+      </div>
+    </header>
+  </div>
 
-        <!-- Mobile Menu Button -->
-        <button class="btn btn-dark hamburger-btn btn-size" type="button" id="hamburgerBtn">
-            ☰
-        </button>
-    </div>
-</header>
+  <!-- Overlay -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-<div class="sidebar-overlay" id="sidebarOverlay"></div>
-
+  <!-- Sidebar -->
 <nav id="mobile-nav" aria-label="Main navigation">
-    <button class="menu-close-btn" aria-label="Close menu">
-        &times;
-    </button>
-    
-    <div class="user-info mb-4 d-none">
-        <div class="d-flex align-items-center">
-            <div class="user-avatar mr-2">
-                <!-- Optional avatar -->
-            </div>
-            <div>
-                <h6 class="mb-0 text-white">Welcome, User</h6>
-                <small class="text-light">user@example.com</small>
-            </div>
-        </div>
-    </div>
-    
+    <button class="menu-close-btn" aria-label="Close menu">&times;</button>
     <ul class="nav-list list-unstyled mb-0">
-        <li><a href="{{ url_for('home') }}" class="nav-link text-white active">Home</a></li>
-        <li><a href="" class="nav-link text-white">Explore</a></li>
-        
-        <li><a href="/createPost" class="nav-link text-white">Create</a></li>
+        <li><a href="{{ url_for('home') }}" class="nav-link text-white">Home</a></li>
+        <li><a href=" {{ url_for('explore') }}" class="nav-link text-white">Explore</a></li>
+        <li><a href="{{ url_for('createPost') }}" class="nav-link text-white active">Create</a></li>
+        <li><a href="{{ url_for('events') }}" class="nav-link text-white">Events</a></li>
         <li><a href="{{ url_for('profile', user_id=session['user_id']) }}" class="nav-link text-white">Profile</a></li>
-        <li><a href="" class="nav-link text-white">Events</a></li>
         <li><hr class="bg-light my-3"></li>
-        <li><a href="" class="nav-link text-white">Settings</a></li>
-        <li><a href="" class="nav-link text-danger">Logout</a></li>
+        <!-- Additional Links -->
+        <li><a href="{{ url_for('logout') }}" class="nav-link text-danger">Logout</a></li>
     </ul>
 </nav>
 
-<div class="center-box">
+  <div class="center-box">
     <div class="upload-card">
-        <h4>Upload a Picture</h4>
-        <!-- Add inside the form in createPost.html -->
-        <form id="uploadForm" method="POST" enctype="multipart/form-data">
-            <!-- Add content textarea -->
-            <div class="mb-3">
-                <label for="content" class="form-label">Post Content</label>
-                <textarea class="form-control" id="content" name="content" 
-                        rows="3" placeholder="What's on your mind?"></textarea>
-            </div>
-            
-            <!-- Add category selection -->
-            <div class="mb-3">
-                <label for="category" class="form-label">Category</label>
-                <select class="form-control" id="category" name="category">
-                    <option value="senior">Senior Post</option>
-                    <option value="junior">Junior Post</option>
-                </select>
-            </div>
-            
-            <!-- Existing file input -->
-            <input type="file" id="fileInput" name="image" accept="image/*" onchange="previewImage(event)">
-            <!-- ... rest of the form ... -->
-            <input type="file" id="fileInput" name="image" accept="image/*" onchange="previewImage(event)">
-            <label for="fileInput" class="custom-file-btn">Choose File</label>
-            <div id="fileName">No file chosen</div>
-            <img id="preview" src="#" alt="Image Preview">
-            <button type="submit" class="btn btn-primary btn-post">Post</button>
-        </form>
-    </div>
-</div>
+      <h4 class="text-center mb-4">Upload a Picture</h4>
 
-<!-- Modal -->
-<div class="modal fade" id="fileWarningModal" tabindex="-1" aria-labelledby="fileWarningModalLabel" aria-hidden="true">
+      <form id="uploadForm" method="POST" enctype="multipart/form-data">
+        <div class="row">
+          <!-- LEFT SIDE -->
+          <div class="col-md-6 d-flex align-items-center justify-content-center">
+            <div class="text-center">
+              <input type="file" id="fileInput" name="image" accept="image/*" onchange="previewImage(event)" hidden />
+
+              <div id="fileName">No file chosen</div>
+
+              <label for="fileInput" class="custom-file-btn">Choose File</label>
+
+              <img id="preview" class="img-fluid hidden mt-3" alt="Image Preview" />
+            </div>
+          </div>
+
+          <!-- RIGHT SIDE -->
+          <div class="col-md-6">
+            <div class="mb-3">
+              <label for="content" class="form-label">Post Content</label>
+              <textarea class="form-control" id="content" name="content" placeholder="What's on your mind?" rows="4" resize="none"></textarea>
+            </div>
+
+            <div class="mb-3">
+              <label for="category" class="form-label">Category</label>
+              <select class="form-control" id="category" name="category">
+                <option value="senior">Senior Post</option>
+                <option value="youth">Youth Post</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- POST BUTTON -->
+        <div class="post-btn-wrapper">
+          <button type="submit" class="btn btn-primary btn-post px-5">Post</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+<!-- MISSING FILE / COMBINED ERROR MODAL -->
+<div class="modal fade" id="fileWarningModal" tabindex="-1" aria-labelledby="fileWarningLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
+
+      <!-- Modal Header -->
       <div class="modal-header">
-        <h5 class="modal-title" id="fileWarningModalLabel">Missing File</h5>
-        <!-- X button -->
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <h5 class="modal-title text-dark" id="fileWarningLabel">
+          Validation Error
+        </h5>
       </div>
-      <div class="modal-body">
-        Please upload a photo before posting!
+
+      <!-- Modal Body with Box -->
+      <div class="modal-body d-flex justify-content-center">
+        <div class="p-3 border w-100 text-center" id="fileWarningMessage">
+          Please upload a photo before posting!
+        </div>
       </div>
+
+      <!-- Modal Footer -->
+      <div class="modal-footer d-flex justify-content-center">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">
+          OK
+        </button>
+      </div>
+
     </div>
   </div>
 </div>
 
-<!-- JS (Bootstrap bundle) -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<!-- POST CONTENT ERROR MODAL -->
+<div class="modal fade" id="contentErrorModal" tabindex="-1" role="dialog" aria-labelledby="contentErrorLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
 
-<script>
-document.addEventListener("DOMContentLoaded", function() {
-    const form = document.getElementById('uploadForm');
-    const fileInput = document.getElementById('fileInput');
-    const fileWarningModalEl = document.getElementById('fileWarningModal');
-    const fileWarningModal = new bootstrap.Modal(fileWarningModalEl);
+      <!-- Modal Header -->
+      <div class="modal-header">
+        <h5 class="modal-title text-dark" id="contentErrorLabel">Validation Error</h5>
+      </div>
 
-    form.addEventListener('submit', function(event) {
-        if (!fileInput.files || fileInput.files.length === 0) {
-            event.preventDefault(); // Stop submission
-            fileWarningModal.show(); // Show modal
-        }
+      <!-- Modal Body -->
+      <div class="modal-body d-flex justify-content-center">
+        <div class="p-3 border w-100 text-center">
+          Post Content cannot be empty!
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="modal-footer d-flex justify-content-center">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">OK</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- FILE TYPE ERROR MODAL -->
+<div class="modal fade" id="fileTypeErrorModal" tabindex="-1" aria-labelledby="fileTypeErrorLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+
+      <!-- Modal Header -->
+      <div class="modal-header">
+        <h5 class="modal-title text-dark" id="fileTypeErrorLabel">
+          Invalid File Type
+        </h5>
+      </div>
+
+      <!-- Modal Body with Box -->
+      <div class="modal-body d-flex justify-content-center">
+        <div class="p-3 border w-100 text-center">
+          Only PNG, JPG, JPEG, or GIF files are allowed!
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="modal-footer d-flex justify-content-center">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">
+          OK
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- POST SUCCESS MODAL -->
+<div class="modal fade" id="postSuccessModal" tabindex="-1" role="dialog" aria-labelledby="postSuccessLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title text-dark" id="postSuccessLabel">Success!</h5>
+      </div>
+
+      <div class="modal-body d-flex justify-content-center">
+        <div class="p-3 border w-100 text-center">
+          Posted!
+        </div>
+      </div>
+
+      <div class="modal-footer d-flex justify-content-center">
+        <button type="button" class="btn btn-primary" id="postSuccessBtn" data-dismiss="modal">OK</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+  <script>
+document.addEventListener('DOMContentLoaded', function () {
+  const form = document.getElementById('uploadForm');
+  const fileInput = document.getElementById('fileInput');
+  const contentField = document.getElementById('content');
+
+  const fileWarningMessage = document.getElementById('fileWarningMessage');
+
+  const allowedExtensions = ['png', 'jpg', 'jpeg', 'gif'];
+
+  // ---------------- Modals ----------------
+  const fileModalEl = $('#fileWarningModal');
+  const contentModalEl = $('#contentErrorModal');
+  const fileTypeModalEl = $('#fileTypeErrorModal');
+  const postSuccessModalEl = $('#postSuccessModal');
+  const postSuccessBtn = $('#postSuccessBtn');
+
+  // ---------------- Zero-width character regex ----------------
+  const zeroWidthRegex = /[\u200B\u200C\u200D\uFEFF]/g;
+
+  // ---------------- Form Submit ----------------
+  form.addEventListener('submit', function (e) {
+    e.preventDefault(); // prevent default submit
+
+    // ---------------- Strip zero-width characters before validation ----------------
+    contentField.value = contentField.value.replace(zeroWidthRegex, '');
+
+    const fileEmpty = !fileInput.files.length;
+    const contentRaw = contentField.value.trim();
+    const contentEmpty = contentRaw === ''; // zero-width already removed
+    let fileInvalid = false;
+
+    if (!fileEmpty) {
+      const fileName = fileInput.files[0].name;
+      const ext = fileName.split('.').pop().toLowerCase();
+      fileInvalid = !allowedExtensions.includes(ext);
+    }
+
+    // ---------------- Validation checks ----------------
+    // 1️⃣ Both file and content missing
+    if (fileEmpty && contentEmpty) {
+      fileWarningMessage.textContent = 'Please upload a photo and add post content!';
+      fileModalEl.modal('show');
+      return;
+    }
+
+    // 2️⃣ Content missing (even if image exists)
+    if (contentEmpty) {
+      contentModalEl.modal('show');
+      return;
+    }
+
+    // 3️⃣ File missing (even if content exists)
+    if (fileEmpty) {
+      fileWarningMessage.textContent = 'Please upload a photo before posting!';
+      fileModalEl.modal('show');
+      return;
+    }
+
+    // 4️⃣ File type invalid
+    if (fileInvalid) {
+      fileTypeModalEl.modal('show');
+      return;
+    }
+
+    // ---------------- All validations passed → submit via AJAX ----------------
+    const formData = new FormData(form);
+
+    fetch(form.action, {
+      method: form.method,
+      body: formData
+    })
+    .then(response => {
+      if (response.ok) {
+        form.reset(); // clear form
+        postSuccessModalEl.modal('show'); // show success modal
+      } else {
+        alert('Something went wrong while posting!');
+      }
+    })
+    .catch(err => {
+      console.error(err);
+      alert('Something went wrong while posting!');
     });
+  });
+
+  // ---------------- Redirects ----------------
+  postSuccessBtn.click(function () {
+    window.location.href = '/profile';
+  });
+
+  postSuccessModalEl.on('hidden.bs.modal', function () {
+    window.location.href = '/profile';
+  });
 });
 
-function previewImage(event) {
-    const preview = document.getElementById('preview');
-    const fileName = document.getElementById('fileName');
-
-    const file = event.target.files[0];
-    if (!file) return;
-
-    preview.src = URL.createObjectURL(file);
-    preview.style.display = 'block';
-    fileName.textContent = file.name;
-}
-</script>
+    function previewImage(event) {
+      const file = event.target.files[0]
+      if (!file) return
+    
+      const preview = document.getElementById('preview')
+      const fileName = document.getElementById('fileName')
+    
+      preview.src = URL.createObjectURL(file);
+      preview.classList.remove('hidden');
+      preview.style.display = 'block'; // optional safety
+      fileName.textContent = file.name
+    }
+  </script>
 {% endblock %}

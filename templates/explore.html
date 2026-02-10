@@ -1,239 +1,1171 @@
 {% extends "base.html" %}
-{% block title %}Bond Buddies - My Profile{% endblock %}
+{% block title %}Bond Buddies - Explore{% endblock %}
 
 {% block content %}
 <div class="container-fluid px-0">
     <header class="nav-bar">
+        <div class="d-flex align-items-center justify-content-between nav-inner">
+            <!-- Logo -->
+            <a href="{{ url_for('home') }}" class="logo-link">
+                <img src="{{ url_for('static', filename='img/Logo.png') }}" alt="Logo" class="logo-img">
+            </a>
 
-        <div class="container-fluid px-0">
-            <div class="d-flex align-items-center justify-content-between nav-inner">
-
-                <!-- Left: Logo -->
-                <a href="{{ url_for('home') }}" class="logo-link">
-                    <img src="{{ url_for('static', filename='img/Logo.png') }}" alt="Logo" class="logo-img">
-                </a>
-
-                <!-- Middle: Search -->
-                <div class="search-container">
-                    <form class="form-inline m-0">
-                        <div class="input-group">
-                            <input type="search" placeholder="Search" class="form-control">
-                            <div class="input-group-append">
-
-                                <button class="btn btn-outline-light" type="button">🔍</button>
-                            </div>
-                        </div>
-                    </form>
+            <!-- Search -->
+          <div class="search-container">
+            <form class="form-inline m-0"
+                  action="{{ url_for('search') }}"
+                  method="GET">
+              <div class="input-group">
+                <input type="search"
+                       name="query"
+                       placeholder="Search"
+                       class="form-control"
+                       value="{{ query if query is defined else '' }}" />
+                <div class="input-group-append">
+                  <button class="btn btn-outline-light" type="submit">🔍</button>
                 </div>
+              </div>
+            </form>
+          </div>
 
-                <!-- Right: Hamburger -->
-                <button class="btn btn-dark hamburger-btn btn-size" type="button" aria-label="Toggle navigation"
-                    aria-controls="mobile-nav" aria-expanded="false">
-                    ☰
-                </button>
-
-            </div>
+            <!-- Hamburger Menu -->
+            <button class="btn btn-dark hamburger-btn btn-size" type="button" aria-label="Toggle navigation"
+                aria-controls="mobile-nav" aria-expanded="false">
+                ☰
+            </button>
         </div>
     </header>
 </div>
 
-<!-- Overlay (hidden by default) -->
+<!-- Overlay -->
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-<!-- Off-canvas Sidebar (right side) -->
+<!-- Sidebar Navigation -->
 <nav id="mobile-nav" aria-label="Main navigation">
-    <!-- Close button inside sidebar -->
-    <button class="menu-close-btn" aria-label="Close menu">
-        &times;
-    </button>
-
-    <!-- User Info (Optional - can add user avatar/name here) -->
-    <div class="user-info mb-4 d-none">
-        <div class="d-flex align-items-center">
-            <div class="user-avatar mr-2">
-                <!-- Add user avatar here -->
-            </div>
-            <div>
-                <h6 class="mb-0 text-white">Welcome, User</h6>
-                <small class="text-light">user@example.com</small>
-            </div>
-        </div>
-    </div>
-
-    <!-- Navigation Links -->
+    <button class="menu-close-btn" aria-label="Close menu">&times;</button>
     <ul class="nav-list list-unstyled mb-0">
         <li><a href="{{ url_for('home') }}" class="nav-link text-white">Home</a></li>
-        <li><a href="{{ url_for('explore') }}" class="nav-link text-white active">Explore</a></li>
-        <li><a href="" class="nav-link text-white">Friends</a></li>
+        <li><a href=" {{ url_for('explore') }}" class="nav-link text-white active">Explore</a></li>
         <li><a href="{{ url_for('createPost') }}" class="nav-link text-white">Create</a></li>
-        <li><a href="" class="nav-link text-white">Profile</a></li>
-        <li>
-            <hr class="bg-light my-3">
-        </li>
+        <li><a href="{{ url_for('events') }}" class="nav-link text-white">Events</a></li>
+        <li><a href="{{ url_for('profile', user_id=session['user_id']) }}" class="nav-link text-white">Profile</a></li>
+        <li><hr class="bg-light my-3"></li>
         <!-- Additional Links -->
-        <li><a href="" class="nav-link text-white">Settings</a></li>
-        <li><a href="" class="nav-link text-danger">Logout</a></li>
+        <li><a href="{{ url_for('logout') }}" class="nav-link text-danger">Logout</a></li>
     </ul>
 </nav>
 
-<!-- Template with better structure -->
+<!-- Image Modal -->
+<div class="modal fade" id="imageModal" tabindex="-1" role="dialog" aria-labelledby="imageModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-body p-0">
+                <button type="button" class="btn-close position-absolute" data-dismiss="modal" aria-label="Close"
+                    style="top: 15px; right: 15px; z-index: 1000; background-color: rgba(0,0,0,0.5); color: white; border: none;">
+                    <span aria-hidden="true" style="font-size: 1.5rem;">×</span>
+                </button>
+
+                <div class="row no-gutters h-100">
+                    <!-- Image Section -->
+                    <div class="col-md-8 col-lg-8 bg-dark d-flex align-items-center justify-content-center">
+                        <img id="modalImage" src="" alt="Full size image" class="img-fluid w-100 h-auto"
+                            style="max-height: 85vh; object-fit: contain;">
+                    </div>
+
+                    <!-- Post Details -->
+                    <div class="col-md-4 col-lg-4 d-flex flex-column" style="max-height: 85vh;">
+                        <!-- User Info -->
+                        <div class="p-3 border-bottom">
+                            <div class="d-flex align-items-center">
+                                <div class="mr-2">
+                                    <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center"
+                                        style="width: 40px; height: 40px;" id="modalUserInitial"></div>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-0 font-weight-bold" id="modalUsername"></h6>
+                                    <span class="badge badge-info" id="modalCategory"></span>
+                                    <small class="text-muted" id="modalTimestamp"></small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Content & Comments -->
+                        <div class="flex-grow-1 p-3 overflow-auto" style="min-height: 200px;">
+                            <div class="mb-3">
+                                <p class="mb-2" id="modalContent"></p>
+                            </div>
+
+                            <div id="modalCommentsSection">
+                                <div class="text-center text-muted py-4" id="noCommentsMessage">
+                                    <small>No comments yet. Be the first to comment!</small>
+                                </div>
+                                <!-- Loading indicator will be added here dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Interactions -->
+                        <div class="border-top p-3 bg-white" style="flex-shrink: 0;">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div class="d-flex align-items-center">
+                                    <button class="btn btn-link text-dark p-0 mr-3 modal-like-btn" data-post-id=""
+                                        style="font-size: 1.5rem;">
+                                        <span id="modalLikeIcon">🤍</span>
+                                    </button>
+                                    <button class="btn btn-link text-dark p-0 mr-3 modal-comment-btn"
+                                        style="font-size: 1.5rem;">
+                                        <span>💬</span>
+                                    </button>
+                                    <button class="btn btn-link text-dark p-0" style="font-size: 1.5rem;">
+                                        <span>↪️</span>
+                                    </button>
+                                </div>
+                                <button class="btn btn-link text-dark p-0" style="font-size: 1.5rem;">
+                                    <span><svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+                                        xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M6 3H18V21L12 17L6 21V3Z"
+                                            stroke="black"
+                                            stroke-width="2"
+                                            stroke-linejoin="round"
+                                            stroke-linecap="round"/>
+                                    </svg>
+                                    </span>
+                                </button>
+                            </div>
+
+                            <div class="mb-2">
+                                <div class="d-flex align-items-center">
+                                    <span class="font-weight-bold mr-2">
+                                        <span id="modalLikes">0</span> likes
+                                    </span>
+                                    <span class="mx-2">•</span>
+                                    <span class="font-weight-bold">
+                                        <span id="modalCommentsCount">0</span> comments
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="text-muted small mb-3">
+                                <span id="modalTimeAgo"></span>
+                            </div>
+
+                            <!-- Comment Form -->
+                            <div class="border-top pt-3">
+                                <form id="commentForm" class="comment-form">
+                                    <div class="input-group">
+                                        <input type="text" id="commentInput" class="form-control border-0"
+                                            placeholder="Add a comment..." aria-label="Add a comment"
+                                            style="background: transparent;" required>
+                                        <div class="input-group-append">
+                                            <button class="btn btn-link text-primary border-0" type="submit"
+                                                id="commentSubmitBtn" disabled>Post</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filter Form -->
 <div class="container my-3">
     <form method="GET" id="filterForm" action="{{ url_for('explore') }}">
-        <div class="row bg-white text-center align-items-center h-100">
-            <!-- Senior Post Filter -->
-            <div class="col p-0">
+        <div class="row bg-white text-center">
+            {% set filters = request.args.getlist('filters') %}
+            
+            <div class="col p-0 mx-2">
                 <button type="button"
-                    class="filter-btn btn-block border-0 rounded-0 py-3 {% if 'senior' in request.args.getlist('filters') %}active{% endif %}"
+                    class="filter-btn btn-block border-0 py-3 bg-button     {% if 'senior' in filters %}active{% endif %}"
                     data-filter="senior">
-                    {% if 'senior' in request.args.getlist('filters') %}✓ {% endif %}Senior Post
+                    {% if 'senior' in filters %}✓ {% endif %}Senior Post
                 </button>
-                <input type="checkbox" id="senior" name="filters" value="senior" {% if 'senior' in
-                    request.args.getlist('filters') %}checked{% endif %} style="display: none;">
+                <input type="checkbox" id="senior" name="filters" value="senior" {% if 'senior' in filters %}checked{% endif %} style="display: none;">
             </div>
 
-            <!-- Junior Post Filter -->
-            <div class="col p-0">
+            <div class="col p-0 mx-2">
                 <button type="button"
-                    class="filter-btn btn-block border-0 rounded-0 py-3 {% if 'junior' in request.args.getlist('filters') %}active{% endif %}"
-                    data-filter="junior">
-                    {% if 'junior' in request.args.getlist('filters') %}✓ {% endif %}Junior Post
+                    class="filter-btn btn-block border-0 py-3 bg-button {% if 'youth' in filters %}active{% endif %}"
+                    data-filter="youth">
+                    {% if 'youth' in filters %}✓ {% endif %}Youth Post
                 </button>
-                <input type="checkbox" id="junior" name="filters" value="junior" {% if 'junior' in
-                    request.args.getlist('filters') %}checked{% endif %} style="display: none;">
+                <input type="checkbox" id="youth" name="filters" value="youth" {% if 'youth' in filters %}checked{% endif %} style="display: none;">
             </div>
 
-            <!-- Trending Filter -->
-            <div class="col p-0">
+            <div class="col p-0 mx-2">
                 <button type="button"
-                    class="filter-btn btn-block border-0 rounded-0 py-3 {% if 'trending' in request.args.getlist('filters') %}active{% endif %}"
+                    class="filter-btn btn-block border-0 py-3 bg-button {% if 'trending' in filters %}active{% endif %}"
                     data-filter="trending">
-                    {% if 'trending' in request.args.getlist('filters') %}✓ {% endif %}Trending
+                    {% if 'trending' in filters %}✓ {% endif %}Trending
                 </button>
-                <input type="checkbox" id="trending" name="filters" value="trending" {% if 'trending' in
-                    request.args.getlist('filters') %}checked{% endif %} style="display: none;">
+                <input type="checkbox" id="trending" name="filters" value="trending" {% if 'trending' in filters %}checked{% endif %} style="display: none;">
             </div>
 
-            <!-- Hot Filter -->
-            <div class="col p-0">
+            <div class="col p-0 mx-2">
                 <button type="button"
-                    class="filter-btn btn-block border-0 rounded-0 py-3 {% if 'hot' in request.args.getlist('filters') %}active{% endif %}"
+                    class="filter-btn btn-block border-0 py-3 bg-button {% if 'hot' in filters %}active{% endif %}"
                     data-filter="hot">
-                    {% if 'hot' in request.args.getlist('filters') %}✓ {% endif %}Hot
+                    {% if 'hot' in filters %}✓ {% endif %}Hot
                 </button>
-                <input type="checkbox" id="hot" name="filters" value="hot" {% if 'hot' in
-                    request.args.getlist('filters') %}checked{% endif %} style="display: none;">
+                <input type="checkbox" id="hot" name="filters" value="hot" {% if 'hot' in filters %}checked{% endif %} style="display: none;">
             </div>
         </div>
 
-        <!-- Hidden fields -->
         <input type="hidden" name="page" value="{{ request.args.get('page', 1) }}">
         <input type="hidden" name="sort" value="{{ request.args.get('sort', 'newest') }}">
     </form>
 </div>
 
-<!-- Content area that will be updated -->
-<!-- In the content area of explore.html -->
-<div id="contentArea container">
-    <!-- explore_posts.html - This is the partial template for AJAX responses -->
+<!-- Filter Messages -->
+{% if filter_messages %}
+<div class="container mb-3">
+    <div class="alert alert-info alert-dismissible fade show" role="alert">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+        <h6>Filter Results:</h6>
+        <ul class="mb-0">
+            {% for message in filter_messages %}
+            <li>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endif %}
+
+<!-- Posts Content -->
+<div id="contentArea" class="container">
     {% if posts %}
-    {% for post_info in posts %}
-    {% set post = post_info.post %}
-    {% set username = post_info.username %}
-    {% set comment_count = post_info.comment_count %}
-    {% set image_url = post_info.image_url %}
+        {% for post_info in posts %}
+            {% set post = post_info.post %}
+            {% set username = post_info.username %}
+            {% set comment_count = post_info.comment_count %}
+            {% set image_url = post_info.image_url %}
 
-    <div class="card mb-3">
-        <div class="card-body">
-            <div class="d-flex align-items-center mb-2">
-                <div class="mr-2">
-                    <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center"
-                        style="width: 40px; height: 40px;">
-                        {{ username[0]|upper if username else '?' }}
+            <div class="card mb-3" data-post-id="{{ post.get_post_id() }}">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="mr-2">
+                            <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center"
+                                style="width: 40px; height: 40px;">
+                                {{ username[0]|upper if username else '?' }}
+                            </div>
+                        </div>
+                        <div>
+                            <h6 class="mb-0">{{ username }}</h6>
+                            <small class="text-muted">{{ post.get_formatted_timestamp() }}</small>
+                        </div>
                     </div>
-                </div>
-                <div>
-                    <h6 class="mb-0">{{ username }}</h6>
-                    <small class="text-muted">
-                        {{ post.get_formatted_timestamp() }}
-                    </small>
-                </div>
-            </div>
 
-            <!-- Display post content if exists -->
-            {% if post.get_content() %}
-            <p class="card-text">{{ post.get_content() }}</p>
-            {% endif %}
-
-            <!-- Display image if exists -->
-            {% if image_url %}
-            <div class="mb-3 text-center">
-                <img src="{{ url_for('static', filename='uploads/' + image_url) }}" alt="Post image"
-                    class="img-fluid rounded" style="max-height: 400px; object-fit: cover;">
-            </div>
-            {% endif %}
-
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <button class="btn btn-sm btn-outline-primary">
-                        <span class="mr-1">❤️</span> {{ post.get_likes() }}
-                    </button>
-                    <button class="btn btn-sm btn-outline-secondary ml-2">
-                        <span class="mr-1">💬</span> {{ comment_count }}
-                    </button>
-                    <button class="btn btn-sm btn-outline-info ml-2">
-                        <span class="mr-1">↪️</span> Share
-                    </button>
-                </div>
-                <div>
-                    {% if post.get_post_category() %}
-                    <span class="badge badge-info">
-                        {{ post.get_post_category()|title }}
-                    </span>
+                    {% if post.get_content() %}
+                        <p class="card-text">{{ post.get_content() }}</p>
                     {% endif %}
+
+                    {% if image_url %}
+                        <div class="mb-3 text-center">
+                            <img src="{{ url_for('static', filename='uploads/' + image_url) }}" alt="Post image"
+                                class="img-fluid rounded clickable-image"
+                                style="max-height: 400px; object-fit: cover; cursor: pointer;"
+                                data-image="{{ url_for('static', filename='uploads/' + image_url) }}" 
+                                data-username="{{ username }}"
+                                data-user-initial="{{ username[0]|upper if username else '?' }}"
+                                data-timestamp="{{ post.get_formatted_timestamp() }}" 
+                                data-content="{{ post.get_content() or '' }}"
+                                data-likes="{{ post.get_likes() }}" 
+                                data-comments="{{ comment_count }}"
+                                data-category="{{ post.get_post_category() or '' }}" 
+                                data-post-id="{{ post.get_post_id() }}"
+                                data-liked="{{ 'true' if post_info.user_has_liked else 'false' }}">
+                        </div>
+                    {% endif %}
+
+                    <!-- In explore.html, update the comment button section -->
+<div class="d-flex justify-content-between align-items-center">
+    <div>
+        <!-- Like Button -->
+        <button class="btn btn-sm {% if post_info.user_has_liked %}btn-danger{% else %}btn-outline-primary{% endif %} like-btn"
+            data-post-id="{{ post.get_post_id() }}"
+            data-liked="{{ 'true' if post_info.user_has_liked else 'false' }}">
+            <span class="mr-1">❤️</span>
+            <span class="like-count">{{ post.get_likes() }}</span>
+        </button>
+
+        <!-- Updated Comment Button - Now opens modal -->
+        <button class="btn btn-sm btn-outline-secondary ml-2 open-comment-modal-btn"
+            data-post-id="{{ post.get_post_id() }}"
+            data-username="{{ username }}"
+            data-user-initial="{{ username[0]|upper if username else '?' }}"
+            data-timestamp="{{ post.get_formatted_timestamp() }}"
+            data-content="{{ post.get_content() or '' }}"
+            data-likes="{{ post.get_likes() }}"
+            data-comments="{{ comment_count }}"
+            data-category="{{ post.get_post_category() or '' }}"
+            data-liked="{{ 'true' if post_info.user_has_liked else 'false' }}"
+            {% if image_url %}
+            data-image="{{ url_for('static', filename='uploads/' + image_url) }}"
+            {% else %}
+            data-image=""
+            {% endif %}>
+            <span class="mr-1">💬</span> <span class="comment-count">{{ comment_count }}</span>
+        </button>
+        
+        <button class="btn btn-sm btn-outline-info ml-2">
+            <span class="mr-1">↪️</span> Share
+        </button>
+    </div>
+    {% if post.get_post_category() %}
+        <span class="badge badge-info">{{ post.get_post_category()|title }}</span>
+    {% endif %}
+</div>
                 </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="container">
+            <div class="alert alert-warning text-center">
+                <h5>No Posts Found</h5>
+                <p class="mb-2">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                        {% if messages %}
+                            {% for category, message in messages %}
+                                {% if category == 'info' or category == 'warning' %}
+                                    {{ message }}
+                                {% endif %}
+                            {% endfor %}
+                        {% else %}
+                            No posts available. Try different filters or be the first to create a post!
+                        {% endif %}
+                    {% endwith %}
+                </p>
+
+                {% set filters = request.args.getlist('filters') %}
+                {% if 'senior' in filters or 'youth' in filters %}
+                    <div class="mt-3">
+                        <a href="{{ url_for('createPost') }}" class="btn btn-primary">
+                            Create {{ 'Senior' if 'senior' in filters else 'Youth' if 'youth' in filters else '' }} Post
+                        </a>
+                    </div>
+                {% endif %}
             </div>
         </div>
-    </div>
-    {% endfor %}
-    {% else %}
-    <div class="alert alert-info container">
-        No posts found. Try different filters or check back later!
-    </div>
     {% endif %}
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const filterForm = document.getElementById('filterForm');
-        const filterButtons = document.querySelectorAll('.filter-btn');
+// ============================================
+// MODAL COMMENT SYSTEM WITH REPLY FEATURE
+// ============================================
 
-        // Add click event to filter buttons
-        filterButtons.forEach(button => {
-            button.addEventListener('click', function () {
-                const filterValue = this.getAttribute('data-filter');
-                const checkbox = document.getElementById(filterValue);
+const currentUsername = "{{ current_username }}";
+let currentPostId = null;
+let currentPostCard = null;
+let replyingToCommentId = null;
+let replyingToUsername = null;
 
-                // Toggle the checkbox
-                if (checkbox) {
-                    checkbox.checked = !checkbox.checked;
+// Utility Functions
+function formatTimeAgo(timestamp) {
+    try {
+        const now = new Date();
+        const commentTime = new Date(timestamp);
+        const diffMs = now - commentTime;
+        const diffSec = Math.floor(diffMs / 1000);
+        const diffMin = Math.floor(diffSec / 60);
+        const diffHour = Math.floor(diffMin / 60);
+        const diffDay = Math.floor(diffHour / 24);
+        const diffMonth = Math.floor(diffDay / 30);
+        const diffYear = Math.floor(diffDay / 365);
 
-                    // Update button appearance
-                    if (checkbox.checked) {
-                        this.classList.add('active');
-                        this.innerHTML = '✓ ' + this.textContent.replace('✓ ', '');
-                    } else {
-                        this.classList.remove('active');
-                        this.innerHTML = this.textContent.replace('✓ ', '');
-                    }
+        if (diffYear > 0) return `${diffYear}y ago`;
+        if (diffMonth > 0) return `${diffMonth}mo ago`;
+        if (diffDay > 0) return `${diffDay}d ago`;
+        if (diffHour > 0) return `${diffHour}h ago`;
+        if (diffMin > 0) return `${diffMin}m ago`;
+        return 'Just now';
+    } catch (e) {
+        return 'Recently';
+    }
+}
 
-                    // Submit the form
-                    setTimeout(() => {
-                        filterForm.submit();
-                    }, 200);
-                }
+function addCharCounter(textarea) {
+    const counter = document.createElement('div');
+    counter.className = 'char-counter small text-muted text-end mt-1';
+    textarea.parentNode.insertBefore(counter, textarea.nextSibling);
+    
+    function updateCounter() {
+        const length = textarea.value.length;
+        counter.textContent = `${length}/1000`;
+        counter.classList.remove('text-warning', 'text-danger');
+        if (length > 800 && length <= 950) {
+            counter.classList.add('text-warning');
+        } else if (length > 950) {
+            counter.classList.add('text-danger');
+        }
+    }
+    
+    textarea.addEventListener('input', updateCounter);
+    updateCounter();
+}
+
+// Comment Management Functions
+function createLoadingIndicator() {
+    return `
+        <div id="commentsLoading" class="text-center py-3">
+            <div class="spinner-border spinner-border-sm text-secondary" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+            <small class="text-muted ml-2">Loading...</small>
+        </div>
+    `;
+}
+
+function renderComments(comments) {
+    const commentsSection = document.getElementById('modalCommentsSection');
+    
+    if (!comments || !Array.isArray(comments) || comments.length === 0) {
+        commentsSection.innerHTML = `
+            <div class="text-center text-muted py-4">
+                <small>No comments yet. Be the first to comment!</small>
+            </div>
+        `;
+        return;
+    }
+    
+    let commentsHTML = '';
+    
+    function renderComment(comment, depth = 0) {
+        const timeAgo = comment.formatted_time || formatTimeAgo(comment.timestamp);
+        const avatarInitial = comment.username ? comment.username[0].toUpperCase() : '?';
+        const isCommentOwner = comment.username === currentUsername;
+        const maxDepth = 5; // Maximum reply depth
+        const indentClass = depth > 0 ? `ml-${Math.min(depth * 2, 8)}` : '';
+        
+        let commentHTML = `
+            <div class="comment-item mb-2 ${indentClass}" data-comment-id="${comment.comment_id}" data-depth="${depth}">
+                <div class="d-flex">
+                    <div class="mr-2 flex-shrink-0">
+                        <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center" 
+                            style="width: ${32 - depth * 4}px; height: ${32 - depth * 4}px; font-size: ${0.8 - depth * 0.1}rem;">
+                            ${avatarInitial}
+                        </div>
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="bg-light rounded p-2">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <span class="font-weight-bold small">${comment.username || 'Unknown User'}</span>
+                                <span class="text-muted comment-time" style="font-size: 0.7rem;">${timeAgo}</span>
+                            </div>
+                            
+                            <p class="mb-0 small comment-content" style="white-space: pre-wrap;">${comment.content}</p>
+                            
+                            <div class="edit-comment-form d-none mt-2">
+                                <textarea class="form-control form-control-sm edit-comment-textarea" rows="2" maxlength="1000">${comment.content}</textarea>
+                                <div class="d-flex justify-content-end mt-2">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary cancel-edit-btn mr-1">Cancel</button>
+                                    <button type="button" class="btn btn-sm btn-primary save-edit-btn" data-comment-id="${comment.comment_id}">Save</button>
+                                </div>
+                            </div>
+                            
+                            <div class="comment-actions mt-2">
+                                <button class="btn btn-link btn-sm p-0 text-muted reply-btn" 
+                                    style="font-size: 0.7rem;" 
+                                    data-comment-id="${comment.comment_id}"
+                                    data-username="${comment.username}">
+                                    Reply
+                                </button>
+                                
+                                ${isCommentOwner ? `
+                                    <button class="btn btn-link btn-sm p-0 text-muted ml-2 edit-comment-btn" 
+                                        style="font-size: 0.7rem;" data-comment-id="${comment.comment_id}">
+                                        Edit
+                                    </button>
+                                    <button class="btn btn-link btn-sm p-0 text-danger ml-2 delete-comment-btn" 
+                                        style="font-size: 0.7rem;" data-comment-id="${comment.comment_id}">
+                                        Delete
+                                    </button>
+                                ` : ''}
+                                
+                                ${comment.reply_count > 0 ? `
+                                    <button class="btn btn-link btn-sm p-0 text-primary ml-2 view-replies-btn" 
+                                        style="font-size: 0.7rem;" 
+                                        data-comment-id="${comment.comment_id}"
+                                        data-expanded="false">
+                                        ${comment.reply_count} ${comment.reply_count === 1 ? 'reply' : 'replies'} ▼
+                                    </button>
+                                    <div id="replies-${comment.comment_id}" class="replies-container"></div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        return commentHTML;
+    }
+    
+    function buildCommentThread(comment, depth = 0) {
+        let html = renderComment(comment, depth);
+        
+        // Render replies if any
+        if (comment.replies && comment.replies.length > 0) {
+            html += '<div class="replies-container">';
+            comment.replies.forEach(reply => {
+                html += buildCommentThread(reply, depth + 1);
             });
+            html += '</div>';
+        }
+        
+        return html;
+    }
+    
+    comments.forEach(comment => {
+        commentsHTML += buildCommentThread(comment);
+    });
+    
+    commentsSection.innerHTML = commentsHTML;
+    attachCommentEventListeners();
+}
+
+function attachCommentEventListeners() {
+    // Edit button
+    document.querySelectorAll('.edit-comment-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const commentId = this.getAttribute('data-comment-id');
+            enableCommentEdit(commentId);
         });
     });
-</script>
+    
+    // Delete button
+    document.querySelectorAll('.delete-comment-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const commentId = this.getAttribute('data-comment-id');
+            if (confirm('Are you sure you want to delete this comment?')) {
+                deleteComment(commentId);
+            }
+        });
+    });
+    
+    // Reply button
+    document.querySelectorAll('.reply-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const commentId = this.getAttribute('data-comment-id');
+            const username = this.getAttribute('data-username');
+            setReplyMode(commentId, username);
+        });
+    });
+    
+    // View replies button
+    document.querySelectorAll('.view-replies-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const commentId = this.getAttribute('data-comment-id');
+            const expanded = this.getAttribute('data-expanded') === 'true';
+            
+            if (!expanded) {
+                loadReplies(commentId, this);
+            } else {
+                const repliesContainer = document.getElementById(`replies-${commentId}`);
+                repliesContainer.innerHTML = '';
+                this.setAttribute('data-expanded', 'false');
+                this.innerHTML = this.innerHTML.replace('▲', '▼');
+            }
+        });
+    });
+    
+    // Cancel edit button
+    document.querySelectorAll('.cancel-edit-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const commentItem = this.closest('.comment-item');
+            disableCommentEdit(commentItem);
+        });
+    });
+    
+    // Save edit button
+    document.querySelectorAll('.save-edit-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const commentId = this.getAttribute('data-comment-id');
+            const commentItem = this.closest('.comment-item');
+            const textarea = commentItem.querySelector('.edit-comment-textarea');
+            const newContent = textarea.value.trim();
+            
+            if (newContent) {
+                updateComment(commentId, newContent, commentItem);
+            } else {
+                alert('Comment cannot be empty');
+            }
+        });
+    });
+}
 
+function setReplyMode(commentId, username) {
+    replyingToCommentId = commentId;
+    replyingToUsername = username;
+    
+    // Update comment input placeholder
+    const commentInput = document.getElementById('commentInput');
+    commentInput.placeholder = `Replying to ${username}...`;
+    commentInput.focus();
+    
+    // Show reply indicator
+    const replyIndicator = document.createElement('div');
+    replyIndicator.id = 'replyIndicator';
+    replyIndicator.className = 'alert alert-info alert-dismissible fade show py-1 px-2 mb-2';
+    replyIndicator.innerHTML = `
+        <small>Replying to <strong>${username}</strong></small>
+        <button type="button" class="close p-1 cancel-reply-btn" aria-label="Cancel reply">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    `;
+    
+    const commentForm = document.getElementById('commentForm');
+    commentForm.parentNode.insertBefore(replyIndicator, commentForm);
+    
+    // Add cancel reply event listener
+    document.querySelector('.cancel-reply-btn').addEventListener('click', cancelReplyMode);
+}
+
+function cancelReplyMode() {
+    replyingToCommentId = null;
+    replyingToUsername = null;
+    
+    // Remove reply indicator
+    const replyIndicator = document.getElementById('replyIndicator');
+    if (replyIndicator) {
+        replyIndicator.remove();
+    }
+    
+    // Reset comment input
+    const commentInput = document.getElementById('commentInput');
+    commentInput.placeholder = 'Add a comment...';
+    commentInput.value = '';
+}
+
+function enableCommentEdit(commentId) {
+    const commentItem = document.querySelector(`.comment-item[data-comment-id="${commentId}"]`);
+    if (!commentItem) return;
+    
+    const contentElement = commentItem.querySelector('.comment-content');
+    const editForm = commentItem.querySelector('.edit-comment-form');
+    const textarea = commentItem.querySelector('.edit-comment-textarea');
+    
+    contentElement.classList.add('d-none');
+    editForm.classList.remove('d-none');
+    
+    if (!textarea.nextElementSibling || !textarea.nextElementSibling.classList.contains('char-counter')) {
+        addCharCounter(textarea);
+    }
+    
+    textarea.focus();
+    textarea.select();
+}
+
+function disableCommentEdit(commentItem) {
+    const contentElement = commentItem.querySelector('.comment-content');
+    const editForm = commentItem.querySelector('.edit-comment-form');
+    
+    contentElement.classList.remove('d-none');
+    editForm.classList.add('d-none');
+}
+
+function updateComment(commentId, newContent, commentItem) {
+    if (newContent.length > 1000) {
+        alert('Comment is too long (max 1000 characters)');
+        return;
+    }
+    
+    const saveBtn = commentItem.querySelector('.save-edit-btn');
+    const originalText = saveBtn.textContent;
+    saveBtn.textContent = 'Saving...';
+    saveBtn.disabled = true;
+    
+    fetch(`/update_comment/${commentId}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({ content: newContent })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const contentElement = commentItem.querySelector('.comment-content');
+            contentElement.textContent = newContent;
+            disableCommentEdit(commentItem);
+            
+            const timeElement = commentItem.querySelector('.comment-time');
+            if (timeElement && data.comment && data.comment.formatted_time) {
+                timeElement.textContent = data.comment.formatted_time;
+            }
+            
+            const successMsg = document.createElement('div');
+            successMsg.className = 'alert alert-success alert-dismissible fade show py-1 px-2 mt-2';
+            successMsg.innerHTML = `
+                <small>Comment updated successfully!</small>
+                <button type="button" class="close p-1" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            `;
+            commentItem.querySelector('.comment-actions').before(successMsg);
+            
+            setTimeout(() => {
+                if (successMsg.parentNode) {
+                    successMsg.remove();
+                }
+            }, 3000);
+        } else {
+            alert('Failed to update comment: ' + (data.error || 'Unknown error'));
+        }
+    })
+    .catch(error => {
+        console.error('Error updating comment:', error);
+        alert('An error occurred while updating comment');
+    })
+    .finally(() => {
+        saveBtn.textContent = originalText;
+        saveBtn.disabled = false;
+    });
+}
+
+function loadReplies(parentCommentId, buttonElement) {
+    const repliesContainer = document.getElementById(`replies-${parentCommentId}`);
+    repliesContainer.innerHTML = createLoadingIndicator();
+    
+    fetch(`/get_replies/${parentCommentId}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success && data.replies.length > 0) {
+            let repliesHTML = '';
+            data.replies.forEach(reply => {
+                repliesHTML += renderComment(reply, 1); // Depth 1 for replies
+            });
+            repliesContainer.innerHTML = repliesHTML;
+            attachCommentEventListeners();
+            
+            buttonElement.setAttribute('data-expanded', 'true');
+            buttonElement.innerHTML = buttonElement.innerHTML.replace('▼', '▲');
+        } else {
+            repliesContainer.innerHTML = `
+                <div class="text-center text-muted py-2">
+                    <small>No replies found</small>
+                </div>
+            `;
+        }
+    })
+    .catch(error => {
+        console.error('Error loading replies:', error);
+        repliesContainer.innerHTML = `
+            <div class="text-center text-danger py-2">
+                <small>Error loading replies</small>
+            </div>
+        `;
+    });
+}
+
+function loadComments(postId) {
+    const commentsSection = document.getElementById('modalCommentsSection');
+    commentsSection.innerHTML = createLoadingIndicator();
+    
+    fetch(`/get_comments/${postId}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Comments data received:', data); // Debug log
+        if (data.success) {
+            renderComments(data.comments);
+            document.getElementById('modalCommentsCount').textContent = data.comment_count;
+            
+            if (currentPostCard) {
+                const commentCountSpan = currentPostCard.querySelector('.comment-count');
+                if (commentCountSpan) {
+                    commentCountSpan.textContent = data.comment_count;
+                }
+            }
+        } else {
+            commentsSection.innerHTML = `
+                <div class="text-center text-danger py-4">
+                    <small>Failed to load comments: ${data.error || 'Unknown error'}</small>
+                </div>
+            `;
+        }
+    })
+    .catch(error => {
+        console.error('Error loading comments:', error);
+        commentsSection.innerHTML = `
+            <div class="text-center text-danger py-4">
+                <small>Error loading comments: ${error.message}</small>
+            </div>
+        `;
+    });
+}
+
+function deleteComment(commentId) {
+    if (!confirm('Are you sure you want to delete this comment?')) return;
+    
+    fetch(`/delete_comment/${commentId}`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const commentElement = document.querySelector(`.comment-item[data-comment-id="${commentId}"]`);
+            if (commentElement) commentElement.remove();
+            
+            const newCount = parseInt(document.getElementById('modalCommentsCount').textContent) - 1;
+            document.getElementById('modalCommentsCount').textContent = newCount;
+            
+            if (currentPostCard) {
+                const commentCountSpan = currentPostCard.querySelector('.comment-count');
+                if (commentCountSpan) {
+                    commentCountSpan.textContent = newCount;
+                }
+            }
+            
+            const imageElements = document.querySelectorAll(`.clickable-image[data-post-id="${currentPostId}"]`);
+            imageElements.forEach(img => {
+                img.setAttribute('data-comments', newCount);
+            });
+            
+            const commentsSection = document.getElementById('modalCommentsSection');
+            if (commentsSection.querySelectorAll('.comment-item').length === 0) {
+                commentsSection.innerHTML = `
+                    <div class="text-center text-muted py-4">
+                        <small>No comments yet. Be the first to comment!</small>
+                    </div>
+                `;
+            }
+        } else {
+            alert('Failed to delete comment: ' + (data.error || 'Unknown error'));
+        }
+    })
+    .catch(error => {
+        console.error('Error deleting comment:', error);
+        alert('An error occurred while deleting comment');
+    });
+}
+
+// Main Event Listeners
+document.addEventListener('DOMContentLoaded', function () {
+    const filterForm = document.getElementById('filterForm');
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    const clickableImages = document.querySelectorAll('.clickable-image');
+    const commentButtons = document.querySelectorAll('.open-comment-modal-btn');
+    const imageModal = new bootstrap.Modal(document.getElementById('imageModal'));
+    const commentForm = document.getElementById('commentForm');
+    const commentInput = document.getElementById('commentInput');
+    const commentSubmitBtn = document.getElementById('commentSubmitBtn');
+
+    function openPostModal(element) {
+        const imageUrl = element.getAttribute('data-image');
+        const username = element.getAttribute('data-username');
+        const userInitial = element.getAttribute('data-user-initial');
+        const timestamp = element.getAttribute('data-timestamp');
+        const content = element.getAttribute('data-content');
+        const likes = element.getAttribute('data-likes');
+        const comments = element.getAttribute('data-comments');
+        const category = element.getAttribute('data-category');
+        const postId = element.getAttribute('data-post-id');
+        const liked = element.getAttribute('data-liked') === 'true';
+        
+        currentPostId = postId;
+        currentPostCard = element.closest('.card');
+        
+        const modalImage = document.getElementById('modalImage');
+        const imageColumn = document.querySelector('.col-md-8.col-lg-8.bg-dark');
+        
+        if (imageUrl && imageUrl.trim() !== '') {
+            modalImage.src = imageUrl;
+            modalImage.style.display = 'block';
+            imageColumn.style.display = 'flex';
+        } else {
+            modalImage.style.display = 'none';
+            imageColumn.style.display = 'none';
+        }
+        
+        document.getElementById('modalUsername').textContent = username;
+        document.getElementById('modalUserInitial').textContent = userInitial;
+        document.getElementById('modalTimestamp').textContent = timestamp;
+        document.getElementById('modalTimeAgo').textContent = timestamp;
+        document.getElementById('modalContent').textContent = content;
+        document.getElementById('modalLikes').textContent = likes;
+        document.getElementById('modalCommentsCount').textContent = comments;
+        
+        const categoryBadge = document.getElementById('modalCategory');
+        if (category && category.trim() !== '') {
+            categoryBadge.style.display = 'inline-block';
+            categoryBadge.textContent = category.charAt(0).toUpperCase() + category.slice(1);
+        } else {
+            categoryBadge.style.display = 'none';
+        }
+        
+        const modalLikeBtn = document.querySelector('.modal-like-btn');
+        const modalLikeIcon = document.getElementById('modalLikeIcon');
+        if (modalLikeBtn && postId) {
+            modalLikeBtn.setAttribute('data-post-id', postId);
+            modalLikeBtn.setAttribute('data-liked', liked.toString());
+            modalLikeIcon.textContent = liked ? '❤️' : '🤍';
+        }
+        
+        loadComments(postId);
+        commentInput.value = '';
+        commentSubmitBtn.disabled = true;
+        cancelReplyMode(); // Clear any previous reply mode
+        imageModal.show();
+    }
+
+    // Filter buttons
+    filterButtons.forEach(button => {
+        button.addEventListener('click', function () {
+            const filterValue = this.getAttribute('data-filter');
+            const checkbox = document.getElementById(filterValue);
+
+            if (checkbox) {
+                checkbox.checked = !checkbox.checked;
+                this.classList.toggle('active');
+                const hasCheck = this.innerHTML.includes('✓');
+                this.innerHTML = (checkbox.checked ? '✓ ' : '') + this.textContent.replace('✓ ', '');
+                setTimeout(() => filterForm.submit(), 200);
+            }
+        });
+    });
+
+    // Image click handlers
+    clickableImages.forEach(image => {
+        image.addEventListener('click', function () {
+            openPostModal(this);
+        });
+    });
+
+    // Comment button handlers
+    commentButtons.forEach(button => {
+        button.addEventListener('click', function () {
+            openPostModal(this);
+        });
+    });
+
+    // Comment input validation
+    commentInput.addEventListener('input', function() {
+        commentSubmitBtn.disabled = this.value.trim() === '';
+    });
+
+    // Comment/Reply form submission
+    commentForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        if (!currentPostId) {
+            alert('No post selected');
+            return;
+        }
+        
+        const content = commentInput.value.trim();
+        
+        if (!content) {
+            alert('Please enter a comment');
+            return;
+        }
+        
+        if (content.length > 1000) {
+            alert('Comment is too long (max 1000 characters)');
+            return;
+        }
+        
+        commentSubmitBtn.disabled = true;
+        commentInput.disabled = true;
+        const originalText = commentSubmitBtn.textContent;
+        commentSubmitBtn.textContent = replyingToCommentId ? 'Replying...' : 'Posting...';
+        
+        let url, method, body;
+        
+        if (replyingToCommentId) {
+            // This is a reply
+            url = `/add_reply/${currentPostId}/${replyingToCommentId}`;
+            method = 'POST';
+            body = { content: content };
+        } else {
+            // This is a regular comment
+            url = `/add_comment/${currentPostId}`;
+            method = 'POST';
+            body = { content: content };
+        }
+        
+        fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify(body)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Reload comments to show new comment/reply
+                loadComments(currentPostId);
+                commentInput.value = '';
+                cancelReplyMode(); // Clear reply mode after successful submission
+                setTimeout(() => commentInput.focus(), 100);
+            } else {
+                alert('Failed to post: ' + (data.error || 'Unknown error'));
+            }
+        })
+        .catch(error => console.error('Error:', error))
+        .finally(() => {
+            commentSubmitBtn.disabled = false;
+            commentInput.disabled = false;
+            commentSubmitBtn.textContent = originalText;
+        });
+    });
+
+    // Like buttons
+    document.addEventListener('click', function (e) {
+        if (e.target.closest('.like-btn')) {
+            const likeBtn = e.target.closest('.like-btn');
+            toggleLike(likeBtn);
+        }
+        
+        if (e.target.closest('.modal-like-btn')) {
+            const modalLikeBtn = e.target.closest('.modal-like-btn');
+            const postId = modalLikeBtn.getAttribute('data-post-id');
+            const regularLikeBtn = document.querySelector(`.like-btn[data-post-id="${postId}"]`);
+            if (regularLikeBtn) toggleLike(regularLikeBtn);
+        }
+        
+        if (e.target.closest('.modal-comment-btn')) {
+            commentInput.focus();
+        }
+    });
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') {
+            imageModal.hide();
+            cancelReplyMode();
+        }
+        
+        if ((event.ctrlKey || event.metaKey) && event.key === 'Enter' && commentInput === document.activeElement) {
+            commentForm.dispatchEvent(new Event('submit'));
+        }
+        
+        if (event.key === 'Escape') {
+            const activeEditForm = document.querySelector('.edit-comment-form:not(.d-none)');
+            if (activeEditForm) {
+                const commentItem = activeEditForm.closest('.comment-item');
+                if (commentItem) {
+                    disableCommentEdit(commentItem);
+                }
+            }
+        }
+    });
+
+    // Modal background click handler
+    document.getElementById('imageModal').addEventListener('click', function (event) {
+        if (event.target === this) {
+            imageModal.hide();
+        }
+    });
+    
+    // Add CSS for reply indentation
+    const style = document.createElement('style');
+    style.textContent = `
+        .comment-item.ml-2 { margin-left: 0.5rem; }
+        .comment-item.ml-4 { margin-left: 1rem; }
+        .comment-item.ml-6 { margin-left: 1.5rem; }
+        .comment-item.ml-8 { margin-left: 2rem; }
+        .reply-indicator {
+            border-left: 3px solid #007bff;
+            padding-left: 10px;
+            margin-left: 5px;
+        }
+        .char-counter.text-warning {
+            color: #ffc107 !important;
+        }
+        .char-counter.text-danger {
+            color: #dc3545 !important;
+            font-weight: bold;
+        }
+        .edit-comment-textarea {
+            resize: vertical;
+            min-height: 80px;
+            max-height: 200px;
+        }
+        .replies-container {
+            margin-left: 20px;
+            border-left: 2px solid #dee2e6;
+            padding-left: 10px;
+        }
+    `;
+    document.head.appendChild(style);
+});
+
+// Toggle like function (keep your existing toggleLike function)
+function toggleLike(likeBtn) {
+    // Your existing toggleLike function
+    const postId = likeBtn.getAttribute('data-post-id');
+    const isLiked = likeBtn.getAttribute('data-liked') === 'true';
+
+    fetch(`/like_post/${postId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const newIsLiked = data.liked;
+            
+            likeBtn.setAttribute('data-liked', newIsLiked.toString());
+            if (newIsLiked) {
+                likeBtn.classList.remove('btn-outline-primary');
+                likeBtn.classList.add('btn-danger');
+            } else {
+                likeBtn.classList.remove('btn-danger');
+                likeBtn.classList.add('btn-outline-primary');
+            }
+
+            const likeCountSpan = likeBtn.querySelector('.like-count');
+            if (likeCountSpan) likeCountSpan.textContent = data.like_count;
+            
+            const modalLikeBtn = document.querySelector(`.modal-like-btn[data-post-id="${postId}"]`);
+            const modalLikeIcon = document.getElementById('modalLikeIcon');
+            if (modalLikeBtn) {
+                modalLikeBtn.setAttribute('data-liked', newIsLiked.toString());
+                modalLikeIcon.textContent = newIsLiked ? '❤️' : '🤍';
+            }
+            
+            const modalLikes = document.getElementById('modalLikes');
+            if (modalLikes) modalLikes.textContent = data.like_count;
+            
+            document.querySelectorAll(`.clickable-image[data-post-id="${postId}"]`).forEach(img => {
+                img.setAttribute('data-likes', data.like_count);
+                img.setAttribute('data-liked', newIsLiked.toString());
+            });
+        }
+    })
+    .catch(error => console.error('Error:', error))
+    .finally(() => {
+        likeBtn.disabled = false;
+        const isNowLiked = likeBtn.getAttribute('data-liked') === 'true';
+        const likeCount = likeBtn.querySelector('.like-count').textContent;
+        likeBtn.innerHTML = `<span class="mr-1">${isNowLiked ? '❤️' : '🤍'}</span> <span class="like-count">${likeCount}</span>`;
+    });
+}
+</script>
 {% endblock %}

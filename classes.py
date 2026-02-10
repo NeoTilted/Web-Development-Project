@@ -1,3 +1,5 @@
+from datetime import datetime
+
 class User:
     def __init__(self, user_id, username, password, user_type, email=None, 
                  birth_date=None, age_group=None, bio=None, avatar_url=None):
@@ -25,6 +27,13 @@ class User:
         return self.__password
     def get_user_type(self):
         return self.__user_type
+    #WONNNNNNNNNGGGGGGGGGGGGGGGGGGFFFFFFFFFFFFFFFFF (SENIOR/YOUTH)
+    def get_user_type_label(self):
+        if self.__user_type == 'S':
+         return 'Senior'
+        elif self.__user_type == 'Y':
+         return 'Youth'
+        return ''
     def get_email(self):
         return self.__email
     def get_birth_date(self):
@@ -34,13 +43,11 @@ class User:
     def get_bio(self):
         return self.__bio
     def get_avatar_url(self):
-        return self.__avatar_url if self.__avatar_url else "/static/img/default-avatar.png"
+        return self.__avatar_url
     def get_created_at(self):
         return self.__created_at
     def get_following(self):
         return self.__following
-    def get_user_type_label(self):
-        return "Senior" if self.get_user_type() == 'S' else "Youth"
     def get_followers(self):
         return self.__followers
     def get_pending_follow_requests(self):
@@ -112,7 +119,7 @@ class User:
 
 class Post:
     def __init__(self, post_id, content, user_id, timestamp, likes=0, 
-                 comments=None, post_category=None, post_prompt_id=None):
+                 comments=None, post_category=None, post_prompt_id=None, image_url=None):
         self.__post_id = post_id
         self.__content = content
         self.__user_id = user_id
@@ -121,6 +128,7 @@ class Post:
         self.__comments = comments if comments is not None else []
         self.__post_category = post_category  # 'youth' or 'senior'
         self.__post_prompt_id = post_prompt_id  # ID of the prompt that inspired this post
+        self.__image_url = image_url
         
     # Accessor methods
     def get_post_id(self):
@@ -139,6 +147,8 @@ class Post:
         return self.__post_category
     def get_post_prompt_id(self):
         return self.__post_prompt_id
+    def get_image_url(self):
+        return self.__image_url
     
     # Mutator methods
     def set_post_id(self, post_id):
@@ -162,7 +172,30 @@ class Post:
         self.__post_category = post_category
     def set_post_prompt_id(self, post_prompt_id):
         self.__post_prompt_id = post_prompt_id
+    def set_image_url(self, image_url):
+        self.__image_url = image_url
     
+    def get_formatted_timestamp(self):
+        """Return formatted timestamp string"""
+        timestamp = self.get_timestamp()
+        if not timestamp:
+            return "Recently"
+        
+        try:
+            if isinstance(timestamp, str):
+                # Parse SQLite datetime string
+                dt = datetime.strptime(timestamp, '%Y-%m-%d %H:%M:%S')
+                return dt.strftime('%B %d, %Y at %I:%M %p')
+            elif hasattr(timestamp, 'strftime'):
+                # Already a datetime object
+                return timestamp.strftime('%B %d, %Y at %I:%M %p')
+            else:
+                # Return as-is
+                return str(timestamp)
+        except Exception as e:
+            print(f"Error formatting timestamp: {e}")
+            return str(timestamp)[:10]  # Just show date part
+
     @classmethod
     def from_database_row(cls, row_data):
         """Create a Post object from database row data"""
@@ -173,7 +206,8 @@ class Post:
             timestamp=row_data[3],
             likes=row_data[4] if len(row_data) > 4 else 0,
             post_category=row_data[5] if len(row_data) > 5 else None,
-            post_prompt_id=row_data[6] if len(row_data) > 6 else None
+            post_prompt_id=row_data[6] if len(row_data) > 6 else None,
+            image_url=row_data[7] if len(row_data) > 7 else None  # Add this
         )
 
 

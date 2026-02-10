@@ -1,96 +1,203 @@
 {% extends "base.html" %}
-{% block title %}Search Results{% endblock %}
+{% block title %}Search Results - Bond Buddies{% endblock %}
 
 {% block content %}
-<!-- HEADER SECTION: Main navigation with logo, search, and mobile menu -->
-<header class="nav-bar">
-    <div class="d-flex align-items-center justify-content-between w-100 px-3"> <!-- Added px-3 for consistent spacing -->
-        <!-- Logo -->
-        <a href="{{ url_for('home') }}" class="logo-link">
-            <img src="{{ url_for('static', filename='img/Logo.png') }}" alt="Logo" class="logo-img" />
-        </a>
+<!-- ===================== HEADER SECTION ===================== -->
+<!-- Main navigation with logo, search, and mobile menu -->
+<div class="container-fluid px-0">
+    <header class="nav-bar">
+        <div class="container-fluid px-0">
+            <!-- NAVIGATION INNER CONTAINER: Aligns logo, search, and hamburger -->
+            <div class="d-flex align-items-center justify-content-between nav-inner">
+                
+                <!-- LOGO SECTION: Clickable logo that returns to home -->
+                <a href="{{ url_for('home') }}" class="logo-link">
+                    <img src="{{ url_for('static', filename='img/Logo.png') }}" alt="Bond Buddies Logo" class="logo-img" />
+                </a>
 
-        <!-- Search -->
-        <div class="search-container flex-grow-1 mx-3">
-            <form class="form-inline d-flex justify-content-center" action="{{ url_for('search') }}" method="GET">
-                <div class="input-group w-100">
-                    <input type="search" name="query" value="{{ query }}" placeholder="Search" class="form-control">
-                    <div class="input-group-append">
-                        <button class="btn btn-outline-light" type="submit">🔍</button>
-                    </div>
-                </div>
-            </form>
-        </div>
-
-        <!-- Mobile Menu Button -->
-        <button class="btn btn-dark hamburger-btn btn-size" type="button" id="hamburgerBtn">
-            ☰
-        </button>
-    </div>
-</header>
-<!-- MAIN CONTENT: Displays search results -->
-<div class="container mt-4">
-    <!-- PAGE TITLE: Shows the search query -->
-    <h4>Results for "{{ query }}"</h4>
-    <hr>
-    
-    <!-- SEARCH RESULTS CONTAINER -->
-    <div class="row">
-        {% if users %}
-            <!-- USER RESULTS LOOP: Display each matching user -->
-            {% for user in users %}
-            <div class="col-12 mb-3"> 
-                <!-- USER CARD: Individual user result card -->
-                <div class="card p-3 shadow-sm">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <!-- USER INFORMATION: Username and type -->
-                        <div class="pr-5"> 
-                            <h5 class="mb-2" style="letter-spacing: 0.5px;">{{ user.get_username() }}</h5>
-                            
-                            <!-- USER TYPE DISPLAY: Converts 'S'/'Y' to readable text -->
-                            <span class="text-muted">
-                                {% if user.get_user_type() == 'S' %}
-                                    Senior
-                                {% elif user.get_user_type() == 'Y' %}
-                                    Youth
-                                {% else %}
-                                    {{ user.get_user_type() }}
-                                {% endif %}
-                            </span>
+                <!-- SEARCH BAR SECTION: Centered search form -->
+                <div class="search-container">
+                    <!-- SEARCH FORM: Submits to Flask search route -->
+                    <form class="form-inline m-0"
+                          action="{{ url_for('search') }}"
+                          method="GET">
+                        <div class="input-group">
+                            <!-- SEARCH INPUT: Pre-filled with current query -->
+                            <input type="search"
+                                   name="query"
+                                   placeholder="Search users"
+                                   class="form-control"
+                                   value="{{ query }}" />
+                            <div class="input-group-append">
+                                <!-- SEARCH BUTTON: Submits the form -->
+                                <button class="btn btn-outline-light" type="submit">🔍</button>
+                            </div>
                         </div>
-                        
-                        <!-- PROFILE LINK: Button to view user's full profile -->
-                        <a href="{{ url_for('profile', user_id=user.get_user_id()) }}" class="btn btn-primary">View Profile</a>
-                    </div>
+                    </form>
                 </div>
+
+                <!-- HAMBURGER MENU BUTTON: Mobile navigation toggle -->
+                <button class="btn btn-dark hamburger-btn btn-size" type="button">☰</button>
             </div>
-            {% endfor %}
-        {% else %}
-            <!-- NO RESULTS MESSAGE: Displayed when search returns empty -->
-            <p class="ml-3">No users found.</p>
-        {% endif %}
-    </div>
+        </div>
+    </header>
 </div>
 
-<!-- MOBILE NAVIGATION OVERLAY: Background dimmer for mobile menu -->
+<!-- ===================== MOBILE NAVIGATION OVERLAY ===================== -->
+<!-- Background dimmer that appears when mobile menu is open -->
 <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-<!-- MOBILE SIDEBAR NAVIGATION: Hidden menu for mobile devices -->
+<!-- ===================== MOBILE SIDEBAR NAVIGATION ===================== -->
+<!-- Hidden menu for mobile devices -->
 <nav id="mobile-nav" aria-label="Main navigation">
     <!-- CLOSE BUTTON: Closes the mobile menu -->
     <button class="menu-close-btn" aria-label="Close menu">&times;</button>
     
-    <!-- NAVIGATION LINKS: App navigation menu -->
+    <!-- NAVIGATION LINKS LIST: App navigation menu -->
     <ul class="nav-list list-unstyled mb-0">
         <li><a href="{{ url_for('home') }}" class="nav-link text-white">Home</a></li>
-        <li><a href="" class="nav-link text-white">Friends</a></li>
-        <li><a href="" class="nav-link text-white">Create</a></li>
-        <li><a href="" class="nav-link text-white">Profile</a></li>
-        <li><hr class="bg-light my-3"></li> <!-- Separator line -->
-        
-        <!-- APP SETTINGS AND LOGOUT -->
-        <li><a href="" class="nav-link text-white">Settings</a></li>
+        <li><a href=" {{ url_for('explore') }}" class="nav-link text-white">Explore</a></li>
+        <li><a href="{{ url_for('createPost') }}" class="nav-link text-white">Create</a></li>
+        <li><a href="{{ url_for('events') }}" class="nav-link text-white">Events</a></li>
+        <li><a href="{{ url_for('profile', user_id=session['user_id']) }}" class="nav-link text-white">Profile</a></li>
+        <!-- SEPARATOR: Visual divider between main nav and account actions -->
+        <li><hr class="bg-light my-3"/></li>
         <li><a href="{{ url_for('logout') }}" class="nav-link text-danger">Logout</a></li>
     </ul>
 </nav>
+
+<!-- ===================== MAIN CONTENT AREA ===================== -->
+<!-- Container for search results display -->
+<main class="container mt-4">
+    
+    <!-- PAGE HEADER SECTION: Shows search query and result count -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <!-- SEARCH QUERY DISPLAY: Shows what the user searched for -->
+            <h1 class="display-5 mb-2">Search Results</h1>
+            <p class="lead text-muted">Showing results for: <strong>"{{ query }}"</strong></p>
+            <hr class="my-3">
+        </div>
+    </div>
+    
+    <!-- SEARCH RESULTS SECTION -->
+    <div class="row">
+        {% if users %}
+            <!-- RESULTS COUNT: Shows number of users found -->
+            <div class="col-12 mb-3">
+                <p class="text-muted">
+                    Found <strong>{{ users|length }}</strong> user{% if users|length != 1 %}s{% endif %}
+                </p>
+            </div>
+            
+            <!-- USER RESULTS LOOP: Display each matching user -->
+            {% for user in users %}
+            <div class="col-12 mb-3">
+                <!-- USER RESULT CARD: Individual user result -->
+                <div class="card p-3 shadow-sm border-light">
+                    <div class="d-flex justify-content-between align-items-center">
+                        
+                        <!-- USER INFO COLUMN: Displays username and user type -->
+                        <div class="flex-grow-1 pr-4">
+                            <!-- USERNAME: Primary identifier -->
+                            <h5 class="mb-2 username-bold">{{ user.get_username() }}</h5>
+                            
+                            <!-- USER TYPE BADGE: Visual indicator of user type -->
+                            <div class="d-inline-block">
+                                <span class="badge user-type-badge 
+                                    {% if user.get_user_type() == 'S' %}bg-info
+                                    {% elif user.get_user_type() == 'Y' %}bg-success
+                                    {% else %}bg-secondary{% endif %}">
+                                    {% if user.get_user_type() == 'S' %}
+                                        👴 Senior
+                                    {% elif user.get_user_type() == 'Y' %}
+                                        👦 Youth
+                                    {% else %}
+                                        {{ user.get_user_type() }}
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <!-- ACTION BUTTON COLUMN: Profile viewing -->
+                        <div class="flex-shrink-0">
+                            <!-- VIEW PROFILE BUTTON: Links to user's full profile -->
+                            <a href="{{ url_for('profile', user_id=user.get_user_id()) }}" 
+                               class="btn btn-primary btn-sm view-profile-btn">
+                                View Profile
+                            </a>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            
+        {% else %}
+            <!-- NO RESULTS STATE: Displayed when search returns empty -->
+            <div class="col-12">
+                <!-- EMPTY STATE CARD: Friendly message for no results -->
+                <div class="card p-5 text-center shadow-sm border-light">
+                    <div class="card-body">
+                        <!-- NO RESULTS ICON: Visual indicator -->
+                        <div class="mb-4 no-results-icon">🔍</div>
+                        
+                        <!-- NO RESULTS MESSAGE -->
+                        <h4 class="card-title mb-3">No Users Found</h4>
+                        <p class="card-text text-muted mb-4">
+                            No users match your search for <strong>"{{ query }}"</strong>.
+                        </p>
+                        
+                        <!-- SEARCH TIPS: Helpful suggestions -->
+                        <div class="alert alert-light border">
+                            <small class="text-muted">
+                                <strong>Search tips:</strong> Try using a different username, 
+                                or browse all users from the home page.
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</main>
+<!-- ===================== END OF MAIN CONTENT ===================== -->
+
+<!-- ===================== JAVASCRIPT FOR MOBILE MENU ===================== -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // MOBILE MENU ELEMENTS: Get DOM elements for mobile navigation
+    const hamburgerBtn = document.querySelector('.hamburger-btn');
+    const closeMenuBtn = document.querySelector('.menu-close-btn');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+    const mobileNav = document.getElementById('mobile-nav');
+    
+    // HAMBURGER BUTTON CLICK: Opens mobile menu
+    if (hamburgerBtn) {
+        hamburgerBtn.addEventListener('click', function() {
+            mobileNav.classList.add('active');
+            sidebarOverlay.classList.add('active');
+            this.setAttribute('aria-expanded', 'true');
+        });
+    }
+    
+    // CLOSE BUTTON CLICK: Closes mobile menu
+    if (closeMenuBtn) {
+        closeMenuBtn.addEventListener('click', function() {
+            mobileNav.classList.remove('active');
+            sidebarOverlay.classList.remove('active');
+            hamburgerBtn.setAttribute('aria-expanded', 'false');
+        });
+    }
+    
+    // OVERLAY CLICK: Closes menu when clicking outside
+    if (sidebarOverlay) {
+        sidebarOverlay.addEventListener('click', function() {
+            mobileNav.classList.remove('active');
+            sidebarOverlay.classList.remove('active');
+            hamburgerBtn.setAttribute('aria-expanded', 'false');
+        });
+    }
+});
+</script>
 {% endblock %}

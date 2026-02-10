@@ -1,80 +1,76 @@
-{# Bond Buddies Profile Page Template
-
-Formatted for readability and grouped by: navbar, profile header, posts preview, badges, modals. Jinja logic unchanged.
-#}
 {% extends "base.html" %}
+
 {% block title %}Bond Buddies - {% if viewing_own_profile %}My{% else %}User{% endif %} Profile{% endblock %}
 
+
+
 {% block extra_css %}
+
 <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
 {% endblock %}
 
 {% block content %}
-<!-- HEADER SECTION: Main navigation with logo, search, and mobile menu -->
-<header class="nav-bar">
-    <div class="d-flex align-items-center justify-content-between w-100 px-3">
-        <!-- Added px-3 for consistent spacing -->
-        <!-- Logo -->
-        <a href="{{ url_for('home') }}" class="logo-link">
-            <img src="{{ url_for('static', filename='img/Logo.png') }}" alt="Logo" class="logo-img" />
-        </a>
+<div class="container-fluid px-0">
+    <header class="nav-bar">
+      <div class="container-fluid px-0">
+        <div class="d-flex align-items-center justify-content-between nav-inner">
+          <!-- Logo -->
+          <a href="{{ url_for('home') }}" class="logo-link"><img src="{{ url_for('static', filename='img/Logo.png') }}" alt="Logo" class="logo-img" /></a>
 
-        <!-- Search -->
-        <div class="search-container flex-grow-1 mx-3">
-            <form class="form-inline d-flex justify-content-center" action="{{ url_for('search') }}" method="GET">
-                <div class="input-group w-100">
-                    <input type="search" name="query" value="{{ query }}" placeholder="Search" class="form-control">
-                    <div class="input-group-append">
-                        <button class="btn btn-outline-light" type="submit">🔍</button>
-                    </div>
+          <!-- SEARCH BAR SECTION: Centered search form -->
+                <div class="search-container">
+                    <!-- SEARCH FORM: Submits to Flask search route -->
+                    <form class="form-inline m-0"
+                          action="{{ url_for('search') }}"
+                          method="GET">
+                        <div class="input-group">
+                            <!-- SEARCH INPUT: Pre-filled with current query -->
+                            <input type="search"
+                                   name="query"
+                                   placeholder="Search users"
+                                   class="form-control"
+                                   value="{{ query }}" />
+                            <div class="input-group-append">
+                                <!-- SEARCH BUTTON: Submits the form -->
+                                <button class="btn btn-outline-light" type="submit">🔍</button>
+                            </div>
+                        </div>
+                    </form>
                 </div>
-            </form>
+
+          <!-- Hamburger -->
+          <button class="btn btn-dark hamburger-btn btn-size" type="button">☰</button>
         </div>
+      </div>
+    </header>
+  </div>
 
-        <!-- Mobile Menu Button -->
-        <button class="btn btn-dark hamburger-btn btn-size" type="button" id="hamburgerBtn">
-            ☰
-        </button>
-    </div>
-</header>
-<!-- Overlay -->
-<div class="sidebar-overlay" id="sidebarOverlay"></div>
+  <!-- Overlay -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-<!-- Sidebar -->
-<nav id="mobile-nav">
-    <button class="menu-close-btn" id="closeMenuBtn">&times;</button>
+  <!-- Sidebar -->
+  <nav id="mobile-nav">
+    <button class="menu-close-btn">&times;</button>
     <ul class="nav-list list-unstyled mb-0">
-        <li>
-            <a href="{{ url_for('home') }}" class="nav-link text-white">Home</a>
-        </li>
-        <li>
-            <a href="{{ url_for('home') }}" class="nav-link text-white">Explore</a>
-        </li>
-        <li>
-            <a href="/createPost" class="nav-link text-white">Create</a>
-        </li>
-        <li>
-            <a href="{{ url_for('profile', user_id=session['user_id']) }}"
-                class="nav-link text-white active">Profile</a>
-        </li>
-        <li>
-            <a href="{{ url_for('home') }}" class="nav-link text-white">Events</a>
-        </li>
-        <li>
-            <hr class="bg-light my-3" />
-
-        </li>
-        <li>
-            <a href="{{ url_for('logout') }}" class="nav-link text-danger">Logout</a>
-        </li>
+        <li><a href="{{ url_for('home') }}" class="nav-link text-white">Home</a></li>
+        <li><a href=" {{ url_for('explore') }}" class="nav-link text-white">Explore</a></li>
+        <li><a href="{{ url_for('createPost') }}" class="nav-link text-white">Create</a></li>
+        <li><a href="{{ url_for('events') }}" class="nav-link text-white">Events</a></li>
+        <li><a href="{{ url_for('profile', user_id=session['user_id']) }}" class="nav-link text-white active">Profile</a></li>
+        <li><hr class="bg-light my-3"></li>
+        <!-- Additional Links -->
+        <li><a href="{{ url_for('logout') }}" class="nav-link text-danger">Logout</a></li>
     </ul>
-</nav>
+  </nav>
 
-<!-- FLASH MESSAGES -->
+
+
+
 
 
 <div class="container-fluid py-3">
-    <div class="row">
+    <div class="row align-items-start">
         <!-- LEFT: Profile + Posts -->
         <div class="col-12 col-lg-6">
             <!-- Profile Header -->
@@ -122,7 +118,7 @@ Formatted for readability and grouped by: navbar, profile header, posts preview,
                             {{ current_user.get_bio() or "No bio yet. Click Edit Profile to add one!" }}
                         </p>
 
-                        <!-- USER STATISTICS (NO FOLLOW BUTTON ABOVE FOLLOWERS) -->
+                        <!-- USER STATISTICS -->
                         <div class="stats-section mb-4">
                             <div class="row text-center">
                                 <div class="col-3 stat-item">
@@ -133,13 +129,10 @@ Formatted for readability and grouped by: navbar, profile header, posts preview,
                                     <div class="stat-number">{{ stats.badge_count }}</div>
                                     <div class="stat-label">Badges</div>
                                 </div>
-
-                                <!-- Followers count only (NO FOLLOW BUTTON) -->
                                 <div class="col-3 stat-item">
                                     <div class="stat-number">{{ stats.follower_count }}</div>
                                     <div class="stat-label">Followers</div>
                                 </div>
-
                                 <div class="col-3 stat-item">
                                     <div class="stat-number">{{ stats.following_count }}</div>
                                     <div class="stat-label">Following</div>
@@ -147,8 +140,9 @@ Formatted for readability and grouped by: navbar, profile header, posts preview,
                             </div>
                         </div>
                     </div>
+                    
 
-                    <!-- Edit Profile Button -->
+                    <!-- Edit Profile Button (Bootstrap 4) -->
                     {% if viewing_own_profile %}
                     <button class="btn btn-primary mt-2 mt-lg-0" data-toggle="modal" data-target="#editProfileModal">
                         ✏️ Edit Profile
@@ -174,36 +168,28 @@ Formatted for readability and grouped by: navbar, profile header, posts preview,
 
             {% if posts and posts|length > 0 %}
             {% set p = posts[0] %}
+
             <div class="card shadow-sm mb-2">
                 <div class="card-body">
                     <div class="d-flex justify-content-between">
                         <div>
-                            <strong>{{ p[8] or 'Post' }}</strong>
-
+                            <strong>{{ p[8] or 'Post'}}</strong>
                             <div class="text-muted small">{{ p[3] }}</div>
                         </div>
                         <span class="badge badge-light">❤️ {{ p[4] }}</span>
                     </div>
 
                     <p class="mt-2 mb-0">{{ p[1][:200] }}{% if p[1]|length > 200 %}...{% endif %}</p>
-
+                    <div class="d-flex justify-content-center">
                     {% if p[7] %}
-                    <img src="{{ url_for('static', filename='uploads/' ~ p[7]) }}" class="post-image img-fluid rounded"
-                        alt="Post image">
-
+                        <img src="{{ url_for('static', filename='uploads/' ~ p[7]) }}" class="img-fluid rounded"
+                            style="max-height: 400px; object-fit: cover;" alt="Post image">
                     {% endif %}
-
                     {% if viewing_own_profile %}
-                    <div class="mt-3">
-                        <a href="{{ url_for('edit_post_route', post_id=p[0]) }}"
-                            class="btn btn-sm btn-outline-primary mr-2">
-                            🖉 Edit
-                        </a>
-                        <button type="button" class="btn btn-sm btn-danger" onclick="openDeleteModal('{{ p[0] }}')">
-                            Delete
-                        </button>
-                    </div>
+
+                    <div class="mt-3"></div>
                     {% endif %}
+                    </div> 
                 </div>
             </div>
             {% else %}
@@ -216,7 +202,6 @@ Formatted for readability and grouped by: navbar, profile header, posts preview,
                 {% endif %}
 
             </div>
-
             {% endif %}
         </div>
 
@@ -312,21 +297,22 @@ Formatted for readability and grouped by: navbar, profile header, posts preview,
 
                 <div class="card-body">
 
-                    <h5><i class="fas fa-bolt mr-2"></i>Quick Actions</h5>
+                    <h5><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
                     <div class="d-grid gap-2">
                         <a href="/createPost" class="btn btn-outline-primary">
-                            <i class="fas fa-plus mr-1"></i> New Post
+                            <i class="fas fa-plus me-1"></i> New Post
                         </a>
                         <a href="{{ url_for('search') }}" class="btn btn-outline-success">
-                            <i class="fas fa-search mr-1"></i> Find Friends
+                            <i class="fas fa-search me-1"></i> Find Friends
                         </a>
                         <button class="btn btn-outline-info" data-toggle="modal" data-target="#editProfileModal">
-                            <i class="fas fa-cog mr-1"></i> Settings
+                            <i class="fas fa-cog me-1"></i> Settings
                         </button>
                     </div>
                 </div>
             </div>
             {% endif %}
+
 
             <!-- Delete Account (for own profile only) -->
             {% if viewing_own_profile %}
@@ -336,7 +322,7 @@ Formatted for readability and grouped by: navbar, profile header, posts preview,
 
                     <div class="d-grid gap-2 mb-3">
                         <button class="btn btn-outline-warning" data-toggle="modal" data-target="#changePasswordModal">
-                            <i class="fas fa-key mr-1"></i> Change Password
+                            <i class="fas fa-key me-1"></i> Change Password
                         </button>
                     </div>
 
@@ -348,7 +334,7 @@ Formatted for readability and grouped by: navbar, profile header, posts preview,
                     <form method="POST" action="{{ url_for('delete_account') }}" class="form-inline mt-2"
                         onsubmit="return confirmDeleteAccount();">
 
-                        <input class="form-control mr-2" id="deleteConfirmInput" name="confirm"
+                        <input class="form-control me-2" id="deleteConfirmInput" name="confirm"
                             placeholder="type delete to confirm" required oninput="checkDeleteMatch()">
 
                         <button class="btn btn-danger" id="deleteBtn" type="submit" disabled>
@@ -367,10 +353,12 @@ Formatted for readability and grouped by: navbar, profile header, posts preview,
     </div>
 </div>
 
-<!-- EDIT PROFILE MODAL -->
+
+<!-- EDIT PROFILE MODAL (Bootstrap 4) -->
 <div class="modal fade" id="editProfileModal" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
+
             <form method="POST" action="{{ url_for('edit_profile') }}" enctype="multipart/form-data">
 
                 <div class="modal-header">
@@ -381,6 +369,9 @@ Formatted for readability and grouped by: navbar, profile header, posts preview,
                 </div>
 
                 <div class="modal-body">
+
+
+
                     <div class="form-group">
                         <label class="teal-cyan-panel">✏️ Bio (max 30 characters)</label>
                         <textarea class="form-control" name="bio" rows="3"
@@ -390,35 +381,62 @@ Formatted for readability and grouped by: navbar, profile header, posts preview,
                     <div class="form-group">
                         <label class="avatar-label">Avatar (png/jpg/jpeg/gif)</label>
 
+
+
                         <!-- Preview Image -->
+
                         <div class="text-center mb-3">
+
                             <img id="avatarPreview"
+
                                 src="{{ url_for('static', filename='uploads/' ~ current_user.get_avatar_url()) if current_user.get_avatar_url() else url_for('static', filename='img/human_icon.jpg') }}"
+
                                 class="border shadow-sm">
+
                         </div>
 
+
+
                         <!-- File Input -->
+
                         <div class="file-upload-box">
+
                             <input class="form-control-file" type="file" name="avatar" id="avatarInput"
+
                                 accept=".png,.jpg,.jpeg,.gif">
+
                             <span id="fileNamePreview" class="file-name-preview"></span>
+
                         </div>
                     </div>
-                </div> <!-- ✅ CLOSE modal-body properly -->
+
+
+
+                </div>
 
                 <div class="modal-footer">
                     <button class="btn btn-primary" type="submit">Save</button>
                 </div>
 
             </form>
+
         </div>
     </div>
 </div>
-
+</div>
+{% block scripts %}
+{{ super() }}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        document.body.classList.add('profile-flash-overlay');
+    });
+</script>
+{% endblock %}
 
 <!-- ALL BADGES MODAL -->
 <div class="modal fade" id="allBadgesModal" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable" role="document">
+
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">All Badges</h5>
@@ -498,88 +516,149 @@ Formatted for readability and grouped by: navbar, profile header, posts preview,
     </div>
 </div>
 
+
 <!-- ALL POSTS MODAL -->
 <div class="modal fade" id="allPostsModal" tabindex="-1">
     <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
+
             <div class="modal-header">
                 <h5 class="modal-title">All Your Posts</h5>
                 <button type="button" class="close" data-dismiss="modal">
                     <span>&times;</span>
                 </button>
             </div>
+
             <div class="modal-body">
+
                 {% if posts and posts|length > 0 %}
                 {% for p in posts %}
                 <div class="card shadow-sm mb-3">
                     <div class="card-body">
+
+                        <!-- Header row -->
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
-                                <strong>{{ p[8] or 'Post' }}</strong>
+                                <strong>{{ p[8] or 'Post'}}</strong>
 
                                 <div class="text-muted small">{{ p[3] }}</div>
                             </div>
-                            <div class="d-flex align-items-center">
+
+                            <div class="d-flex justify-content-between align-items-center">
                                 {% if viewing_own_profile %}
-                                <a href="{{ url_for('edit_post_route', post_id=p[0]) }}"
-                                    class="btn btn-sm btn-outline-primary mr-2">
+                                <!-- EDIT BUTTON -->
+                                <a href="{{ url_for('edit_post_route', post_id=p[0]) }}" class="btn btn-outline-primary mr-2">
                                     🖉 Edit
                                 </a>
-                                <button type="button" class="btn btn-sm btn-danger mr-2"
-                                    onclick="openDeleteModal('{{ p[0] }}')">
-                                    Delete
-                                </button>
+                                
+                                <button type="button" class="btn btn-danger mr-2" onclick="openDeleteModal('{{ p[0] }}')"> Delete Post </button>
                                 {% endif %}
+                                
+                                
+                                <!-- BIG HEART -->
                                 <span class="badge badge-light" style="font-size:22px;">
                                     ❤️ {{ p[4] }}
                                 </span>
                             </div>
                         </div>
+
+                        <!-- Post text -->
                         <p class="mt-2 mb-2">{{ p[1][:200] }}{% if p[1]|length > 200 %}...{% endif %}</p>
+
+                        <!-- IMAGE -->
                         {% if p[7] %}
                         {% set img = p[7] | replace('\\', '/') %}
                         {% set filename_only = img.split('/')[-1] %}
+
                         <div class="mt-2 text-center">
-                            <img src="{{ url_for('static', filename='uploads/' ~ filename_only) }}"
-                                class="img-fluid rounded shadow-sm" style="max-height: 400px; object-fit: cover;">
+                            <img src="{{ url_for('static', filename='uploads/' ~ p[7]) }}"
+     class="img-fluid rounded post-image d-block mx-auto"
+     alt="Post image">
+
                         </div>
                         {% endif %}
+
                     </div>
                 </div>
                 {% endfor %}
                 {% else %}
                 <div class="alert alert-info">No posts yet.</div>
                 {% endif %}
+
             </div>
+
             <div class="modal-footer">
                 <button class="btn btn-secondary" data-dismiss="modal">Close</button>
             </div>
+
         </div>
     </div>
 </div>
 
 <!-- DELETE CONFIRM MODAL -->
-<div class="modal fade" id="deleteConfirmModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title text-danger">Confirm Delete</h5>
-                <button type="button" class="close" data-dismiss="modal">
-                    <span>&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                Are you sure you want to delete this post?
-                <strong>This action cannot be undone.</strong>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                <form id="deleteForm" method="POST">
-                    <button type="submit" class="btn btn-danger">Yes, Delete</button>
-                </form>
-            </div>
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" role="dialog" aria-labelledby="deleteConfirmLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title text-danger" id="deleteConfirmLabel">
+          Confirm Delete
+        </h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span>&times;</span>
+        </button>
+      </div>
+
+      <div class="modal-body text-center">
+        <p class="mb-2">
+          Are you sure you want to delete this post?
+        </p>
+        <p class="mb-0 font-weight-bold text-danger">
+          This action cannot be undone.
+        </p>
+      </div>
+
+      <div class="modal-footer justify-content-center">
+        <div class="d-flex justify-content-center">
+          <button type="button" class="btn btn-secondary me-2" data-dismiss="modal">
+            Cancel
+          </button>
+
+          <!-- Form submit handled by JS -->
+          <form id="deleteForm" class="mb-0" onsubmit="return false;">
+            <button type="submit" class="btn btn-danger">
+              Yes, Delete
+            </button>
+          </form>
         </div>
+      </div>
+
     </div>
+  </div>
+</div>
+
+<!-- DELETE SUCCESS MODAL -->
+<div class="modal fade" id="deleteSuccessModal" tabindex="-1" role="dialog" aria-labelledby="deleteSuccessLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title text-dark" id="deleteSuccessLabel">Success!</h5>
+      </div>
+
+      <div class="modal-body d-flex justify-content-center">
+        <div class="p-3 border w-100 text-center">
+          Post deleted successfully!
+        </div>
+      </div>
+
+      <div class="modal-footer d-flex justify-content-center">
+        <!-- DO NOT use data-dismiss="modal" here, JS handles redirect -->
+        <button type="button" class="btn btn-primary" id="deleteSuccessBtn">OK</button>
+      </div>
+
+    </div>
+  </div>
 </div>
 
 <!-- CONFIRM MODAL for Follow/Unfollow -->
@@ -603,41 +682,116 @@ Formatted for readability and grouped by: navbar, profile header, posts preview,
 </div>
 
 <script>
-    // Mobile navigation toggle functionality
-    document.addEventListener('DOMContentLoaded', function () {
-        const hamburgerBtn = document.getElementById('hamburgerBtn');
-        const closeMenuBtn = document.getElementById('closeMenuBtn');
-        const sidebarOverlay = document.getElementById('sidebarOverlay');
-        const mobileNav = document.getElementById('mobile-nav');
+let postToDelete = null;
+let currentUserId = null;
+let currentUsername = null;
+let currentAction = null;
 
-        if (hamburgerBtn) {
-            hamburgerBtn.addEventListener('click', function () {
-                mobileNav.classList.add('active');
-                sidebarOverlay.classList.add('active');
-            });
-        }
+// ---------------- Open Delete Modal ----------------
+function openDeleteModal(postId) {
+    postToDelete = postId;  // store selected post
+    document.getElementById('deleteForm').action = `/api/delete_post/${postId}`;
 
-        if (closeMenuBtn) {
-            closeMenuBtn.addEventListener('click', function () {
-                mobileNav.classList.remove('active');
-                sidebarOverlay.classList.remove('active');
-            });
-        }
+    // Hide the "all posts" modal first
+    $('#allPostsModal').modal('hide');
 
-        if (sidebarOverlay) {
-            sidebarOverlay.addEventListener('click', function () {
-                mobileNav.classList.remove('active');
-                sidebarOverlay.classList.remove('active');
-            });
+    $('#allPostsModal').on('hidden.bs.modal', function () {
+        // 🔥 clean any leftover modal state
+        $('.modal-backdrop').remove();
+        $('body').removeClass('modal-open');
+        $('body').css('padding-right', '');
+
+        // ✅ show delete confirm modal
+        $('#deleteConfirmModal').modal({
+            backdrop: true,   // grey background
+            keyboard: true    // ESC closes modal
+        });
+
+        // remove listener to prevent stacking
+        $(this).off('hidden.bs.modal');
+    });
+}
+
+// ---------------- Confirm Delete ----------------
+$('#deleteForm').on('submit', function(e) {
+    e.preventDefault(); // prevent default form submission
+
+    if (!postToDelete) {
+        alert('No post selected');
+        return;
+    }
+
+    fetch(`/api/delete_post/${postToDelete}`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
         }
+    })
+    .then(res => {
+        if (!res.ok) throw new Error('Network response not ok');
+        return res.json();
+    })
+    .then(data => {
+        if (data.success) {
+            // Hide confirm modal first
+            $('#deleteConfirmModal').modal('hide');
+
+            // ✅ Show delete success modal after slight delay
+            setTimeout(showDeleteSuccessModal, 200); // small delay ensures previous modal fully hides
+        } else {
+            alert(data.error || 'Failed to delete post');
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        alert('Something went wrong');
+    });
+});
+
+// ---------------- Redirect after success modal ----------------
+// Redirect function
+function redirectToProfile() {
+    window.location.href = "{{ url_for('profile') }}";
+}
+
+// Show the success modal safely
+function showDeleteSuccessModal() {
+    $('#deleteSuccessModal').modal({
+        backdrop: true, // allow click outside
+        keyboard: true  // allow ESC
     });
 
-    // Follow/Unfollow popup functionality
-    let currentUserId = null;
-    let currentUsername = null;
-    let currentAction = null;
+    // Bind redirect on hide or hidden events
+    $('#deleteSuccessModal').off('hide.bs.modal hidden.bs.modal') // remove any old listeners
+        .on('hide.bs.modal hidden.bs.modal', redirectToProfile);
+}
 
-    function showFollowPopup(username, userId) {
+// Redirect when OK button is clicked
+$('#deleteSuccessBtn').off('click').on('click', redirectToProfile);
+
+// ---------------- Delete Account Helpers (unchanged) ----------------
+
+
+
+function checkDeleteMatch() {
+    const input = document.getElementById("deleteConfirmInput");
+    const btn = document.getElementById("deleteBtn");
+    const hint = document.getElementById("deleteHint");
+
+    if (input.value.trim().toLowerCase() === "delete") {
+        btn.disabled = false;
+        hint.innerHTML = "✅ Confirmed. You may delete your account.";
+        hint.classList.remove("text-muted");
+        hint.classList.add("text-success");
+    } else {
+        btn.disabled = true;
+        hint.innerHTML = "You must type <b>delete</b> exactly to enable deletion.";
+        hint.classList.remove("text-success");
+        hint.classList.add("text-muted");
+    }
+}
+
+function showFollowPopup(username, userId) {
         currentUserId = userId;
         currentUsername = username;
         currentAction = 'follow';
@@ -650,7 +804,7 @@ Formatted for readability and grouped by: navbar, profile header, posts preview,
         $('#confirmModal').modal('show');
     }
 
-    function showUnfollowPopup(username, userId) {
+function showUnfollowPopup(username, userId) {
         currentUserId = userId;
         currentUsername = username;
         currentAction = 'unfollow';
@@ -663,8 +817,8 @@ Formatted for readability and grouped by: navbar, profile header, posts preview,
         $('#confirmModal').modal('show');
     }
 
-    // Handle confirm button
-    document.getElementById('confirmButton').addEventListener('click', function () {
+// Handle confirm button
+document.getElementById('confirmButton').addEventListener('click', function () {
         if (!currentUserId) return;
 
         const endpoint = currentAction === 'follow'
@@ -672,7 +826,7 @@ Formatted for readability and grouped by: navbar, profile header, posts preview,
             : `/api/unfollow/${currentUserId}`;
 
         // Show loading
-        this.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Processing...';
+        this.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Processing...';
         this.disabled = true;
 
         fetch(endpoint, {
@@ -724,19 +878,7 @@ Formatted for readability and grouped by: navbar, profile header, posts preview,
         currentAction = null;
     });
 
-    // Delete account confirmation
-    let postToDelete = null;
-
-    function openDeleteModal(postId) {
-        document.getElementById('deleteForm').action = `/api/delete_post/${postId}`;
-        $('#allPostsModal').modal('hide');
-        $('#allPostsModal').on('hidden.bs.modal', function () {
-            $('#deleteConfirmModal').modal('show');
-            $(this).off('hidden.bs.modal');
-        });
-    }
-
-    function checkDeleteMatch() {
+function checkDeleteMatch() {
         const input = document.getElementById("deleteConfirmInput");
         const btn = document.getElementById("deleteBtn");
         const hint = document.getElementById("deleteHint");
@@ -754,26 +896,17 @@ Formatted for readability and grouped by: navbar, profile header, posts preview,
         }
     }
 
-    function confirmDeleteAccount() {
-        return confirm(
-            "⚠️ FINAL WARNING!\n\n" +
-            "This action is PERMANENT.\n" +
-            "Your account, posts, badges, and friends will be LOST FOREVER.\n\n" +
-            "Click OK to DELETE.\n" +
-            "Click Cancel to STOP."
-        );
-    }
+function confirmDeleteAccount() {
+    return confirm(
+        "⚠️ FINAL WARNING!\n\n" +
+        "This action is PERMANENT.\n" +
+        "Your account, posts, badges, and friends will be LOST FOREVER.\n\n" +
+        "Click OK to DELETE.\n" +
+        "Click Cancel to STOP."
+    );
+}
 
-    // Initialize profile flash overlay
-
-
-</script>
-
-
-<!-- SCRIPT FOR FOLLOW -->
-
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", function () {
         const btn = document.getElementById("followBtn");
         if (!btn) return;
 
@@ -803,7 +936,8 @@ Formatted for readability and grouped by: navbar, profile header, posts preview,
                 // ✅ Decide new follow state
                 // Prefer backend truth if it returns it, else invert
                 const nowFollowing =
-                    (typeof data.following === "boolean") ? data.following : !isFollowing;
+                    (typeof data.is_following === "boolean") ? data.is_following : !isFollowing;
+
 
                 // ✅ Update dataset + button UI
                 btn.dataset.following = nowFollowing ? "1" : "0";
@@ -844,13 +978,8 @@ Formatted for readability and grouped by: navbar, profile header, posts preview,
             }
         });
     });
-</script>
 
-
-
-
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", function () {
         const avatarInput = document.getElementById("avatarInput");
         const avatarPreview = document.getElementById("avatarPreview");
         const fileNamePreview = document.getElementById("fileNamePreview");
@@ -876,8 +1005,6 @@ Formatted for readability and grouped by: navbar, profile header, posts preview,
         });
     });
 </script>
-
-
 
 
 {% endblock %}
