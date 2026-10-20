@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>{% block title %}{% endblock %}</title>
+
+  <!-- Bootstrap 4.5.2 CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="icon" type="image/png" href="static\img\favicon.png">
+</head>
+
+<body>
+  <div class="top-spacer"></div>
+  <!-- Flash Overlay (must come BEFORE navbar so it never affects layout) -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  <div class="flash-overlay">
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }} alert-dismissible fade show flash-alert" role="alert">
+      {{ message }}
+      <button type="button" class="close" data-dismiss="alert">
+        <span>&times;</span>
+      </button>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+  {% endwith %}
+
+  <!-- Warning notification (also should be overlay OR it will push layout) -->
+  {% if session.get('has_active_warnings', False) %}
+  {% include 'warning_notification.html' %}
+  {% endif %}
+
+  {% block navbar %}{% endblock %}
+
+  <div class="container-fluid px-0">
+    {% block content %}{% endblock %}
+  </div>
+
+
+  <!-- ================= BADGE UNLOCKED MODAL (STYLED) ================= -->
+  <div class="modal fade" id="badgeUnlockedModal" tabindex="-1" role="dialog" aria-hidden="true" data-backdrop="static"
+    data-keyboard="false">
+
+    <div class="modal-dialog modal-dialog-centered" role="document" style="max-width: 560px;">
+      <div class="modal-content bb-badge-modal">
+
+        <!-- top accent -->
+        <div class="bb-badge-accent"></div>
+
+        <div class="modal-body text-center p-4 position-relative">
+
+          <!-- close -->
+          <button type="button" class="close bb-badge-close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+
+          <!-- icon with glow -->
+          <div class="bb-badge-glow-wrap mx-auto mb-3">
+            <img id="badgeUnlockedIcon" class="bb-badge-icon" src="" alt="Badge icon">
+          </div>
+
+          <h4 class="mb-1 bb-badge-heading">Badge Unlocked!</h4>
+
+          <!-- badge name -->
+          <div id="badgeUnlockedTitle" class="bb-badge-title"></div>
+
+          <!-- optional: short status/subtitle -->
+          <div id="badgeUnlockedSubtitle" class="bb-badge-subtitle"></div>
+
+          <!-- description -->
+          <p id="badgeUnlockedDesc" class="bb-badge-desc mt-3 mb-0"></p>
+
+          <button type="button" class="btn bb-badge-btn mt-4 px-4" data-dismiss="modal">
+            Yay!
+          </button>
+
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- ================= GLOBAL TUTORIAL MODAL ================= -->
+  <div class="modal fade" id="tutorialModal" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false">
+
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable" role="document">
+
+      <div class="modal-content">
+
+        <!-- Header -->
+        <div class="modal-header">
+          <h5 class="modal-title">Tutorial</h5>
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+        </div>
+
+        <!-- Body -->
+        <div class="modal-body p-0 overflow-auto">
+
+
+          <div id="tutorialCarousel" class="carousel slide" data-interval="false">
+            <div class="carousel-inner">
+
+              <!-- HOME -->
+              <div class="carousel-item active p-3 text-center" data-page="home">
+                <h4 class="mb-2">1. Home Page Tutorial</h4>
+                <video class="w-100 tutorial-video" controls>
+                  <source src="{{ url_for('static', filename='videos/HOME_TUTORIAL.mp4') }}" type="video/mp4">
+                </video>
+              </div>
+
+              <!-- EXPLORE -->
+              <div class="carousel-item p-3 text-center" data-page="explore">
+                <h4 class="mb-2">Explore Page Tutorial</h4>
+                <video class="w-100 tutorial-video" controls>
+                  <source src="{{ url_for('static', filename='videos/EXPLORE_TUTORIAL.mp4') }}" type="video/mp4">
+                </video>
+              </div>
+
+              <!-- POSTS: Create Post -->
+              <div class="carousel-item p-3 text-center" data-page="posts">
+                <h4 class="mb-2">How to Create a Post</h4>
+                <video class="w-100 tutorial-video" controls>
+                  <source src="{{ url_for('static', filename='videos/POST_TUTORIAL.mp4') }}" type="video/mp4">
+                </video>
+              </div>
+
+              <!-- POSTS: Edit Post -->
+              <div class="carousel-item p-3 text-center" data-page="posts">
+                <h4 class="mb-2">How to Edit or Delete a Post</h4>
+                <video class="w-100 tutorial-video" controls>
+                  <source src="{{ url_for('static', filename='videos/POST_TUTORIAL_2.mp4') }}" type="video/mp4">
+                </video>
+              </div>
+
+              <!-- EVENTS -->
+              <div class="carousel-item p-3 text-center" data-page="events">
+                <h4 class="mb-2">Events Tutorial</h4>
+                <video class="w-100 tutorial-video" controls>
+                  <source src="{{ url_for('static', filename='videos/EVENTS_TUTORIAL.mp4') }}" type="video/mp4">
+                </video>
+              </div>
+
+              <!-- PROFILE EDITING PAGE -->
+              <div class="carousel-item p-3 text-center" data-page="profile">
+                <h4 class="mb-2">Navigating in Profile page</h4>
+
+
+                <video class="w-100 tutorial-video" controls>
+                  <source src="{{ url_for('static', filename='videos/EDIT_PROFILE_TUTORIAL.mp4') }}" type="video/mp4">
+                </video>
+                <div class="text-left">
+                  <h6 class="font-weight-bold">Steps to edit your profile:</h6>
+                  <ol class="mb-0 pl-3">
+
+                    <li>Click the <b>☰ menu icon</b> at the top right of any page.</li>
+                    <li>Select <b>Profile</b> from the sidebar.</li>
+                    <li>Click the <b>Edit Profile</b> button on the left panel.</li>
+                    <li>Enter your bio (up to 30 characters).</li>
+                    <li>To change your avatar, click <b>Choose File</b> and select an image.</li>
+                    <li>Preview the image — you can change it again if needed.</li>
+                    <li>Click <b>Save</b> to apply your new profile details.</li>
+                  </ol>
+                </div>
+
+              </div>
+
+              <!-- PROFILE edit -->
+              <div class="carousel-item p-3 text-center" data-page="profile">
+                <h4 class="mb-2">Editing in Profile page?</h4>
+
+
+                <video class="w-100 tutorial-video" controls>
+                  <source src="{{ url_for('static', filename='videos/EDIT_PROFILE_TUTORIAL.mp4') }}" type="video/mp4">
+                </video>
+                <div class="text-left">
+                  <h6 class="font-weight-bold">Steps to edit your profile:</h6>
+                  <ol class="mb-0 pl-3">
+
+                    <li>Click the <b>☰ menu icon</b> at the top right of any page.</li>
+                    <li>Select <b>Profile</b> from the sidebar.</li>
+                    <li>Click the <b>Edit Profile</b> button on the left panel.</li>
+                    <li>Enter your bio (up to 30 characters).</li>
+                    <li>To change your avatar, click <b>Choose File</b> and select an image.</li>
+                    <li>Preview the image — you can change it again if needed.</li>
+                    <li>Click <b>Save</b> to apply your new profile details.</li>
+                  </ol>
+                </div>
+
+              </div>
+
+              <!-- PROFILE HOW TO USE BADGES -->
+              <div class="carousel-item p-3 text-center" data-page="profile">
+                <h4 class="mb-2">Getting badges</h4>
+
+
+                <video class="w-100 tutorial-video" controls>
+                  <source src="{{ url_for('static', filename='videos/EDIT_PROFILE_TUTORIAL.mp4') }}" type="video/mp4">
+                </video>
+                <div class="text-left">
+                  <h6 class="font-weight-bold">Steps to edit your profile:</h6>
+                  <ol class="mb-0 pl-3">
+
+                    <li>Click the <b>☰ menu icon</b> at the top right of any page.</li>
+                    <li>Select <b>Profile</b> from the sidebar.</li>
+                    <li>Click the <b>Edit Profile</b> button on the left panel.</li>
+                    <li>Enter your bio (up to 30 characters).</li>
+                    <li>To change your avatar, click <b>Choose File</b> and select an image.</li>
+                    <li>Preview the image — you can change it again if needed.</li>
+                    <li>Click <b>Save</b> to apply your new profile details.</li>
+                  </ol>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Footer -->
+          <div class="modal-footer justify-content-between">
+
+            <button class="btn btn-secondary" data-dismiss="modal">Close</button>
+
+<!-- NAV BUTTONS RIGHT -->
+  <div id="tutorialNavWrap" style="display:none;">
+  <button id="tutorialPrev" class="btn btn-secondary mr-2" onclick="tutorialNav('prev')">Previous</button>
+  <button id="tutorialNext" class="btn btn-secondary" onclick="tutorialNav('next')">Next</button>
+</div>
+
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- =============================================================== -->
+
+
+    {% block scripts %}
+    <!-- jQuery, Popper, Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
+      integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
+      crossorigin="anonymous"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"
+      integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN"
+      crossorigin="anonymous"></script>
+
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"
+      integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV"
+      crossorigin="anonymous"></script>
+
+    <script>
+      // Sidebar menu (only works if those elements exist)
+      document.addEventListener('DOMContentLoaded', function () {
+        const hamburgerBtn = document.querySelector('.hamburger-btn');
+        const mobileNav = document.getElementById('mobile-nav');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+        const closeBtn = document.querySelector('.menu-close-btn');
+
+        if (!hamburgerBtn || !mobileNav || !sidebarOverlay) return;
+
+        function openMenu() {
+          mobileNav.classList.add('active');
+          sidebarOverlay.classList.add('active');
+          hamburgerBtn.setAttribute('aria-expanded', 'true');
+          document.body.classList.add('menu-open');
+        }
+
+        function closeMenu() {
+          mobileNav.classList.remove('active');
+          sidebarOverlay.classList.remove('active');
+          hamburgerBtn.setAttribute('aria-expanded', 'false');
+          document.body.classList.remove('menu-open');
+        }
+
+        hamburgerBtn.addEventListener('click', openMenu);
+
+        if (closeBtn) closeBtn.addEventListener('click', closeMenu);
+
+        sidebarOverlay.addEventListener('click', closeMenu);
+
+        const navLinks = mobileNav.querySelectorAll('.nav-link');
+        navLinks.forEach(link => link.addEventListener('click', closeMenu));
+
+        document.addEventListener('keydown', function (e) {
+          if (e.key === 'Escape' && mobileNav.classList.contains('active')) {
+            closeMenu();
+          }
+        });
+
+        document.addEventListener('click', function (e) {
+          if (mobileNav.classList.contains('active') &&
+            !mobileNav.contains(e.target) &&
+            !hamburgerBtn.contains(e.target)) {
+            closeMenu();
+          }
+        });
+      });
+
+
+      // Badge icon fallback mapping (if backend doesn't send iconSrc)
+      const BADGE_ICON_MAP = {
+        "Talking is fun!": "{{ url_for('static', filename='img/badges/comment.png') }}",
+        "Like a lover!": "{{ url_for('static', filename='img/badges/lover.png') }}",
+        "Friends": "{{ url_for('static', filename='img/badges/friends.png') }}",
+        "Creating is caring": "{{ url_for('static', filename='img/badges/post.png') }}",
+        "Event Enthusiast": "{{ url_for('static', filename='img/badges/event.png') }}",
+        "Weekly Interaction": "{{ url_for('static', filename='img/badges/weekly.png') }}",
+        "Story Sharer": "{{ url_for('static', filename='img/badges/story.png') }}",
+        "Community Builder": "{{ url_for('static', filename='img/badges/community.png') }}"
+      };
+
+      // ✅ Single showBadgeUnlocked function
+      function showBadgeUnlocked(payload) {
+        const iconEl = document.getElementById("badgeUnlockedIcon");
+        const titleEl = document.getElementById("badgeUnlockedTitle");
+        const subEl = document.getElementById("badgeUnlockedSubtitle");
+        const descEl = document.getElementById("badgeUnlockedDesc");
+
+        const badgeName = (payload.badgeName || payload.title || "New Badge").trim();
+
+
+        const iconSrc = payload.iconSrc || BADGE_ICON_MAP[badgeName] || "";
+
+        if (iconSrc) {
+          iconEl.src = iconSrc;
+          iconEl.style.display = "inline-block";
+        } else {
+          iconEl.style.display = "none";
+        }
+
+        titleEl.textContent = badgeName;
+        subEl.textContent = payload.subtitle || "🎉 Completed 🎉";
+        descEl.textContent = payload.desc || `You unlocked "${badgeName}". Keep going!`;
+
+        $("#badgeUnlockedModal").modal("show");
+      }
+
+
+      function stopVideosInside(el) {
+        if (!el) return;
+
+        // HTML5 videos
+        el.querySelectorAll("video").forEach(v => {
+          v.pause();
+
+        });
+
+        // iframes (YouTube)
+        el.querySelectorAll("iframe").forEach(f => {
+          const src = f.src;
+          f.src = src;
+        });
+      }
+
+      $(document).ready(function () {
+
+        // ✅ When ANY tutorial modal closes (works on any page)
+        $(document).on('hidden.bs.modal', '#tutorialModal', function () {
+          stopVideosInside(this);
+        });
+
+        // ✅ When the carousel changes slide (Next/Prev) inside the tutorial modal
+        $(document).on('slide.bs.carousel', '#tutorialCarousel', function () {
+          // stop videos in the modal (covers old slide)
+          stopVideosInside(document.getElementById("tutorialModal"));
+        });
+
+      });
+    </script>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+
+
+<script>
+$('#tutorialModal').on('show.bs.modal', function (event) {
+  var $btn = $(event.relatedTarget);
+  var page = ($btn && $btn.length) ? $btn.data('page') : null;
+
+  var $carousel = $('#tutorialCarousel');
+  var $items = $carousel.find('.carousel-item');
+  var $nav = $('#tutorialNavWrap');
+
+  // default: keep nav hidden (both)
+  $nav.addClass('d-none').hide();
+
+  if (!page) {
+    $items.removeClass('d-none active');
+    $items.first().addClass('active');
+    $carousel.carousel(0);
+    return;
+  }
+
+  page = String(page).toLowerCase();
+
+  $items.addClass('d-none').removeClass('active');
+  var $targets = $items.filter('[data-page="' + page + '"]');
+
+  if (!$targets.length) {
+    $items.removeClass('d-none active');
+    $items.first().addClass('active');
+    $carousel.carousel(0);
+    $nav.addClass('d-none').hide();
+    return;
+  }
+
+  $targets.removeClass('d-none');
+  $targets.first().addClass('active');
+  $carousel.carousel($targets.first().index());
+
+  // ✅ show nav ONLY if more than 1 video exists
+  if ($targets.length > 1) {
+    $nav.removeClass('d-none').show();
+    updateTutorialNavButtons();
+  } else {
+    $nav.addClass('d-none').hide();
+  }
+});
+
+$('#tutorialModal').on('hidden.bs.modal', function () {
+  var $items = $('#tutorialCarousel').find('.carousel-item');
+  var $nav = $('#tutorialNavWrap');
+
+  $items.removeClass('d-none active');
+  $items.first().addClass('active');
+  $('#tutorialCarousel').carousel(0);
+
+  // hide nav (both)
+  $nav.addClass('d-none').hide();
+});
+</script>
+
+
+
+
+
+
+    <script>
+      function tutorialNav(dir) {
+        var $c = $('#tutorialCarousel');
+
+        // only slides that are visible for the current page
+        var $visible = $c.find('.carousel-item').not('.d-none');
+
+        // find current active among visible
+        var $active = $visible.filter('.active').first();
+        if (!$active.length) $active = $visible.first();
+
+        var current = $visible.index($active);
+
+        // next/prev within visible slides (NO loop)
+        var next = (dir === 'next') ? current + 1 : current - 1;
+
+        // stop at ends (or change to loop if you want)
+        if (next < 0 || next >= $visible.length) return;
+
+        // convert to global carousel index
+        var globalIndex = $c.find('.carousel-item').index($visible.eq(next));
+
+        $c.carousel(globalIndex);
+      }
+      
+      function updateTutorialNavButtons() {
+  var $c = $('#tutorialCarousel');
+  var $visible = $c.find('.carousel-item').not('.d-none');
+
+  var $active = $visible.filter('.active').first();
+  if (!$active.length) $active = $visible.first();
+
+  var index = $visible.index($active);
+  var total = $visible.length;
+
+  var $prev = $('#tutorialPrev');
+  var $next = $('#tutorialNext');
+
+  // only 1 slide → hide both
+  if (total <= 1) {
+    $prev.hide();
+    $next.hide();
+    return;
+  }
+
+  // first slide → hide prev
+  if (index === 0) {
+    $prev.hide();
+  } else {
+    $prev.show();
+  }
+
+  // last slide → hide next
+  if (index === total - 1) {
+    $next.hide();
+  } else {
+    $next.show();
+  }
+}
+
+    </script>
+    <script>
+$('#tutorialCarousel').on('slid.bs.carousel', function () {
+  updateTutorialNavButtons();
+});
+</script>
+
+
+
+
+
+
+
+    {% endblock %}
+</body>
+
+</html>

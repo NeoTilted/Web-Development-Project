@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}Page Not Found{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <header class="nav-bar">
+        <div class="container-fluid px-0">
+            <div class="d-flex align-items-center justify-content-between nav-inner mt-2">
+                <!-- Logo -->
+                <a href="{{ url_for('home') }}" class="logo-link"><img
+                        src="{{ url_for('static', filename='img/Logo.png') }}" alt="Logo" class="logo-img" /></a>
+
+                <!-- Search -->
+                <div class="search-container">
+                    <form class="form-inline m-0" action="{{ url_for('search') }}" method="GET">
+                        <div class="input-group">
+                            <input type="search" name="query" placeholder="Search" class="form-control"
+                                value="{{ query if query is defined else '' }}" />
+                            <div class="input-group-append">
+                                <button class="btn btn-outline-light" type="submit">🔍</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- RIGHT SIDE BUTTON GROUP -->
+                <div class="d-flex align-items-center">
+
+                    <!-- Tutorial Button (same design as hamburger) -->
+                    <button type="button"
+  class="btn btn-dark btn-size mr-2 d-flex align-items-center justify-content-center p-0 tutorial-btn"
+  data-toggle="modal"
+  data-target="#tutorialModal"
+  data-page="home"
+  title="Tutorial">
+
+                        <!-- Tutorial Icon -->
+                        <svg width="18" height="18" viewBox="0 0 64 64" fill="none" stroke="white" stroke-width="2.6"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M6 14h18a6 6 0 0 1 6 6v28H12a6 6 0 0 0-6 6V14z" />
+                            <path d="M58 14H40a6 6 0 0 0-6 6v28h18a6 6 0 0 1 6 6V14z" />
+                            <line x1="16" y1="22" x2="24" y2="22" />
+                            <line x1="16" y1="28" x2="24" y2="28" />
+                            <line x1="16" y1="34" x2="24" y2="34" />
+                            <line x1="40" y1="22" x2="48" y2="22" />
+                            <line x1="40" y1="28" x2="48" y2="28" />
+                            <line x1="40" y1="34" x2="48" y2="34" />
+                            <path d="M44 46v-14" />
+                            <path d="M48 48v-12" />
+                            <path d="M52 50v-10" />
+                            <path d="M44 46c-3-6 8-8 8 0" />
+                        </svg>
+                    </button>
+
+                    <!-- Hamburger -->
+                    <button class="btn btn-dark hamburger-btn btn-size" type="button">☰</button>
+
+                </div>
+
+            </div>
+        </div>
+    </header>
+</div>
+
+<!-- Overlay -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<!-- Sidebar -->
+<nav id="mobile-nav" aria-label="Main navigation">
+    <button class="menu-close-btn" aria-label="Close menu">&times;</button>
+    <ul class="nav-list list-unstyled mb-0">
+        <li><a href="{{ url_for('home') }}" class="nav-link text-white active">Home</a></li>
+        <li><a href=" {{ url_for('explore') }}" class="nav-link text-white">Explore</a></li>
+        <li><a href="{{ url_for('createPost') }}" class="nav-link text-white">Create</a></li>
+        <li><a href="{{ url_for('events') }}" class="nav-link text-white">Events</a></li>
+        <li><a href="{{ url_for('profile', user_id=session['user_id']) }}" class="nav-link text-white">Profile</a></li>
+        <li>
+            <hr class="bg-light my-3">
+        </li>
+        <!-- Additional Links -->
+        <li><a href="{{ url_for('logout') }}" class="nav-link text-danger">Logout</a></li>
+    </ul>
+</nav>
+
+<div class="container text-center" style="min-height: 70vh; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+    <h1 class="display-1">404</h1>
+    <p class="lead">Oops! The page you are looking for does not exist.</p>
+    <a href="{{ url_for('home') }}" class="btn btn-primary btn-lg mt-3">Go Back Home</a>
+</div>
+{% endblock %}

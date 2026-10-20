@@ -1,0 +1,364 @@
+{% extends 'base.html' %}
+{% block title %}Bond Buddies - Edit Post{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <header class="nav-bar">
+      <div class="container-fluid px-0">
+        <div class="d-flex align-items-center justify-content-between nav-inner mt-2">
+          <!-- Logo -->
+          <a href="{{ url_for('home') }}" class="logo-link"><img src="{{ url_for('static', filename='img/Logo.png') }}" alt="Logo" class="logo-img" /></a>
+
+          <!-- Search -->
+          <div class="search-container">
+            <form class="form-inline m-0"
+                  action="{{ url_for('search') }}"
+                  method="GET">
+              <div class="input-group">
+                <input type="search"
+                       name="query"
+                       placeholder="Search"
+                       class="form-control"
+                       value="{{ query if query is defined else '' }}" />
+                <div class="input-group-append">
+                  <button class="btn btn-outline-light" type="submit">🔍</button>
+                </div>
+              </div>
+            </form>
+          </div>
+
+          <!-- Hamburger -->
+          <button class="btn btn-dark hamburger-btn btn-size" type="button">☰</button>
+        </div>
+      </div>
+    </header>
+  </div>
+
+
+<!-- Sidebar -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+<nav id="mobile-nav" aria-label="Main navigation">
+    <button class="menu-close-btn" aria-label="Close menu">&times;</button>
+    <ul class="nav-list list-unstyled mb-0">
+        <li><a href="{{ url_for('home') }}" class="nav-link text-white">Home</a></li>
+        <li><a href=" {{ url_for('explore') }}" class="nav-link text-white">Explore</a></li>
+        <li><a href="{{ url_for('createPost') }}" class="nav-link text-white">Create</a></li>
+        <li><a href="{{ url_for('events') }}" class="nav-link text-white">Events</a></li>
+        <li><a href="{{ url_for('profile', user_id=session['user_id']) }}" class="nav-link text-white">Profile</a></li>
+        <li><hr class="bg-light my-3"></li>
+        <!-- Additional Links -->
+        <li><a href="{{ url_for('logout') }}" class="nav-link text-danger">Logout</a></li>
+    </ul>
+</nav>
+
+<!-- MAIN EDIT POST -->
+<div class="center-box mt-5">
+  <div class="upload-card">
+    <h4 class="text-center mb-4">Edit Post</h4>
+
+    <form id="editForm" method="POST" enctype="multipart/form-data">
+      <div class="row">
+        <!-- LEFT SIDE: Image -->
+        <div class="col-md-6 d-flex align-items-center justify-content-center">
+          <div class="text-center">
+            <input type="file" id="fileInput" name="image" accept="image/*" onchange="previewImage(event)" hidden>
+
+            <div id="fileName">
+              {% if post['image_url'] %}{{ post['image_url'] }}{% else %}No file chosen{% endif %}
+            </div>
+
+            <label for="fileInput" class="custom-file-btn">Choose File</label>
+
+            <img id="preview"
+                 class="img-fluid align-items-center justify-content-center mt-3 {% if post['image_url'] %}visible{% else %}hidden{% endif %}"
+                 src="{% if post['image_url'] %}{{ url_for('static', filename='uploads/' ~ post['image_url']) }}{% endif %}"
+                 alt="Post Image"> 
+          </div>
+        </div>
+
+        <!-- RIGHT SIDE: Content & Category -->
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label for="content" class="form-label">Post Content</label>
+            <textarea class="form-control" id="content" name="content" rows="4" maxlength="100">{{ post['content'] }}</textarea>
+            <!-- Character counter -->
+              <small class="text-muted">
+                <span id="charCount">0</span> / 100 characters
+              </small>
+          </div>
+
+          <div class="mb-3">
+            <label for="category" class="form-label">Category</label>
+            <select class="form-control" id="category" name="category">
+              <option value="senior" {% if post['post_category'] == 'senior' %}selected{% endif %}>Senior Post</option>
+              <option value="youth" {% if post['post_category'] == 'youth' %}selected{% endif %}>Youth Post</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="post-btn-wrapper">
+        <button type="submit" class="btn btn-success btn-post px-5">Update Post</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODALS -->
+<!-- MISSING FILE MODAL -->
+<div class="modal fade" id="fileWarningModal" tabindex="-1" aria-labelledby="fileWarningLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title text-dark" id="fileWarningLabel">Missing File</h5>
+      </div>
+      <div class="modal-body d-flex justify-content-center">
+        <div class="p-3 border w-100 text-center" id="fileWarningMessage">
+          Please upload a photo before posting!
+        </div>
+      </div>
+      <div class="modal-footer d-flex justify-content-center">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- POST CONTENT ERROR MODAL -->
+<div class="modal fade" id="contentErrorModal" tabindex="-1" role="dialog" aria-labelledby="contentErrorLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+
+      <!-- Modal Header -->
+      <div class="modal-header">
+        <h5 class="modal-title text-dark" id="contentErrorLabel">Validation Error</h5>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="modal-body d-flex justify-content-center">
+        <div id="contentErrorText" class="p-3 border w-100 text-center">
+          Post Content cannot be empty!
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="modal-footer d-flex justify-content-center">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">OK</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- FILE TYPE ERROR MODAL -->
+<div class="modal fade" id="fileTypeErrorModal" tabindex="-1" aria-labelledby="fileTypeErrorLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title text-dark" id="fileTypeErrorLabel">Invalid File Type</h5>
+      </div>
+      <div class="modal-body d-flex justify-content-center">
+        <div class="p-3 border w-100 text-center">
+          Only PNG, JPG, JPEG, or GIF files are allowed!
+        </div>
+      </div>
+      <div class="modal-footer d-flex justify-content-center">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SUCCESS MODAL -->
+<div class="modal fade" id="postSuccessModal" tabindex="-1" aria-labelledby="postSuccessLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title text-dark" id="postSuccessLabel">Posted!</h5>
+      </div>
+      <div class="modal-body d-flex justify-content-center">
+        <div class="p-3 border w-100 text-center">
+          Your post has been updated successfully.
+        </div>
+      </div>
+      <div class="modal-footer d-flex justify-content-center">
+        <button type="button" class="btn btn-secondary" id="postSuccessBtn">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PREVIEW SCRIPT -->
+<script>
+function previewImage(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const preview = document.getElementById('preview');
+    const fileName = document.getElementById('fileName');
+
+    preview.src = URL.createObjectURL(file);
+    preview.classList.remove('hidden');
+    preview.classList.add('visible');
+
+    fileName.textContent = file.name;
+}
+</script>
+
+<!-- EDIT FORM VALIDATION & SUBMISSION -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const form = document.getElementById('editForm');
+  const fileInput = document.getElementById('fileInput');
+  const contentField = document.getElementById('content');
+
+  // ---------------- Character Counter & Validation ----------------
+  const charCount = document.getElementById("charCount");
+  const charCounter = document.getElementById("charCounter");
+  const minError = document.getElementById("minError");
+
+  const MAX_CHARS = 100;
+  const MIN_CHARS = 10;
+  const WARNING_THRESHOLD = 20;
+
+  // ---------------- Initialize character counter on page load ----------------
+  const initialLength = contentField.value.length;
+  charCount.textContent = initialLength;
+
+  const initialRemaining = MAX_CHARS - initialLength;
+  if (initialRemaining <= WARNING_THRESHOLD) {
+    charCounter.classList.remove("text-muted");
+    charCounter.classList.add("text-danger");
+  }
+
+  contentField.addEventListener("input", function () {
+    const length = contentField.value.length;
+    const remaining = MAX_CHARS - length;
+
+    // Update counter
+    charCount.textContent = length;
+
+    // 🔴 Turn red near limit
+    if (remaining <= WARNING_THRESHOLD) {
+      charCounter.classList.remove("text-muted");
+      charCounter.classList.add("text-danger");
+    } else {
+      charCounter.classList.remove("text-danger");
+      charCounter.classList.add("text-muted");
+    }
+
+    // ❗ Minimum characters warning
+    if (length > 0 && length < MIN_CHARS) {
+      minError.classList.remove("d-none");
+    } else {
+      minError.classList.add("d-none");
+    }
+  });
+
+  const fileWarningMessage = document.getElementById('fileWarningMessage');
+  const contentErrorText = document.getElementById('contentErrorText');
+
+  const allowedExtensions = ['png', 'jpg', 'jpeg', 'gif'];
+
+  const fileModalEl = $('#fileWarningModal');
+  const contentModalEl = $('#contentErrorModal');
+  const fileTypeModalEl = $('#fileTypeErrorModal');
+  const postSuccessModalEl = $('#postSuccessModal');
+  const postSuccessBtn = $('#postSuccessBtn');
+
+  const zeroWidthRegex = /[\u200B\u200C\u200D\uFEFF]/g;
+
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+
+    // strip zero-width characters
+    contentField.value = contentField.value.replace(zeroWidthRegex, '');
+    const fileEmpty = !fileInput.files.length && !'{{ post["image_url"] }}'; // allow keeping old image
+    const contentRaw = contentField.value.trim();
+    const contentEmpty = contentRaw === '';
+    let fileInvalid = false;
+
+    if (!fileEmpty && fileInput.files.length) {
+      const fileName = fileInput.files[0].name;
+      const ext = fileName.split('.').pop().toLowerCase();
+      fileInvalid = !allowedExtensions.includes(ext);
+    }
+
+ // ---------------- Validation checks ----------------
+    // 1️⃣ Both file and content missing
+    if (fileEmpty && contentEmpty) {
+      contentField.classList.add('is-invalid');
+      fileWarningMessage.textContent = 'Please upload a photo and add post content!';
+      fileModalEl.modal('show');
+      // highlight file name box in red
+      const fileNameBox = document.getElementById('fileName');
+      fileNameBox.classList.add('file-invalid');
+      return;
+    }
+
+    // 2️⃣ Content missing (even if image exists)
+    if (contentEmpty) {
+      contentField.classList.add('is-invalid');
+      contentErrorText.textContent = 'Post Content cannot be empty!';
+      contentModalEl.modal('show');
+      return;
+    }
+
+    // 3️⃣ File missing (even if content exists)
+    if (fileEmpty) {
+      fileWarningMessage.textContent = 'Please upload a photo before posting!';
+      fileModalEl.modal('show');
+      // highlight file name box in red
+      const fileNameBox = document.getElementById('fileName');
+      fileNameBox.classList.add('file-invalid');
+      return;
+    }
+
+    // 4️⃣ File type invalid
+    if (fileInvalid) {
+      fileTypeModalEl.modal('show');
+      return;
+    }
+
+    if (contentRaw.length < 10) {
+      contentField.classList.add('is-invalid');
+      contentErrorText.textContent = 'Post Content must be at least 10 characters.';
+      contentModalEl.modal('show');
+      return;
+    }
+
+    if (contentRaw.length > 100) {
+      contentField.classList.add('is-invalid');
+      contentErrorText.textContent = 'Post Content cannot exceed 100 characters.';
+      contentModalEl.modal('show');
+      return;
+    }
+
+    // Submit via AJAX
+    const formData = new FormData(form);
+    fetch(form.action, {
+      method: form.method,
+      body: formData
+    }).then(res => {
+      if(res.ok){
+        form.reset();
+        postSuccessModalEl.modal('show');
+      } else {
+        alert('Something went wrong while updating!');
+      }
+    }).catch(err => {
+      console.error(err);
+      alert('Something went wrong while updating!');
+    });
+  });
+
+  postSuccessBtn.click(function () {
+    window.location.href = '/profile';
+  });
+
+  postSuccessModalEl.on('hidden.bs.modal', function () {
+    window.location.href = '/profile';
+  });
+});
+</script>
+{% endblock %}

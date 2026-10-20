@@ -1,0 +1,1556 @@
+{% extends "base.html" %}
+{% block title %}Bond Buddies - Explore{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <header class="nav-bar">
+        <div class="d-flex align-items-center justify-content-between nav-inner mt-2">
+            <!-- Logo -->
+            <a href="{{ url_for('home') }}" class="logo-link">
+                <img src="{{ url_for('static', filename='img/Logo.png') }}" alt="Logo" class="logo-img">
+            </a>
+
+            <!-- Search -->
+            <div class="search-container">
+                <form class="form-inline m-0" action="{{ url_for('search') }}" method="GET">
+                    <div class="input-group">
+                        <input type="search" name="query" placeholder="Search" class="form-control"
+                            value="{{ query if query is defined else '' }}" />
+                        <div class="input-group-append">
+                            <button class="btn btn-outline-light" type="submit">🔍</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <!-- RIGHT SIDE BUTTON GROUP -->
+<div class="d-flex align-items-center">
+
+  <!-- Tutorial Button -->
+  <button type="button"
+    class="btn btn-dark btn-size mr-2 d-flex align-items-center justify-content-center p-0 tutorial-btn"
+    data-toggle="modal"
+    data-target="#tutorialModal"
+    data-page="explore"
+    title="Tutorial">
+
+    <svg width="18" height="18" viewBox="0 0 64 64" fill="none"
+         stroke="white" stroke-width="2.6"
+         stroke-linecap="round" stroke-linejoin="round">
+      <path d="M6 14h18a6 6 0 0 1 6 6v28H12a6 6 0 0 0-6 6V14z" />
+      <path d="M58 14H40a6 6 0 0 0-6 6v28h18a6 6 0 0 1 6 6V14z" />
+      <line x1="16" y1="22" x2="24" y2="22" />
+      <line x1="16" y1="28" x2="24" y2="28" />
+      <line x1="16" y1="34" x2="24" y2="34" />
+      <line x1="40" y1="22" x2="48" y2="22" />
+      <line x1="40" y1="28" x2="48" y2="28" />
+      <line x1="40" y1="34" x2="48" y2="34" />
+      <path d="M44 46v-14" />
+      <path d="M48 48v-12" />
+      <path d="M52 50v-10" />
+      <path d="M44 46c-3-6 8-8 8 0" />
+    </svg>
+  </button>
+
+  <!-- Hamburger Menu -->
+  <button class="btn btn-dark hamburger-btn btn-size"
+          type="button"
+          aria-label="Toggle navigation"
+          aria-controls="mobile-nav"
+          aria-expanded="false">
+    ☰
+  </button>
+
+</div>
+    </header>
+</div>
+<!-- Overlay (hidden by default) -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<!-- Sidebar Navigation -->
+<nav id="mobile-nav" aria-label="Main navigation">
+    <button class="menu-close-btn" aria-label="Close menu">&times;</button>
+    <ul class="nav-list list-unstyled mb-0">
+        <li><a href="{{ url_for('home') }}" class="nav-link text-white">Home</a></li>
+        <li><a href=" {{ url_for('explore') }}" class="nav-link text-white active">Explore</a></li>
+        <li><a href="{{ url_for('createPost') }}" class="nav-link text-white">Create</a></li>
+        <li><a href="{{ url_for('events') }}" class="nav-link text-white">Events</a></li>
+        <li><a href="{{ url_for('profile', user_id=session['user_id']) }}" class="nav-link text-white">Profile</a></li>
+        <li>
+            <hr class="bg-light my-3">
+        </li>
+        <!-- Additional Links -->
+        <li><a href="{{ url_for('logout') }}" class="nav-link text-danger">Logout</a></li>
+    </ul>
+</nav>
+
+<!-- Image Modal - FIXED MOBILE RESPONSIVENESS (ALL CONTENT VISIBLE) -->
+<div class="modal fade" id="imageModal" tabindex="-1" role="dialog" aria-labelledby="imageModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-body p-0">
+                <button type="button" class="btn-close position-absolute" data-dismiss="modal" aria-label="Close"
+                    style="top: 15px; right: 15px; z-index: 1000; background-color: rgba(0,0,0,0.5); color: white; border: none; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                    <span aria-hidden="true" style="font-size: 1.5rem;">×</span>
+                </button>
+
+                <div class="row no-gutters h-100">
+                    <!-- Image Section -->
+                    <div class="col-md-8 col-lg-8 bg-dark d-flex align-items-center justify-content-center image-section">
+                        <img id="modalImage" src="" alt="Full size image" class="img-fluid w-100 h-auto"
+                            style="max-height: 85vh; object-fit: contain;">
+                    </div>
+
+                    <!-- Post Details -->
+                    <div class="col-md-4 col-lg-4 d-flex flex-column post-details" style="max-height: 85vh;">
+                        <!-- User Info - Fixed at top -->
+                        <div class="p-3 border-bottom user-info-section">
+                            <div class="d-flex align-items-center">
+                                <div class="mr-2">
+                                    <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center"
+                                        style="width: 40px; height: 40px;" id="modalUserInitial"></div>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-0 font-weight-bold" id="modalUsername"></h6>
+                                    <span class="badge badge-info" id="modalCategory"></span>
+                                    <small class="text-muted" id="modalTimestamp"></small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Content - Small fixed section -->
+                        <div class="px-3 py-2 content-section border-bottom">
+                            <p class="mb-0 small" id="modalContent" style="max-height: 60px; overflow-y: auto;"></p>
+                        </div>
+
+                        <!-- Comments - Scrollable but limited height -->
+                        <div class="flex-grow-1 px-3 py-2 overflow-auto comments-section" style="min-height: 0;">
+                            <div id="modalCommentsSection">
+                                <div class="text-center text-muted py-2" id="noCommentsMessage">
+                                    <small>No comments yet. Be the first to comment!</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Stats - Compact -->
+                        <div class="px-3 py-2 border-top border-bottom stats-section">
+                            <div class="d-flex align-items-center small">
+                                <span class="font-weight-bold mr-3">
+                                    <span id="modalLikes">0</span> likes
+                                </span>
+                                <span class="font-weight-bold">
+                                    <span id="modalCommentsCount">0</span> comments
+                                </span>
+                                <span class="ml-auto text-muted">
+                                    <span id="modalTimeAgo"></span>
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons - Always visible -->
+                        <div class="px-3 py-2 action-buttons-section">
+                            <div class="d-flex align-items-center">
+                                <button class="btn btn-link text-dark p-1 mr-3 modal-like-btn" data-post-id=""
+                                    style="font-size: 1.3rem; text-decoration: none;">
+                                    <span id="modalLikeIcon">🤍</span>
+                                </button>
+                                <button class="btn btn-link text-dark p-1 modal-comment-btn"
+                                    style="font-size: 1.3rem; text-decoration: none;">
+                                    <span>💬</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Comment Form - Always visible at bottom -->
+                        <div class="p-3 border-top comment-form-section">
+                            <form id="commentForm" class="comment-form">
+                                <div class="input-group input-group-sm">
+                                    <input type="text" id="commentInput" class="form-control form-control-sm border-0 bg-light"
+                                        placeholder="Add a comment..." aria-label="Add a comment" required>
+                                    <div class="input-group-append">
+                                        <button class="btn btn-link text-primary btn-sm" type="submit"
+                                            id="commentSubmitBtn" disabled style="text-decoration: none;">Post</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Mobile-specific styles for modal only - ALL CONTENT VISIBLE */
+@media (max-width: 767.98px) {
+    #imageModal .modal-dialog {
+        margin: 0;
+        max-width: 100%;
+        height: 100vh;
+        max-height: 100vh;
+    }
+    
+    #imageModal .modal-content {
+        height: 100vh;
+        max-height: 100vh;
+        border-radius: 0;
+    }
+    
+    #imageModal .row {
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    /* Image section - fixed height 35% */
+    #imageModal .image-section {
+        width: 100%;
+        max-width: 100%;
+        flex: 0 0 35vh;
+        min-height: 35vh;
+        max-height: 35vh;
+        padding: 0;
+    }
+    
+    /* Post details - takes 65% */
+    #imageModal .post-details {
+        width: 100%;
+        max-width: 100%;
+        flex: 0 0 65vh;
+        max-height: 65vh !important;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    /* User info - fixed height */
+    #imageModal .user-info-section {
+        flex: 0 0 auto;
+        padding: 0.75rem !important;
+    }
+    
+    /* Content section - fixed small height */
+    #imageModal .content-section {
+        flex: 0 0 auto;
+        max-height: 70px;
+        padding: 0.5rem 0.75rem !important;
+    }
+    
+    #modalContent {
+        font-size: 0.85rem;
+        line-height: 1.3;
+        max-height: 45px !important;
+    }
+    
+    /* Comments section - scrollable with fixed remaining space */
+    #imageModal .comments-section {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto;
+        padding: 0.5rem 0.75rem !important;
+    }
+    
+    /* Stats section - fixed */
+    #imageModal .stats-section {
+        flex: 0 0 auto;
+        padding: 0.5rem 0.75rem !important;
+    }
+    
+    /* Action buttons - fixed */
+    #imageModal .action-buttons-section {
+        flex: 0 0 auto;
+        padding: 0.25rem 0.75rem !important;
+    }
+    
+    /* Comment form - fixed at bottom */
+    #imageModal .comment-form-section {
+        flex: 0 0 auto;
+        padding: 0.5rem 0.75rem !important;
+    }
+    
+    /* Adjust image */
+    #modalImage {
+        max-height: 33vh !important;
+        width: auto !important;
+        max-width: 100%;
+    }
+    
+    /* Close button */
+    #imageModal .btn-close {
+        top: 10px;
+        right: 10px;
+        width: 36px;
+        height: 36px;
+        z-index: 1050;
+    }
+    
+    /* Touch targets */
+    #imageModal .btn-link {
+        min-width: 44px;
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    /* Comment items compact */
+    #imageModal .comment-item {
+        margin-bottom: 0.5rem !important;
+    }
+    
+    #imageModal .comment-item .bg-light {
+        padding: 0.5rem !important;
+    }
+    
+    #imageModal .comment-item .small {
+        font-size: 0.75rem !important;
+    }
+    
+    #imageModal .comment-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 0.25rem;
+    }
+    
+    #imageModal .comment-actions .btn-link {
+        padding: 2px 6px;
+        min-height: 32px;
+        font-size: 0.7rem !important;
+    }
+    
+    /* Reply indentation */
+    #imageModal .comment-item .ml-4 {
+        margin-left: 0.5rem !important;
+    }
+    
+    /* Badge sizing */
+    #imageModal .badge {
+        font-size: 0.65rem;
+        padding: 0.2rem 0.4rem;
+    }
+    
+    /* Input group */
+    #imageModal .input-group-sm .form-control {
+        font-size: 0.85rem;
+        height: 38px;
+    }
+    
+    #imageModal .input-group-sm .btn {
+        font-size: 0.85rem;
+        padding: 0.25rem 0.75rem;
+    }
+    
+    /* Reply indicator */
+    #replyIndicator {
+        margin-bottom: 0.5rem;
+        font-size: 0.8rem;
+        padding: 0.35rem 0.5rem !important;
+    }
+}
+
+/* Desktop styles - keep original */
+@media (min-width: 768px) {
+    #imageModal .modal-dialog {
+        max-width: 90vw;
+    }
+    
+    #imageModal .image-section {
+        max-height: 85vh;
+    }
+    
+    #imageModal .post-details {
+        max-height: 85vh;
+    }
+    
+    #modalImage {
+        max-height: 85vh;
+    }
+}
+</style>
+
+<!-- Filter Form -->
+<div class="container my-3">
+    <form method="GET" id="filterForm" action="{{ url_for('explore') }}">
+        <div class="row bg-white text-center">
+            {% set filters = request.args.getlist('filters') %}
+
+            <div class="col p-0 mx-2">
+                <button type="button"
+                    class="filter-btn btn-block border-0 py-3 bg-button     {% if 'senior' in filters %}active{% endif %}"
+                    data-filter="senior">
+                    {% if 'senior' in filters %}✓ {% endif %}Senior Post
+                </button>
+                <input type="checkbox" id="senior" name="filters" value="senior" {% if 'senior' in filters %}checked{%
+                    endif %} style="display: none;">
+            </div>
+
+            <div class="col p-0 mx-2">
+                <button type="button"
+                    class="filter-btn btn-block border-0 py-3 bg-button {% if 'youth' in filters %}active{% endif %}"
+                    data-filter="youth">
+                    {% if 'youth' in filters %}✓ {% endif %}Youth Post
+                </button>
+                <input type="checkbox" id="youth" name="filters" value="youth" {% if 'youth' in filters %}checked{%
+                    endif %} style="display: none;">
+            </div>
+
+            <div class="col p-0 mx-2">
+                <button type="button"
+                    class="filter-btn btn-block border-0 py-3 bg-button {% if 'trending' in filters %}active{% endif %}"
+                    data-filter="trending">
+                    {% if 'trending' in filters %}✓ {% endif %}Trending
+                </button>
+                <input type="checkbox" id="trending" name="filters" value="trending" {% if 'trending' in filters
+                    %}checked{% endif %} style="display: none;">
+            </div>
+        </div>
+
+        <input type="hidden" name="page" value="{{ request.args.get('page', 1) }}">
+        <input type="hidden" name="sort" value="{{ request.args.get('sort', 'newest') }}">
+    </form>
+</div>
+
+<!-- Filter Messages -->
+{% if filter_messages %}
+<div class="container mb-3">
+    <div class="alert alert-info alert-dismissible fade show" role="alert">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+        <h6>Filter Results:</h6>
+        <ul class="mb-0">
+            {% for message in filter_messages %}
+            <li>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endif %}
+
+<!-- Posts Content -->
+<div id="contentArea" class="container">
+    {% if posts %}
+    {% for post_info in posts %}
+    {% set post = post_info.post %}
+    {% set username = post_info.username %}
+    {% set comment_count = post_info.comment_count %}
+    {% set image_url = post_info.image_url %}
+
+    <div class="card mb-3" data-post-id="{{ post.get_post_id() }}">
+        <div class="card-body">
+            <div class="d-flex align-items-center mb-2">
+                <div class="mr-2">
+                    <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center"
+                        style="width: 40px; height: 40px;">
+                        {{ username[0]|upper if username else '?' }}
+                    </div>
+                </div>
+                <div>
+                    <h6 class="mb-0">{{ username }}</h6>
+                    <small class="text-muted">{{ post.get_formatted_timestamp() }}</small>
+                </div>
+            </div>
+
+            {% if post.get_content() %}
+            <p class="card-text">{{ post.get_content() }}</p>
+            {% endif %}
+
+            {% if image_url %}
+            <div class="mb-3 text-center">
+                <img src="{{ url_for('static', filename='uploads/' + image_url) }}" alt="Post image"
+                    class="img-fluid rounded clickable-image"
+                    style="max-height: 400px; object-fit: cover; cursor: pointer;"
+                    data-image="{{ url_for('static', filename='uploads/' + image_url) }}" data-username="{{ username }}"
+                    data-user-initial="{{ username[0]|upper if username else '?' }}"
+                    data-timestamp="{{ post.get_formatted_timestamp() }}" data-content="{{ post.get_content() or '' }}"
+                    data-likes="{{ post.get_likes() }}" data-comments="{{ comment_count }}"
+                    data-category="{{ post.get_post_category() or '' }}" data-post-id="{{ post.get_post_id() }}"
+                    data-liked="{{ 'true' if post_info.user_has_liked else 'false' }}">
+            </div>
+            {% endif %}
+
+            <!-- In explore.html, update the comment button section -->
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <!-- Like Button -->
+                    <button
+                        class="btn btn-sm {% if post_info.user_has_liked %}btn-danger{% else %}btn-outline-primary{% endif %} like-btn"
+                        data-post-id="{{ post.get_post_id() }}"
+                        data-liked="{{ 'true' if post_info.user_has_liked else 'false' }}">
+                        <span class="mr-1">❤️</span>
+                        <span class="like-count">{{ post.get_likes() }}</span>
+                    </button>
+
+                    <!-- Updated Comment Button - Now opens modal -->
+                    <button class="btn btn-sm btn-outline-secondary ml-2 open-comment-modal-btn"
+                        data-post-id="{{ post.get_post_id() }}" data-username="{{ username }}"
+                        data-user-initial="{{ username[0]|upper if username else '?' }}"
+                        data-timestamp="{{ post.get_formatted_timestamp() }}"
+                        data-content="{{ post.get_content() or '' }}" data-likes="{{ post.get_likes() }}"
+                        data-comments="{{ comment_count }}" data-category="{{ post.get_post_category() or '' }}"
+                        data-liked="{{ 'true' if post_info.user_has_liked else 'false' }}" {% if image_url %}
+                        data-image="{{ url_for('static', filename='uploads/' + image_url) }}" {% else %} data-image=""
+                        {% endif %}>
+                        <span class="mr-1">💬</span> <span class="comment-count">{{ comment_count }}</span>
+                    </button>
+                </div>
+                {% if post.get_post_category() %}
+                <span class="badge badge-info">{{ post.get_post_category()|title }}</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="container">
+        <div class="alert alert-warning text-center">
+            <h5>No Posts Found</h5>
+            <p class="mb-2">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                {% for category, message in messages %}
+                {% if category == 'info' or category == 'warning' %}
+                {{ message }}
+                {% endif %}
+                {% endfor %}
+                {% else %}
+                No posts available. Try different filters or be the first to create a post!
+                {% endif %}
+                {% endwith %}
+            </p>
+
+            {% set filters = request.args.getlist('filters') %}
+            {% if 'senior' in filters or 'youth' in filters %}
+            <div class="mt-3">
+                <a href="{{ url_for('createPost') }}" class="btn btn-primary">
+                    Create {{ 'Senior' if 'senior' in filters else 'Youth' if 'youth' in filters else '' }} Post
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- ==================== REPORT COMMENT MODAL ==================== -->
+<div id="reportCommentModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="reportCommentModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-white">
+                <h5 class="modal-title" id="reportCommentModalLabel">
+                    <span style="font-size: 1.2rem;">⚠️</span> Report Comment
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="reported-comment-preview mb-3 p-3 bg-light rounded">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center mr-2"
+                            style="width: 30px; height: 30px; font-size: 0.8rem;">
+                            <span id="reportCommentUserInitial">?</span>
+                        </div>
+                        <div>
+                            <strong id="reportCommentUsername">User</strong>
+                            <span class="text-muted ml-2" style="font-size: 0.7rem;">said:</span>
+                        </div>
+                    </div>
+                    <p id="reportCommentContent" class="mb-0 small"
+                        style="font-style: italic; white-space: pre-wrap; max-height: 100px; overflow-y: auto;">
+                        Loading...</p>
+                </div>
+
+                <form id="reportCommentForm">
+                    <input type="hidden" id="reportCommentId" name="comment_id">
+
+                    <div class="form-group mb-5"> <!-- CHANGED: added mb-4 -->
+                        <label for="reportReason" class="font-weight-bold">Reason for reporting:</label>
+                        <textarea id="reportReason" name="reason" class="form-control" rows="4"
+                            placeholder="Please explain why this comment violates our community guidelines (e.g., harassment, spam, hate speech, inappropriate content)..."
+                            maxlength="500" required></textarea>
+                        <small class="char-counter text-muted float-right mt-1">0/500</small>
+                    </div>
+
+                    <!-- Add mt-3 or mt-4 to push it down -->
+                    <div class="alert alert-info pt-2 px-3 mb-0 mt-3"> <!-- CHANGED: added mt-3 -->
+                        <small>
+                            <strong>Note:</strong> Your report will be reviewed by our moderation team.
+                            Please provide as much detail as possible.
+                        </small>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" id="submitReportBtn" class="btn btn-warning">
+                    <span class="report-btn-text">Submit Report</span>
+                    <span class="report-btn-spinner spinner-border spinner-border-sm d-none" role="status"
+                        aria-hidden="true"></span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Report Success Modal -->
+<div id="reportSuccessModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="reportSuccessModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm" role="document">
+        <div class="modal-content text-center">
+            <div class="modal-body py-4">
+                <div class="text-success mb-3" style="font-size: 3rem;">✓</div>
+                <h5 class="modal-title mb-2">Report Submitted</h5>
+                <p class="mb-0 text-muted">Thank you for helping keep our community safe!</p>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-success" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ============================================
+// MODAL COMMENT SYSTEM WITH TIKTOK-STYLE REPLIES
+// ============================================
+
+const currentUsername = "{{ current_username }}";
+let currentPostId = null;
+let currentPostCard = null;
+let replyingToCommentId = null;
+let replyingToUsername = null;
+let lastLikeClickTime = 0;
+const LIKE_CLICK_COOLDOWN = 1000; // 1 second in milliseconds
+
+// Utility Functions
+function formatTimeAgo(timestamp) {
+    try {
+        const now = new Date();
+        const commentTime = new Date(timestamp);
+        const diffMs = now - commentTime;
+        const diffSec = Math.floor(diffMs / 1000);
+        const diffMin = Math.floor(diffSec / 60);
+        const diffHour = Math.floor(diffMin / 60);
+        const diffDay = Math.floor(diffHour / 24);
+        const diffMonth = Math.floor(diffDay / 30);
+        const diffYear = Math.floor(diffDay / 365);
+
+        if (diffYear > 0) return `${diffYear}y ago`;
+        if (diffMonth > 0) return `${diffMonth}mo ago`;
+        if (diffDay > 0) return `${diffDay}d ago`;
+        if (diffHour > 0) return `${diffHour}h ago`;
+        if (diffMin > 0) return `${diffMin}m ago`;
+        return 'Just now';
+    } catch (e) {
+        return 'Recently';
+    }
+}
+
+function createLoadingIndicator() {
+    return `
+        <div class="text-center py-3">
+            <div class="spinner-border spinner-border-sm text-secondary" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+            <small class="text-muted ml-2">Loading comments...</small>
+        </div>
+    `;
+}
+
+// Render a single comment
+function renderComment(comment, isReply = false, parentUsername = null) {
+    const timeAgo = comment.formatted_time || formatTimeAgo(comment.timestamp);
+    const avatarInitial = comment.username ? comment.username[0].toUpperCase() : '?';
+    const isCommentOwner = comment.username === currentUsername;
+    
+    // Format content with TikTok-style @username if it's a reply
+    let contentHTML = comment.content;
+    if (isReply && parentUsername) {
+        contentHTML = `<span class="text-primary font-weight-bold">@${parentUsername}</span> ${comment.content}`;
+    }
+
+    return `
+        <div class="comment-item mb-2" data-comment-id="${comment.comment_id}" data-is-reply="${isReply}">
+            <div class="d-flex ${isReply ? 'ml-4' : ''}">
+                <div class="mr-2 flex-shrink-0">
+                    <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center" 
+                        style="width: 32px; height: 32px; font-size: 0.8rem;">
+                        ${avatarInitial}
+                    </div>
+                </div>
+                <div class="flex-grow-1">
+                    <div class="bg-light rounded p-2">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <span class="font-weight-bold small">${comment.username || 'Unknown User'}</span>
+                            <span class="text-muted comment-time" style="font-size: 0.7rem;">${timeAgo}</span>
+                        </div>
+                        
+                        <p class="mb-0 small comment-content" style="white-space: pre-wrap;">${contentHTML}</p>
+                        
+                        <div class="edit-comment-form d-none mt-2">
+                            <textarea class="form-control form-control-sm edit-comment-textarea" rows="2" maxlength="1000">${comment.content}</textarea>
+                            <div class="d-flex justify-content-end mt-2">
+                                <button type="button" class="btn btn-sm btn-outline-secondary cancel-edit-btn mr-1">Cancel</button>
+                                <button type="button" class="btn btn-sm btn-primary save-edit-btn" data-comment-id="${comment.comment_id}">Save</button>
+                            </div>
+                        </div>
+                        
+                        <div class="comment-actions mt-2">
+                            <button class="btn btn-link btn-sm p-0 text-muted reply-btn" 
+                                style="font-size: 0.7rem;" 
+                                data-comment-id="${comment.comment_id}"
+                                data-username="${comment.username}">
+                                Reply
+                            </button>
+                            
+                            ${isCommentOwner ? `
+                                <button class="btn btn-link btn-sm p-0 text-muted ml-2 edit-comment-btn" 
+                                    style="font-size: 0.7rem;" data-comment-id="${comment.comment_id}">
+                                    Edit
+                                </button>
+                                <button class="btn btn-link btn-sm p-0 text-danger ml-2 delete-comment-btn" 
+                                    style="font-size: 0.7rem;" data-comment-id="${comment.comment_id}">
+                                    Delete
+                                </button>
+                            ` : `
+                                <button class="btn btn-link btn-sm p-0 text-warning ml-2 report-comment-btn" 
+                                    style="font-size: 0.7rem;" 
+                                    data-comment-id="${comment.comment_id}"
+                                    data-username="${comment.username}"
+                                    data-content="${comment.content.replace(/"/g, '&quot;').replace(/'/g, '&#39;')}">
+                                    ⚠️ Report
+                                </button>
+                            `}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// Load and display comments for a post
+// Load and display comments for a post (with nested replies)
+function loadComments(postId) {
+    const commentsSection = document.getElementById('modalCommentsSection');
+    commentsSection.innerHTML = createLoadingIndicator();
+
+    fetch(`/get_comments/${postId}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const commentsSection = document.getElementById('modalCommentsSection');
+                
+                if (!data.comments || data.comments.length === 0) {
+                    commentsSection.innerHTML = `
+                        <div class="text-center text-muted py-4">
+                            <small>No comments yet. Be the first to comment!</small>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Function to recursively render comments and their replies
+                function renderCommentTree(comment, depth = 0, parentUsername = null) {
+                    const timeAgo = comment.formatted_time || formatTimeAgo(comment.timestamp);
+                    const avatarInitial = comment.username ? comment.username[0].toUpperCase() : '?';
+                    const isCommentOwner = comment.username === currentUsername;
+                    const isReply = depth > 0;
+                    
+                    // Format content with TikTok-style @username for replies
+                    let contentHTML = comment.content;
+                    if (parentUsername) {
+                        contentHTML = `<span class="text-primary font-weight-bold">@${parentUsername}</span> ${comment.content}`;
+                    }
+
+                    let html = `
+                        <div class="comment-item mb-2" data-comment-id="${comment.comment_id}" data-depth="${depth}">
+                            <div class="d-flex" style="margin-left: ${depth * 20}px;">
+                                <div class="mr-2 flex-shrink-0">
+                                    <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center" 
+                                        style="width: 32px; height: 32px; font-size: 0.8rem;">
+                                        ${avatarInitial}
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="bg-light rounded p-2">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <span class="font-weight-bold small">${comment.username || 'Unknown User'}</span>
+                                            <span class="text-muted comment-time" style="font-size: 0.7rem;">${timeAgo}</span>
+                                        </div>
+                                        
+                                        <p class="mb-0 small comment-content" style="white-space: pre-wrap;">${contentHTML}</p>
+                                        
+                                        <div class="edit-comment-form d-none mt-2">
+                                            <textarea class="form-control form-control-sm edit-comment-textarea" rows="2" maxlength="1000">${comment.content}</textarea>
+                                            <div class="d-flex justify-content-end mt-2">
+                                                <button type="button" class="btn btn-sm btn-outline-secondary cancel-edit-btn mr-1">Cancel</button>
+                                                <button type="button" class="btn btn-sm btn-primary save-edit-btn" data-comment-id="${comment.comment_id}">Save</button>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="comment-actions mt-2">
+                                            <button class="btn btn-link btn-sm p-0 text-muted reply-btn" 
+                                                style="font-size: 0.7rem;" 
+                                                data-comment-id="${comment.comment_id}"
+                                                data-username="${comment.username}">
+                                                Reply
+                                            </button>
+                                            
+                                            ${isCommentOwner ? `
+                                                <button class="btn btn-link btn-sm p-0 text-muted ml-2 edit-comment-btn" 
+                                                    style="font-size: 0.7rem;" data-comment-id="${comment.comment_id}">
+                                                    Edit
+                                                </button>
+                                                <button class="btn btn-link btn-sm p-0 text-danger ml-2 delete-comment-btn" 
+                                                    style="font-size: 0.7rem;" data-comment-id="${comment.comment_id}">
+                                                    Delete
+                                                </button>
+                                            ` : `
+                                                <button class="btn btn-link btn-sm p-0 text-warning ml-2 report-comment-btn" 
+                                                    style="font-size: 0.7rem;" 
+                                                    data-comment-id="${comment.comment_id}"
+                                                    data-username="${comment.username}"
+                                                    data-content="${comment.content.replace(/"/g, '&quot;').replace(/'/g, '&#39;')}">
+                                                    ⚠️ Report
+                                                </button>
+                                            `}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+                    // Recursively render replies if they exist
+                    if (comment.replies && comment.replies.length > 0) {
+                        comment.replies.forEach(reply => {
+                            html += renderCommentTree(reply, depth + 1, comment.username);
+                        });
+                    }
+
+                    return html;
+                }
+
+                // Render all root comments and their nested replies
+                let commentsHTML = '';
+                data.comments.forEach(rootComment => {
+                    commentsHTML += renderCommentTree(rootComment, 0);
+                });
+
+                commentsSection.innerHTML = commentsHTML;
+                
+                // Update comment count
+                document.getElementById('modalCommentsCount').textContent = data.comment_count;
+
+                // Update the post card comment count
+                if (currentPostCard) {
+                    const commentCountSpan = currentPostCard.querySelector('.comment-count');
+                    if (commentCountSpan) {
+                        commentCountSpan.textContent = data.comment_count;
+                    }
+                }
+
+                attachCommentEventListeners();
+            } else {
+                commentsSection.innerHTML = `
+                    <div class="text-center text-danger py-4">
+                        <small>Failed to load comments: ${data.error || 'Unknown error'}</small>
+                    </div>
+                `;
+            }
+        })
+        .catch(error => {
+            console.error('Error loading comments:', error);
+            document.getElementById('modalCommentsSection').innerHTML = `
+                <div class="text-center text-danger py-4">
+                    <small>Error loading comments: ${error.message}</small>
+                </div>
+            `;
+        });
+}
+
+// Set reply mode for a comment
+function setReplyMode(commentId, username) {
+    replyingToCommentId = commentId;
+    replyingToUsername = username;
+
+    // Update comment input placeholder
+    const commentInput = document.getElementById('commentInput');
+    commentInput.placeholder = `Reply to @${username}...`;
+    commentInput.focus();
+
+    // Remove existing reply indicator if any
+    const existingIndicator = document.getElementById('replyIndicator');
+    if (existingIndicator) {
+        existingIndicator.remove();
+    }
+
+    // Show reply indicator
+    const replyIndicator = document.createElement('div');
+    replyIndicator.id = 'replyIndicator';
+    replyIndicator.className = 'alert alert-info alert-dismissible fade show py-1 px-2 mb-2';
+    replyIndicator.innerHTML = `
+        <small>Replying to <strong>@${username}</strong></small>
+        <button type="button" class="close p-1 cancel-reply-btn" aria-label="Cancel reply">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    `;
+
+    const commentForm = document.getElementById('commentForm');
+    commentForm.parentNode.insertBefore(replyIndicator, commentForm);
+
+    // Add cancel reply event listener
+    document.querySelector('.cancel-reply-btn').addEventListener('click', cancelReplyMode);
+}
+
+// Cancel reply mode
+function cancelReplyMode() {
+    replyingToCommentId = null;
+    replyingToUsername = null;
+
+    // Remove reply indicator
+    const replyIndicator = document.getElementById('replyIndicator');
+    if (replyIndicator) {
+        replyIndicator.remove();
+    }
+
+    // Reset comment input
+    const commentInput = document.getElementById('commentInput');
+    commentInput.placeholder = 'Add a comment...';
+}
+
+// Enable comment edit mode
+function enableCommentEdit(commentId) {
+    const commentItem = document.querySelector(`.comment-item[data-comment-id="${commentId}"]`);
+    if (!commentItem) return;
+
+    const contentElement = commentItem.querySelector('.comment-content');
+    const editForm = commentItem.querySelector('.edit-comment-form');
+
+    contentElement.classList.add('d-none');
+    editForm.classList.remove('d-none');
+    
+    const textarea = editForm.querySelector('.edit-comment-textarea');
+    textarea.focus();
+    textarea.select();
+}
+
+// Disable comment edit mode
+function disableCommentEdit(commentItem) {
+    const contentElement = commentItem.querySelector('.comment-content');
+    const editForm = commentItem.querySelector('.edit-comment-form');
+
+    contentElement.classList.remove('d-none');
+    editForm.classList.add('d-none');
+}
+
+// Update a comment
+function updateComment(commentId, newContent, commentItem) {
+    if (newContent.length > 1000) {
+        alert('Comment is too long (max 1000 characters)');
+        return;
+    }
+
+    const saveBtn = commentItem.querySelector('.save-edit-btn');
+    const originalText = saveBtn.textContent;
+    saveBtn.textContent = 'Saving...';
+    saveBtn.disabled = true;
+
+    fetch(`/update_comment/${commentId}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({ content: newContent })
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const contentElement = commentItem.querySelector('.comment-content');
+                contentElement.textContent = newContent;
+                disableCommentEdit(commentItem);
+
+                const timeElement = commentItem.querySelector('.comment-time');
+                if (timeElement && data.comment && data.comment.formatted_time) {
+                    timeElement.textContent = data.comment.formatted_time;
+                }
+
+                // Show success message
+                const successMsg = document.createElement('div');
+                successMsg.className = 'alert alert-success alert-dismissible fade show py-1 px-2 mt-2';
+                successMsg.innerHTML = `
+                    <small>Comment updated successfully!</small>
+                    <button type="button" class="close p-1" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                `;
+                commentItem.querySelector('.comment-actions').before(successMsg);
+
+                setTimeout(() => {
+                    if (successMsg.parentNode) {
+                        successMsg.remove();
+                    }
+                }, 3000);
+            } else {
+                alert('Failed to update comment: ' + (data.error || 'Unknown error'));
+            }
+        })
+        .catch(error => {
+            console.error('Error updating comment:', error);
+            alert('An error occurred while updating comment');
+        })
+        .finally(() => {
+            saveBtn.textContent = originalText;
+            saveBtn.disabled = false;
+        });
+}
+
+// Delete a comment
+function deleteComment(commentId) {
+    if (!confirm('Are you sure you want to delete this comment?')) return;
+
+    fetch(`/delete_comment/${commentId}`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Reload comments to reflect deletion
+                loadComments(currentPostId);
+            } else {
+                alert('Failed to delete comment: ' + (data.error || 'Unknown error'));
+            }
+        })
+        .catch(error => {
+            console.error('Error deleting comment:', error);
+            alert('An error occurred while deleting comment');
+        });
+}
+
+// Toggle like function
+function toggleLike(likeBtn) {
+    const currentTime = Date.now();
+
+    if (currentTime - lastLikeClickTime < LIKE_CLICK_COOLDOWN) {
+        return;
+    }
+
+    lastLikeClickTime = currentTime;
+
+    const postId = likeBtn.getAttribute('data-post-id');
+    const isLiked = likeBtn.getAttribute('data-liked') === 'true';
+
+    likeBtn.disabled = true;
+
+    fetch(`/like_post/${postId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const newIsLiked = data.liked;
+
+                likeBtn.setAttribute('data-liked', newIsLiked.toString());
+                likeBtn.querySelector('.like-count').textContent = data.like_count;
+
+                if (newIsLiked) {
+                    likeBtn.classList.remove('btn-outline-primary');
+                    likeBtn.classList.add('btn-danger');
+                    likeBtn.querySelector('span:first-child').innerHTML = '❤️';
+                } else {
+                    likeBtn.classList.remove('btn-danger');
+                    likeBtn.classList.add('btn-outline-primary');
+                    likeBtn.querySelector('span:first-child').innerHTML = '🤍';
+                }
+
+                // Update modal like button
+                const modalLikeBtn = document.querySelector(`.modal-like-btn[data-post-id="${postId}"]`);
+                const modalLikeIcon = document.getElementById('modalLikeIcon');
+                if (modalLikeBtn && modalLikeIcon) {
+                    modalLikeBtn.setAttribute('data-liked', newIsLiked.toString());
+                    modalLikeIcon.textContent = newIsLiked ? '❤️' : '🤍';
+                }
+
+                document.getElementById('modalLikes').textContent = data.like_count;
+
+                if (data.badge_unlocked) {
+                    showBadgeUnlocked({
+                        badgeName: data.title || "New Badge",
+                        subtitle: data.subtitle || "🎉 Completed 🎉",
+                        desc: `You unlocked "${data.title || 'a new badge'}"!`,
+                        iconSrc: data.iconSrc
+                    });
+                }
+            }
+        })
+        .finally(() => {
+            likeBtn.disabled = false;
+        });
+}
+
+// Open post modal
+function openPostModal(element) {
+    const imageUrl = element.getAttribute('data-image');
+    const username = element.getAttribute('data-username');
+    const userInitial = element.getAttribute('data-user-initial');
+    const timestamp = element.getAttribute('data-timestamp');
+    const content = element.getAttribute('data-content');
+    const likes = element.getAttribute('data-likes');
+    const comments = element.getAttribute('data-comments');
+    const category = element.getAttribute('data-category');
+    const postId = element.getAttribute('data-post-id');
+    const liked = element.getAttribute('data-liked') === 'true';
+
+    currentPostId = postId;
+    currentPostCard = element.closest('.card');
+
+    const modalImage = document.getElementById('modalImage');
+    const imageColumn = document.querySelector('.col-md-8.col-lg-8.bg-dark');
+
+    if (imageUrl && imageUrl.trim() !== '') {
+        modalImage.src = imageUrl;
+        modalImage.style.display = 'block';
+        imageColumn.style.display = 'flex';
+    } else {
+        modalImage.style.display = 'none';
+        imageColumn.style.display = 'none';
+    }
+
+    document.getElementById('modalUsername').textContent = username;
+    document.getElementById('modalUserInitial').textContent = userInitial;
+    document.getElementById('modalTimestamp').textContent = timestamp;
+    document.getElementById('modalTimeAgo').textContent = timestamp;
+    document.getElementById('modalContent').textContent = content;
+    document.getElementById('modalLikes').textContent = likes;
+    document.getElementById('modalCommentsCount').textContent = comments;
+
+    const categoryBadge = document.getElementById('modalCategory');
+    if (category && category.trim() !== '') {
+        categoryBadge.style.display = 'inline-block';
+        categoryBadge.textContent = category.charAt(0).toUpperCase() + category.slice(1);
+    } else {
+        categoryBadge.style.display = 'none';
+    }
+
+    const modalLikeBtn = document.querySelector('.modal-like-btn');
+    const modalLikeIcon = document.getElementById('modalLikeIcon');
+    if (modalLikeBtn && postId) {
+        modalLikeBtn.setAttribute('data-post-id', postId);
+        modalLikeBtn.setAttribute('data-liked', liked.toString());
+        modalLikeIcon.textContent = liked ? '❤️' : '🤍';
+    }
+
+    loadComments(postId);
+    
+    const commentInput = document.getElementById('commentInput');
+    commentInput.value = '';
+    document.getElementById('commentSubmitBtn').disabled = true;
+    cancelReplyMode();
+    
+    const imageModal = new bootstrap.Modal(document.getElementById('imageModal'));
+    imageModal.show();
+}
+
+// Attach event listeners to comment actions
+function attachCommentEventListeners() {
+    // Reply button
+    document.querySelectorAll('.reply-btn').forEach(btn => {
+        btn.replaceWith(btn.cloneNode(true));
+    });
+
+    document.querySelectorAll('.reply-btn').forEach(btn => {
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const commentId = this.getAttribute('data-comment-id');
+            const username = this.getAttribute('data-username');
+            setReplyMode(commentId, username);
+        });
+    });
+
+    // Edit button
+    document.querySelectorAll('.edit-comment-btn').forEach(btn => {
+        btn.replaceWith(btn.cloneNode(true));
+    });
+
+    document.querySelectorAll('.edit-comment-btn').forEach(btn => {
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const commentId = this.getAttribute('data-comment-id');
+            enableCommentEdit(commentId);
+        });
+    });
+
+    // Delete button
+    document.querySelectorAll('.delete-comment-btn').forEach(btn => {
+        btn.replaceWith(btn.cloneNode(true));
+    });
+
+    document.querySelectorAll('.delete-comment-btn').forEach(btn => {
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const commentId = this.getAttribute('data-comment-id');
+            deleteComment(commentId);
+        });
+    });
+
+    // Cancel edit button
+    document.querySelectorAll('.cancel-edit-btn').forEach(btn => {
+        btn.replaceWith(btn.cloneNode(true));
+    });
+
+    document.querySelectorAll('.cancel-edit-btn').forEach(btn => {
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const commentItem = this.closest('.comment-item');
+            if (commentItem) {
+                disableCommentEdit(commentItem);
+            }
+        });
+    });
+
+    // Save edit button
+    document.querySelectorAll('.save-edit-btn').forEach(btn => {
+        btn.replaceWith(btn.cloneNode(true));
+    });
+
+    document.querySelectorAll('.save-edit-btn').forEach(btn => {
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const commentId = this.getAttribute('data-comment-id');
+            const commentItem = this.closest('.comment-item');
+            const textarea = commentItem.querySelector('.edit-comment-textarea');
+            const newContent = textarea.value.trim();
+
+            if (newContent) {
+                updateComment(commentId, newContent, commentItem);
+            } else {
+                alert('Comment cannot be empty');
+            }
+        });
+    });
+
+    // Report button
+    document.querySelectorAll('.report-comment-btn').forEach(btn => {
+        btn.replaceWith(btn.cloneNode(true));
+    });
+
+    document.querySelectorAll('.report-comment-btn').forEach(btn => {
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const commentId = this.getAttribute('data-comment-id');
+            const username = this.getAttribute('data-username');
+            const content = this.getAttribute('data-content');
+            reportComment(commentId, username, content);
+        });
+    });
+}
+
+// ============================================
+// REPORT COMMENT FUNCTIONALITY
+// ============================================
+
+let currentReportingCommentId = null;
+
+function initReportCommentModal() {
+    const reportReason = document.getElementById('reportReason');
+    if (reportReason) {
+        reportReason.addEventListener('input', function () {
+            const counter = this.nextElementSibling;
+            const length = this.value.length;
+            counter.textContent = `${length}/500`;
+            
+            const submitBtn = document.getElementById('submitReportBtn');
+            if (submitBtn) {
+                submitBtn.disabled = this.value.trim() === '' || this.value.length > 500;
+            }
+        });
+    }
+
+    const submitBtn = document.getElementById('submitReportBtn');
+    if (submitBtn) {
+        submitBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            submitReport();
+        });
+    }
+
+    $('#reportCommentModal').on('hidden.bs.modal', function () {
+        const form = document.getElementById('reportCommentForm');
+        if (form) form.reset();
+        document.getElementById('submitReportBtn').disabled = true;
+        currentReportingCommentId = null;
+    });
+}
+
+function reportComment(commentId, username, content) {
+    currentReportingCommentId = commentId;
+
+    document.getElementById('reportCommentId').value = commentId;
+    document.getElementById('reportCommentUsername').textContent = username;
+    document.getElementById('reportCommentUserInitial').textContent = username[0].toUpperCase();
+    document.getElementById('reportCommentContent').textContent = content.length > 200 ?
+        content.substring(0, 200) + '...' : content;
+
+    const form = document.getElementById('reportCommentForm');
+    if (form) form.reset();
+
+    $('#reportCommentModal').modal('show');
+}
+
+function submitReport() {
+    const commentId = currentReportingCommentId;
+    const reason = document.getElementById('reportReason').value.trim();
+
+    if (!commentId || !reason) return;
+
+    const submitBtn = document.getElementById('submitReportBtn');
+    const btnText = submitBtn.querySelector('.report-btn-text');
+    const btnSpinner = submitBtn.querySelector('.report-btn-spinner');
+
+    submitBtn.disabled = true;
+    btnText.textContent = 'Submitting...';
+    btnSpinner.classList.remove('d-none');
+
+    fetch('/api/report_comment', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({ comment_id: commentId, reason: reason })
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                $('#reportCommentModal').modal('hide');
+                $('#reportSuccessModal').modal('show');
+            } else {
+                alert('Error: ' + (data.error || 'Failed to submit report'));
+            }
+        })
+        .catch(error => {
+            console.error('Error submitting report:', error);
+            alert('Network error. Please try again.');
+        })
+        .finally(() => {
+            submitBtn.disabled = false;
+            btnText.textContent = 'Submit Report';
+            btnSpinner.classList.add('d-none');
+        });
+}
+
+// ============================================
+// DOM CONTENT LOADED - MAIN INITIALIZATION
+// ============================================
+document.addEventListener('DOMContentLoaded', function () {
+    // Initialize report modal
+    initReportCommentModal();
+
+    const filterForm = document.getElementById('filterForm');
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    const clickableImages = document.querySelectorAll('.clickable-image');
+    const commentButtons = document.querySelectorAll('.open-comment-modal-btn');
+    const commentForm = document.getElementById('commentForm');
+    const commentInput = document.getElementById('commentInput');
+    const commentSubmitBtn = document.getElementById('commentSubmitBtn');
+
+    // Filter buttons functionality
+    filterButtons.forEach(button => {
+        button.addEventListener('click', function () {
+            const filterValue = this.getAttribute('data-filter');
+            const checkbox = document.getElementById(filterValue);
+
+            if (checkbox) {
+                checkbox.checked = !checkbox.checked;
+                this.classList.toggle('active');
+                const hasCheck = this.innerHTML.includes('✓');
+                this.innerHTML = (checkbox.checked ? '✓ ' : '') + this.textContent.replace('✓ ', '');
+                setTimeout(() => filterForm.submit(), 200);
+            }
+        });
+    });
+
+    // Image click handlers
+    clickableImages.forEach(image => {
+        image.addEventListener('click', function () {
+            openPostModal(this);
+        });
+    });
+
+    // Comment button handlers
+    commentButtons.forEach(button => {
+        button.addEventListener('click', function () {
+            openPostModal(this);
+        });
+    });
+
+    // Comment input validation
+    commentInput.addEventListener('input', function () {
+        commentSubmitBtn.disabled = this.value.trim() === '';
+    });
+
+    // Comment/Reply form submission
+    commentForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        if (!currentPostId) {
+            alert('No post selected');
+            return;
+        }
+
+        const content = commentInput.value.trim();
+
+        if (!content) {
+            alert('Please enter a comment');
+            return;
+        }
+
+        if (content.length > 1000) {
+            alert('Comment is too long (max 1000 characters)');
+            return;
+        }
+
+        commentSubmitBtn.disabled = true;
+        commentInput.disabled = true;
+        const originalText = commentSubmitBtn.textContent;
+        commentSubmitBtn.textContent = replyingToCommentId ? 'Replying...' : 'Posting...';
+
+        let url, body;
+
+        if (replyingToCommentId) {
+            url = `/add_reply/${currentPostId}/${replyingToCommentId}`;
+            body = { content: content };
+        } else {
+            url = `/add_comment/${currentPostId}`;
+            body = { content: content };
+        }
+
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify(body)
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    loadComments(currentPostId);
+                    commentInput.value = '';
+                    cancelReplyMode();
+                    
+                    if (data.badge_unlocked) {
+                        showBadgeUnlocked({
+                            badgeName: data.title || "Commenter Badge",
+                            subtitle: data.subtitle || "Talking is fun!",
+                            desc: `You unlocked "${data.title || 'a new badge'}"!`,
+                            iconSrc: data.iconSrc
+                        });
+                    }
+                } else {
+                    alert('Failed to post: ' + (data.error || 'Unknown error'));
+                }
+            })
+            .catch(error => console.error('Error:', error))
+            .finally(() => {
+                commentSubmitBtn.disabled = false;
+                commentInput.disabled = false;
+                commentSubmitBtn.textContent = originalText;
+            });
+    });
+
+    // Global click handlers for like buttons
+    document.addEventListener('click', function (e) {
+        if (e.target.closest('.like-btn')) {
+            e.preventDefault();
+            toggleLike(e.target.closest('.like-btn'));
+        }
+
+        if (e.target.closest('.modal-like-btn')) {
+            e.preventDefault();
+            const modalLikeBtn = e.target.closest('.modal-like-btn');
+            const postId = modalLikeBtn.getAttribute('data-post-id');
+            const regularLikeBtn = document.querySelector(`.like-btn[data-post-id="${postId}"]`);
+            if (regularLikeBtn) {
+                toggleLike(regularLikeBtn);
+            }
+        }
+
+        if (e.target.closest('.modal-comment-btn')) {
+            e.preventDefault();
+            commentInput.focus();
+        }
+    });
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') {
+            cancelReplyMode();
+        }
+
+        if ((event.ctrlKey || event.metaKey) && event.key === 'Enter' && commentInput === document.activeElement) {
+            event.preventDefault();
+            commentForm.dispatchEvent(new Event('submit'));
+        }
+    });
+
+    // Add CSS styles
+    const style = document.createElement('style');
+    style.textContent = `
+        .comment-item[data-is-reply="true"] .bg-light {
+            background-color: #f8f9fa !important;
+        }
+        .ml-4 {
+            margin-left: 2rem !important;
+        }
+        .comment-content .text-primary {
+            color: #007bff !important;
+            font-weight: 600;
+        }
+        .reply-indicator {
+            border-left: 3px solid #007bff;
+            padding-left: 10px;
+            margin-left: 5px;
+        }
+        .edit-comment-textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+        .comment-actions .btn-link {
+            text-decoration: none;
+        }
+        .comment-actions .btn-link:hover {
+            text-decoration: underline;
+        }
+    `;
+    document.head.appendChild(style);
+});
+</script>
+
+{% endblock %}

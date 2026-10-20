@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+    <div class="admin-container">
+        <h1>Admin Dashboard</h1>
+        
+        <div class="admin-nav">
+            <a href="{{ url_for('admin_dashboard') }}">Dashboard</a>
+            <a href="{{ url_for('admin_report') }}">Report</a>
+            <a href="{{ url_for('home') }}">Back to Site</a>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Total Users</h3>
+                <div class="stat-number">{{ stats.total_users }}</div>
+            </div>
+            <div class="stat-card">
+                <h3>Total Posts</h3>
+                <div class="stat-number">{{ stats.total_posts }}</div>
+            </div>
+            <div class="stat-card">
+                <h3>Total Events</h3>
+                <div class="stat-number">{{ stats.total_events }}</div>
+            </div>
+        </div>
+        
+        <div class="recent-section">
+            <h2>Recent Signups</h2>
+            <table class="recent-table">
+                <thead>
+                    <tr>
+                        <th>User ID</th>
+                        <th>Username</th>
+                        <th>User Type</th>
+                        <th>Joined</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in stats.recent_signups %}
+                    <tr>
+                        <td>{{ user[0] }}</td>
+                        <td>{{ user[1] }}</td>
+                        <td>{{ user[2] }}</td>
+                        <td>{{ user[3] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}

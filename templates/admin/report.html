@@ -1,0 +1,813 @@
+{% extends "base.html" %}
+{% block title %}Report Moderation{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <h1>Report Moderation Dashboard</h1>
+
+    <div class="admin-nav">
+        <a href="{{ url_for('admin_dashboard') }}">Dashboard</a>
+        <a href="{{ url_for('admin_report') }}">Report</a>
+        <a href="{{ url_for('home') }}">Back to Site</a>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <h3>Pending Reports</h3>
+            <div class="stat-number">{{ reports|length }}</div>
+        </div>
+        <div class="stat-card">
+            <h3>Active Warnings</h3>
+            <div class="stat-number">{{ warning_stats.active_warnings }}</div>
+        </div>
+        <div class="stat-card">
+            <h3>Total Warnings</h3>
+            <div class="stat-number">{{ warning_stats.total_warnings }}</div>
+        </div>
+        <div class="stat-card">
+            <h3>Users with Warnings</h3>
+            <div class="stat-number">{{ warning_stats.users_with_warnings }}</div>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="report-tabs">
+        <button class="tab-btn active" onclick="showTab('reports')">Pending Reports ({{ reports|length }})</button>
+        <button class="tab-btn" onclick="showTab('warnings')">Active Warnings ({{ warning_stats.active_warnings
+            }})</button>
+        <button class="tab-btn" onclick="showTab('offenders')">Top Offenders</button>
+    </div>
+
+    <!-- Pending Reports Tab -->
+    <div id="reports-tab" class="tab-content active">
+        <h2>Reported Comments</h2>
+
+        {% if reports %}
+        <!-- In report.html, you can access the attributes directly -->
+        {% for report in reports %}
+        <div class="report-card" id="report-{{ report.report_id }}">
+            <div class="report-header">
+                <div class="report-meta">
+                    <span class="report-id">Report #{{ report.report_id }}</span>
+                    <span class="report-date">Reported: {{ report.reported_at }}</span>
+                    <span class="report-count">{{ report.total_reports }} total report(s)</span>
+                </div>
+                <div class="report-actions">
+                    <button class="btn-view" onclick="viewCommentDetails({{ report.comment_id }})">View Comment</button>
+                </div>
+            </div>
+
+            <div class="report-content">
+                <div class="reported-comment">
+                    <strong>Comment by {{ report.commenter_username }}:</strong>
+                    <p>{{ report.comment_content }}</p>
+                    <small>Posted: {{ report.comment_timestamp }}</small>
+                </div>
+
+                <div class="reported-post">
+                    <strong>On post by {{ report.post_author_username }}:</strong>
+                    <p>{{ report.post_content[:200] }}{% if report.post_content|length > 200 %}...{% endif %}</p>
+                </div>
+
+                <div class="report-reason">
+                    <strong>Reported by {{ report.reporter_username }}:</strong>
+                    <p class="reason-text">{{ report.reason }}</p>
+                </div>
+            </div>
+
+            <div class="moderation-actions">
+                <div class="action-group">
+                    <h4>Moderation Actions</h4>
+
+                    <!-- Warn Commenter -->
+                    <div class="action-item">
+                        <button class="btn-warn" data-user-id="{{ report.commenter_id }}"
+                            data-username="{{ report.commenter_username }}" data-comment-id="{{ report.comment_id }}"
+                            data-post-id="{{ report.post_id }}" data-report-id="{{ report.report_id }}"
+                            onclick="showWarningModalFromData(this)">
+                            Warn User
+                        </button>
+                        <span class="action-desc">Issue a warning to the commenter</span>
+                    </div>
+
+                    <!-- Delete Account - FIXED to use report data -->
+                    <div class="action-item severe">
+                        <button class="btn-delete-account" data-user-id="{{ report.commenter_id }}"
+                            data-username="{{ report.commenter_username }}" data-report-id="{{ report.report_id }}"
+                            onclick="showDeleteUserModalFromData(this)">
+                            Delete Account
+                        </button>
+                    </div>
+
+                    <!-- Dismiss Report -->
+                    <div class="action-item">
+                        <button class="btn-dismiss" onclick="dismissReport({{ report.report_id }}, this)">
+                            Dismiss Report
+                        </button>
+                        <span class="action-desc">Mark as not a violation</span>
+                    </div>
+
+                    <!-- Dismiss All Reports for This Comment -->
+                    <div class="action-item">
+                        <button class="btn-dismiss-all" onclick="dismissAllReports({{ report.comment_id }}, this)">
+                            Dismiss All Reports for This Comment
+                        </button>
+                        <span class="action-desc">Dismiss all pending reports for this comment</span>
+                    </div>
+                </div>
+
+                <div class="admin-notes">
+                    <textarea id="notes-{{ report.report_id }}" placeholder="Add admin notes..."
+                        class="admin-notes-textarea"></textarea>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <p>No pending reports. Great job keeping the community clean!</p>
+        </div>
+        {% endfor %}
+        {% endif %}
+    </div>
+
+<!-- Active Warnings Tab -->
+<div id="warnings-tab" class="tab-content">
+    <h2>Active Warnings</h2>
+
+    {% if active_warnings %}
+    <table class="admin-warnings-table">
+        <thead>
+            <tr>
+                <th>User</th>
+                <th>Reason</th>
+                <th>Type</th>
+                <th>Strike</th>
+                <th>Issued By</th>
+                <th>Issued</th>
+                <th>Expires</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for warning in active_warnings %}
+            <tr id="warning-row-{{ warning.warning_id }}">
+                <td>
+                    <strong>{{ warning.username }}</strong>
+                    <br><small>ID: {{ warning.user_id }}</small>
+                </td>
+                <td>{{ warning.reason[:50] }}{% if warning.reason|length > 50 %}...{% endif %}</td>
+                <td><span class="badge-type">{{ warning.warning_type }}</span></td>
+                <td><span class="strike-count">{{ warning.warning_count }}</span></td>
+                <td>{{ warning.admin_username }}</td>
+                <td>{{ warning.issued_at }}</td>
+                <td>{{ warning.expires_at }}</td>
+                <td>
+                    <button class="btn-revoke" onclick="revokeWarning({{ warning.warning_id }})">Revoke</button>
+                    <button class="btn-view" onclick="viewUserWarnings({{ warning.user_id }})">History</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+        <p>No active warnings. All users are on their best behavior!</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Top Offenders Tab -->
+<div id="offenders-tab" class="tab-content">
+    <h2>Top Offenders</h2>
+
+    {% if warning_stats.top_offenders %}
+    <table class="admin-offenders-table">
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Active Warnings</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for offender in warning_stats.top_offenders %}
+            <tr>
+                <td><strong>{{ offender[0] }}</strong></td>
+                <td><span class="strike-count">{{ offender[1] }}</span></td>
+                <td>
+                    <button class="btn-view" onclick="viewUserWarnings({{ offender[2] }})">View Warnings</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+        <p>No repeat offenders. Keep up the good work!</p>
+    </div>
+    {% endif %}
+</div>
+</div>
+
+<!-- Warning Modal -->
+<div id="warningModal" class="modal admin-modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Issue Warning</h2>
+        <form id="warningForm">
+            <input type="hidden" id="warningUserId" name="user_id">
+            <input type="hidden" id="warningCommentId" name="comment_id">
+            <input type="hidden" id="warningPostId" name="post_id">
+            <input type="hidden" id="warningReportId" name="report_id">
+            
+            <div class="form-group">
+                <label>User:</label>
+                <span id="warningUsername"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="warningReason">Reason for warning:</label>
+                <textarea id="warningReason" name="reason" rows="4" required></textarea>
+                <small class="char-counter">0/500</small>
+            </div>
+
+            <div class="form-group">
+                <label for="warningType">Warning Type:</label>
+                <select id="warningType" name="warning_type">
+                    <option value="comment">Inappropriate Comment</option>
+                    <option value="post">Inappropriate Post</option>
+                    <option value="harassment">Harassment</option>
+                    <option value="spam">Spam</option>
+                    <option value="general">General Violation</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="expiresDays">Warning Duration:</label>
+                <select id="expiresDays" name="expires_days">
+                    <option value="7">7 days</option>
+                    <option value="14">14 days</option>
+                    <option value="30" selected>30 days</option>
+                    <option value="60">60 days</option>
+                    <option value="90">90 days</option>
+                    <option value="365">1 year</option>
+                    <option value="0">Permanent (no expiry)</option>
+                </select>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn-submit">Issue Warning</button>
+                <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Delete User Modal -->
+<div id="deleteUserModal" class="modal admin-modal">
+    <div class="modal-content delete-modal">
+        <span class="close">&times;</span>
+        <h2>Delete User Account</h2>
+        <div class="warning-icon">⚠️</div>
+        <p class="delete-warning">This action is permanent and cannot be undone.</p>
+
+        <form id="deleteUserForm">
+            <input type="hidden" id="deleteUserId" name="user_id">
+            <input type="hidden" id="deleteReportId" name="report_id">
+
+            <div class="form-group">
+                <label>User:</label>
+                <span id="deleteUsername"></span>
+            </div>
+
+            <div class="form-group">
+                <label for="deleteReason">Reason for deletion:</label>
+                <textarea id="deleteReason" name="reason" rows="4" required></textarea>
+                <small class="char-counter">0/500</small>
+            </div>
+
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="confirmDelete" required>
+                    I confirm that I want to permanently delete this user account
+                </label>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn-delete">Delete Account</button>
+                <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Comment Details Modal -->
+<div id="commentModal" class="modal admin-modal">
+    <div class="modal-content large">
+        <span class="close">&times;</span>
+        <h2>Comment Details</h2>
+        <div id="commentDetails"></div>
+
+        <h3>Report History</h3>
+        <div id="reportHistory"></div>
+    </div>
+</div>
+
+<!-- User Warning History Modal -->
+<div id="userWarningsModal" class="modal admin-modal">
+    <div class="modal-content large">
+        <span class="close">&times;</span>
+        <h2>User Warning History</h2>
+        <div id="userWarningsContent"></div>
+    </div>
+</div>
+
+<script>
+    // ============================================
+    // ADMIN REPORT MODERATION - AJAX FUNCTIONS
+    // Instant UI updates without page refresh
+    // ============================================
+
+    // Tab switching
+    function showTab(tabName) {
+        document.querySelectorAll('.tab-content').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        document.getElementById(tabName + '-tab').classList.add('active');
+        event.target.classList.add('active');
+    }
+
+    // ============ DISMISS SINGLE REPORT ============
+    function dismissReport(reportId, buttonElement) {
+        const reportCard = document.getElementById(`report-${reportId}`);
+        const notes = document.getElementById(`notes-${reportId}`)?.value || 'Dismissed by admin';
+
+        if (!confirm('Are you sure you want to dismiss this report?')) {
+            return;
+        }
+
+        // Show loading state
+        const originalText = buttonElement.textContent;
+        buttonElement.disabled = true;
+        buttonElement.innerHTML = 'Dismissing...';
+
+        fetch(`/admin/report/resolve/${reportId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                action: 'dismiss',
+                admin_notes: notes
+            })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Remove the report card with animation
+                    reportCard.style.transition = 'all 0.3s ease';
+                    reportCard.style.opacity = '0';
+                    reportCard.style.transform = 'translateX(20px)';
+
+                    setTimeout(() => {
+                        reportCard.remove();
+                        updatePendingReportsCount();
+                        alert('Report dismissed successfully');
+
+                        // Check if no more reports
+                        const reportsContainer = document.querySelector('#reports-tab');
+                        const remainingReports = reportsContainer.querySelectorAll('[id^="report-"]');
+                        if (remainingReports.length === 0) {
+                            const emptyState = document.createElement('div');
+                            emptyState.className = 'empty-state';
+                            emptyState.innerHTML = '<p>No pending reports. Great job keeping the community clean!</p>';
+                            reportsContainer.appendChild(emptyState);
+                        }
+                    }, 300);
+                } else {
+                    alert('Error: ' + data.error);
+                    buttonElement.disabled = false;
+                    buttonElement.innerHTML = originalText;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred');
+                buttonElement.disabled = false;
+                buttonElement.innerHTML = originalText;
+            });
+    }
+
+    // ============ DISMISS ALL REPORTS FOR COMMENT ============
+    function dismissAllReports(commentId, buttonElement) {
+        const notes = prompt('Enter reason for dismissing all reports:');
+        if (notes === null) return;
+
+        const originalText = buttonElement.textContent;
+        buttonElement.disabled = true;
+        buttonElement.innerHTML = 'Dismissing all...';
+
+        fetch(`/admin/report/dismiss_all/${commentId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                admin_notes: notes
+            })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(`Dismissed ${data.dismissed_count} report(s)`);
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred');
+            })
+            .finally(() => {
+                buttonElement.disabled = false;
+                buttonElement.innerHTML = originalText;
+            });
+    }
+
+    // ============ ISSUE WARNING ============
+    function showWarningModal(userId, username, commentId, postId, reportId) {
+        console.log('WARNING MODAL - Received params:', {
+            userId: userId,
+            username: username,
+            commentId: commentId,
+            postId: postId,
+            reportId: reportId
+        });
+        
+        // Check if userId is valid
+        if (!userId || userId === 'undefined' || userId === 'null') {
+            console.error('Invalid user ID:', userId);
+            alert('Error: Invalid user ID. Cannot issue warning.');
+            return;
+        }
+        
+        const modal = document.getElementById('warningModal');
+        
+        // Set the values
+        document.getElementById('warningUserId').value = userId;
+        document.getElementById('warningUsername').textContent = username || 'Unknown User';
+        document.getElementById('warningCommentId').value = commentId || '';
+        document.getElementById('warningPostId').value = postId || '';
+        document.getElementById('warningReportId').value = reportId || '';
+        
+        // Clear previous reason
+        const reasonField = document.getElementById('warningReason');
+        if (reasonField) {
+            reasonField.value = '';
+            const counter = document.querySelector('#warningModal .char-counter');
+            if (counter) counter.textContent = '0/500';
+        }
+        
+        modal.style.display = 'block';
+    }
+
+    function showWarningModalFromData(button) {
+        const userId = button.dataset.userId;
+        const username = button.dataset.username;
+        const commentId = button.dataset.commentId;
+        const postId = button.dataset.postId;
+        const reportId = button.dataset.reportId;
+
+        showWarningModal(userId, username, commentId, postId, reportId);
+    }
+
+    function submitWarning() {
+        const reasonField = document.getElementById('warningReason');
+        const reason = reasonField ? reasonField.value.trim() : '';
+
+        if (!reason) {
+            alert('Please provide a reason for the warning');
+            return;
+        }
+
+        if (reason.length > 500) {
+            alert('Reason is too long (max 500 characters)');
+            return;
+        }
+
+        const formData = {
+            user_id: document.getElementById('warningUserId').value,
+            reason: reason,
+            warning_type: document.getElementById('warningType').value,
+            comment_id: document.getElementById('warningCommentId').value || null,
+            post_id: document.getElementById('warningPostId').value || null,
+            expires_days: parseInt(document.getElementById('expiresDays').value),
+            report_id: document.getElementById('warningReportId')?.value || null
+        };
+
+        console.log('Submitting warning:', formData);
+
+        const submitBtn = document.querySelector('#warningModal .btn-submit');
+        const originalText = submitBtn.textContent;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = 'Issuing...';
+
+        fetch('/admin/issue_warning', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Warning response:', data);
+                if (data.success) {
+                    closeModal('warningModal');
+
+                    // If this warning was from a report, remove that report card
+                    if (formData.report_id) {
+                        const reportCard = document.getElementById(`report-${formData.report_id}`);
+                        if (reportCard) {
+                            reportCard.remove();
+                        }
+                    }
+
+                    alert(data.message);
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    alert('Error: ' + (data.error || 'Failed to issue warning'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            })
+            .finally(() => {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            });
+    }
+
+    // ============ DELETE USER ACCOUNT ============
+    function showDeleteUserModal(userId, username, reportId) {
+        console.log('DELETE MODAL - Received params:', {
+            userId: userId,
+            username: username,
+            reportId: reportId
+        });
+        
+        // Check if userId is valid
+        if (!userId || userId === 'undefined' || userId === 'null') {
+            console.error('Invalid user ID:', userId);
+            alert('Error: Invalid user ID. Cannot delete account.');
+            return;
+        }
+        
+        const modal = document.getElementById('deleteUserModal');
+        
+        document.getElementById('deleteUserId').value = userId;
+        document.getElementById('deleteUsername').textContent = username || 'Unknown User';
+        document.getElementById('deleteReportId').value = reportId || '';
+        
+        // Clear previous reason and checkbox
+        const reasonField = document.getElementById('deleteReason');
+        if (reasonField) {
+            reasonField.value = '';
+            const counter = document.querySelector('#deleteUserModal .char-counter');
+            if (counter) counter.textContent = '0/500';
+        }
+        
+        const confirmCheckbox = document.getElementById('confirmDelete');
+        if (confirmCheckbox) {
+            confirmCheckbox.checked = false;
+        }
+        
+        modal.style.display = 'block';
+    }
+
+    function showDeleteUserModalFromData(button) {
+        const userId = button.dataset.userId;
+        const username = button.dataset.username;
+        const reportId = button.dataset.reportId;
+        showDeleteUserModal(userId, username, reportId);
+    }
+
+    function submitDeleteUser() {
+        const confirmCheckbox = document.getElementById('confirmDelete');
+        if (!confirmCheckbox || !confirmCheckbox.checked) {
+            alert('Please confirm that you want to delete this account');
+            return;
+        }
+
+        const reasonField = document.getElementById('deleteReason');
+        const reason = reasonField ? reasonField.value.trim() : '';
+
+        if (!reason) {
+            alert('Please provide a reason for deletion');
+            return;
+        }
+
+        if (reason.length > 500) {
+            alert('Reason is too long (max 500 characters)');
+            return;
+        }
+
+        const formData = {
+            user_id: document.getElementById('deleteUserId').value,
+            reason: reason,
+            report_id: document.getElementById('deleteReportId')?.value || null
+        };
+
+        console.log('Submitting delete:', formData);
+
+        if (!confirm('WARNING: This will permanently delete the user account and all their content. This action cannot be undone. Are you absolutely sure?')) {
+            return;
+        }
+
+        const submitBtn = document.querySelector('#deleteUserModal .btn-delete');
+        const originalText = submitBtn.textContent;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = 'Deleting...';
+
+        fetch('/admin/delete_user_with_reason', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Delete response:', data);
+                if (data.success) {
+                    closeModal('deleteUserModal');
+
+                    // If this deletion was from a report, remove that report card
+                    if (formData.report_id) {
+                        const reportCard = document.getElementById(`report-${formData.report_id}`);
+                        if (reportCard) {
+                            reportCard.remove();
+                        }
+                    }
+
+                    alert(data.message);
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    alert('Error: ' + (data.error || 'Failed to delete user'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            })
+            .finally(() => {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            });
+    }
+
+    // ============ REVOKE WARNING ============
+    function revokeWarning(warningId, buttonElement) {
+        if (!confirm('Are you sure you want to revoke this warning?')) {
+            return;
+        }
+
+        const originalText = buttonElement.textContent;
+        buttonElement.disabled = true;
+        buttonElement.innerHTML = 'Revoking...';
+
+        fetch(`/admin/revoke_warning/${warningId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const warningRow = document.getElementById(`warning-row-${warningId}`);
+                    if (warningRow) {
+                        warningRow.remove();
+                        alert('Warning revoked successfully');
+                    }
+                } else {
+                    alert('Error: ' + (data.error || 'Failed to revoke warning'));
+                    buttonElement.disabled = false;
+                    buttonElement.innerHTML = originalText;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred');
+                buttonElement.disabled = false;
+                buttonElement.innerHTML = originalText;
+            });
+    }
+
+    // ============ VIEW FUNCTIONS ============
+    function viewCommentDetails(commentId) {
+        alert('View comment details - Comment ID: ' + commentId);
+        // Implement actual comment view functionality
+    }
+
+    function viewUserWarnings(userId) {
+        alert('View user warnings - User ID: ' + userId);
+        // Implement actual user warnings view functionality
+    }
+
+    // ============ UTILITY FUNCTIONS ============
+
+    function updatePendingReportsCount() {
+        const pendingCount = document.querySelectorAll('[id^="report-"]').length;
+        const statsCard = document.querySelector('.stat-card:first-child .stat-number');
+        if (statsCard) {
+            statsCard.textContent = pendingCount;
+        }
+
+        const reportsTabBtn = document.querySelector('.tab-btn[onclick*="reports"]');
+        if (reportsTabBtn) {
+            reportsTabBtn.textContent = `Pending Reports (${pendingCount})`;
+        }
+    }
+
+    // ============ MODAL HANDLING ============
+
+    function closeModal(modalId) {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+            modal.style.display = 'none';
+        }
+    }
+
+    // ============ FORM SUBMISSIONS ============
+
+    document.addEventListener('DOMContentLoaded', function () {
+        console.log('DOM loaded - initializing forms');
+
+        // Warning form submission
+        const warningForm = document.getElementById('warningForm');
+        if (warningForm) {
+            warningForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+                console.log('Warning form submitted');
+                submitWarning();
+            });
+        }
+
+        // Delete user form submission
+        const deleteForm = document.getElementById('deleteUserForm');
+        if (deleteForm) {
+            deleteForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+                console.log('Delete form submitted');
+                submitDeleteUser();
+            });
+        }
+
+        // Character counters
+        const warningReason = document.getElementById('warningReason');
+        if (warningReason) {
+            warningReason.addEventListener('input', function () {
+                const counter = this.nextElementSibling;
+                if (counter && counter.classList.contains('char-counter')) {
+                    counter.textContent = `${this.value.length}/500`;
+                }
+            });
+        }
+
+        const deleteReason = document.getElementById('deleteReason');
+        if (deleteReason) {
+            deleteReason.addEventListener('input', function () {
+                const counter = this.nextElementSibling;
+                if (counter && counter.classList.contains('char-counter')) {
+                    counter.textContent = `${this.value.length}/500`;
+                }
+            });
+        }
+
+        // Close buttons
+        document.querySelectorAll('.close').forEach(btn => {
+            btn.addEventListener('click', function () {
+                this.closest('.modal').style.display = 'none';
+            });
+        });
+
+        // Update pending reports count
+        setTimeout(updatePendingReportsCount, 100);
+    });
+
+    // Close modal when clicking outside
+    window.onclick = function (event) {
+        if (event.target.classList.contains('modal')) {
+            event.target.style.display = 'none';
+        }
+    }
+</script>
+
+{% endblock %}

@@ -1,0 +1,96 @@
+<!-- Warning Notification Alert (One-time) -->
+{% if session.get('has_active_warnings', False) %}
+<div class="alert alert-warning alert-dismissible fade show warning-flash" role="alert" id="warningFlash">
+    <div class="container">
+        <div class="d-flex align-items-center">
+            <div class="mr-3">
+                <i class="fas fa-exclamation-triangle fa-2x"></i>
+            </div>
+            <div class="flex-grow-1">
+                <strong>Account Warning Notice</strong>
+                <p class="mb-0">You have {{ session.get('warning_count', 1) }} active warning(s). 
+                {% if session.get('strike_count', 0) >= 3 %}
+                    <span class="badge badge-danger ml-2">Strike {{ session.get('strike_count') }}</span>
+                {% endif %}
+                </p>
+                <small class="text-muted">Reason: {{ session.get('latest_warning_reason', 'No reason provided')[:100] }}</small>
+            </div>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close" onclick="clearWarnings()">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden Warning Details Modal (for more info) -->
+<div class="modal fade" id="warningDetailsModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title">Warning Details</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Reason:</strong> {{ session.get('latest_warning_reason', 'No reason provided') }}</p>
+                <p><strong>Date issued:</strong> {{ session.get('latest_warning_date', 'Unknown') }}</p>
+                <p><strong>Total warnings:</strong> {{ session.get('warning_count', 1) }}</p>
+                <p><strong>Current strike:</strong> {{ session.get('strike_count', 1) }}</p>
+                
+                <hr>
+                <h6>Consequences:</h6>
+                <ul class="small">
+                    {% if session.get('strike_count', 0) >= 5 %}
+                        <li class="text-danger">⚠️ Account flagged for deletion review</li>
+                    {% elif session.get('strike_count', 0) >= 4 %}
+                        <li class="text-danger">⚠️ 30-day suspension active</li>
+                    {% elif session.get('strike_count', 0) >= 3 %}
+                        <li class="text-warning">⚠️ 7-day posting restriction</li>
+                    {% elif session.get('strike_count', 0) >= 2 %}
+                        <li class="text-warning">⚠️ 3-day posting restriction</li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function clearWarnings() {
+    // Clear warning session data via AJAX
+    fetch('/clear_warning_message', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    });
+}
+
+// Add click handler to show more details
+document.addEventListener('DOMContentLoaded', function() {
+    const warningFlash = document.getElementById('warningFlash');
+    if (warningFlash) {
+        warningFlash.addEventListener('click', function(e) {
+            if (!e.target.closest('.close')) {
+                $('#warningDetailsModal').modal('show');
+            }
+        });
+        warningFlash.style.cursor = 'pointer';
+    }
+});
+</script>
+
+<style>
+.warning-flash {
+    border-left: 5px solid #dc3545;
+    border-radius: 0;
+    margin-bottom: 0;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+.warning-flash:hover {
+    background-color: #fff3cd;
+}
+</style>
+{% endif %}

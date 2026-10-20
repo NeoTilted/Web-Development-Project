@@ -1,0 +1,334 @@
+{% extends "base.html" %}
+{% block title %}Events{% endblock %}
+
+{% block content %}
+<!-- ================= NAVBAR (SAME AS home.html) ================= -->
+<div class="container-fluid px-0">
+    <header class="nav-bar">
+        <div class="d-flex align-items-center justify-content-between nav-inner mt-2">
+            <!-- Logo -->
+            <a href="{{ url_for('home') }}" class="logo-link">
+                <img src="{{ url_for('static', filename='img/Logo.png') }}" alt="Logo" class="logo-img">
+            </a>
+
+            <!-- Search -->
+            <div class="search-container">
+                <form class="form-inline m-0" action="{{ url_for('search') }}" method="GET">
+                    <div class="input-group">
+                        <input type="search" name="query" placeholder="Search" class="form-control"
+                            value="{{ query if query is defined else '' }}" />
+                        <div class="input-group-append">
+                            <button class="btn btn-outline-light" type="submit">🔍</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- RIGHT SIDE BUTTON GROUP -->
+            <div class="d-flex align-items-center">
+
+                <!-- Tutorial Button -->
+                <button type="button"
+                    class="btn btn-dark btn-size mr-2 d-flex align-items-center justify-content-center p-0 tutorial-btn"
+                    data-toggle="modal" data-target="#tutorialModal" data-page="events" title="Tutorial">
+
+                    <svg width="18" height="18" viewBox="0 0 64 64" fill="none" stroke="white" stroke-width="2.6"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M6 14h18a6 6 0 0 1 6 6v28H12a6 6 0 0 0-6 6V14z" />
+                        <path d="M58 14H40a6 6 0 0 0-6 6v28h18a6 6 0 0 1 6 6V14z" />
+                        <line x1="16" y1="22" x2="24" y2="22" />
+                        <line x1="16" y1="28" x2="24" y2="28" />
+                        <line x1="16" y1="34" x2="24" y2="34" />
+                        <line x1="40" y1="22" x2="48" y2="22" />
+                        <line x1="40" y1="28" x2="48" y2="28" />
+                        <line x1="40" y1="34" x2="48" y2="34" />
+                        <path d="M44 46v-14" />
+                        <path d="M48 48v-12" />
+                        <path d="M52 50v-10" />
+                        <path d="M44 46c-3-6 8-8 8 0" />
+                    </svg>
+                </button>
+
+                <!-- Hamburger Menu -->
+                <button class="btn btn-dark hamburger-btn btn-size" type="button" aria-label="Toggle navigation"
+                    aria-controls="mobile-nav" aria-expanded="false">
+                    ☰
+                </button>
+
+            </div>
+    </header>
+</div>
+
+<!-- Overlay (hidden by default) -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<!-- Off-canvas Sidebar (right side) -->
+<nav id="mobile-nav" aria-label="Main navigation">
+    <button class="menu-close-btn" aria-label="Close menu">&times;</button>
+    <ul class="nav-list list-unstyled mb-0">
+        <li><a href="{{ url_for('home') }}" class="nav-link text-white">Home</a></li>
+        <li><a href=" {{ url_for('explore') }}" class="nav-link text-white">Explore</a></li>
+        <li><a href="{{ url_for('createPost') }}" class="nav-link text-white">Create</a></li>
+        <li><a href="{{ url_for('events') }}" class="nav-link text-white active">Events</a></li>
+        <li><a href="{{ url_for('profile', user_id=session['user_id']) }}" class="nav-link text-white">Profile</a></li>
+        <li>
+            <hr class="bg-light my-3">
+        </li>
+        <!-- Additional Links -->
+        <li><a href="{{ url_for('logout') }}" class="nav-link text-danger">Logout</a></li>
+    </ul>
+</nav>
+<!-- ============================================================ -->
+
+<!-- ================= PAGE CONTENT ================= -->
+<div class="container mt-3">
+    <!-- Create Event Button -->
+    <button class="create-event-btn" id="createEventBtn">Create Event</button>
+
+    <!-- Event Form -->
+    <form class="event-form" id="eventForm" method="POST" action="{{ url_for('events') }}">
+        <div class="form-group">
+            <label class="form-label">Name of event:</label>
+            <input type="text" class="form-input" id="event_name" name="event_name" required>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Location of event:</label>
+            <input type="text" class="form-input" id="location" name="location" required>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Itinerary of event:</label>
+            <textarea class="form-textarea" id="event_itinerary" name="event_itinerary"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Date & time of event:</label>
+            <input type="datetime-local" class="form-input" id="event_date" name="event_date" required>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Duration (minutes):</label>
+            <input type="number" class="form-input" id="event_duration" name="event_duration" min="1"
+                placeholder="e.g. 60">
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Max participants:</label>
+            <input type="number" class="form-input" id="max_participants" name="max_participants" min="1" value="10">
+        </div>
+
+        <!-- Badge Notice -->
+        <div class="badge-notice">
+            Hosting/attending 5 events will grant users a badge!!!
+        </div>
+
+        <!-- Preview Button (instead of direct Post) -->
+        <button type="button" class="post-btn" id="previewBtn">Preview Event</button>
+    </form>
+</div>
+<!-- ================================================= -->
+
+<!-- ================= CONFIRMATION MODAL ================= -->
+<div class="modal fade" id="confirmEventModal" tabindex="-1" role="dialog" aria-labelledby="confirmEventModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmEventModalLabel">Confirm Event Details</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="event-preview-card">
+                    <h4 class="event-preview-title" id="previewEventName"></h4>
+
+                    <div class="event-preview-details">
+                        <div class="detail-row">
+                            <span class="detail-label">📍 Location:</span>
+                            <span class="detail-value" id="previewLocation"></span>
+                        </div>
+
+                        <div class="detail-row">
+                            <span class="detail-label">📅 Date & Time:</span>
+                            <span class="detail-value" id="previewDate"></span>
+                        </div>
+
+                        <div class="detail-row" id="durationRow">
+                            <span class="detail-label">⏱ Duration:</span>
+                            <span class="detail-value" id="previewDuration"></span>
+                        </div>
+
+                        <div class="detail-row">
+                            <span class="detail-label">👥 Max Participants:</span>
+                            <span class="detail-value" id="previewMaxParticipants"></span>
+                        </div>
+
+                        <div class="detail-row">
+                            <span class="detail-label">👤 Organizer:</span>
+                            <span class="detail-value" id="previewOrganizer"></span>
+                        </div>
+
+                        <div class="detail-row itinerary-row" id="itineraryRow">
+                            <span class="detail-label">📝 Itinerary:</span>
+                            <p class="detail-value itinerary-text" id="previewItinerary"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Edit</button>
+                <button type="button" class="btn btn-primary" id="confirmSubmitBtn">Create Event ✓</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- ====================================================== -->
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Mobile menu functionality
+        const hamburgerBtn = document.querySelector('.hamburger-btn');
+        const closeMenuBtn = document.querySelector('.menu-close-btn');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+        const mobileNav = document.getElementById('mobile-nav');
+
+        if (hamburgerBtn) {
+            hamburgerBtn.addEventListener('click', function () {
+                mobileNav.classList.add('active');
+                sidebarOverlay.classList.add('active');
+                this.setAttribute('aria-expanded', 'true');
+            });
+        }
+
+        if (closeMenuBtn) {
+            closeMenuBtn.addEventListener('click', function () {
+                mobileNav.classList.remove('active');
+                sidebarOverlay.classList.remove('active');
+                hamburgerBtn.setAttribute('aria-expanded', 'false');
+            });
+        }
+
+        if (sidebarOverlay) {
+            sidebarOverlay.addEventListener('click', function () {
+                mobileNav.classList.remove('active');
+                sidebarOverlay.classList.remove('active');
+                hamburgerBtn.setAttribute('aria-expanded', 'false');
+            });
+        }
+
+        // Toggle form visibility with Create Event button
+        const createBtn = document.getElementById('createEventBtn');
+        const eventForm = document.getElementById('eventForm');
+
+        if (createBtn && eventForm) {
+            // Hide form initially
+            eventForm.style.display = 'none';
+
+            createBtn.addEventListener('click', function () {
+                if (eventForm.style.display === 'none') {
+                    eventForm.style.display = 'block';
+                    createBtn.textContent = 'Cancel';
+                    createBtn.classList.add('cancel-btn');
+                    // Add this line to make the button red
+                    createBtn.style.backgroundColor = '#dc3545'; // Bootstrap red color
+                } else {
+                    eventForm.style.display = 'none';
+                    createBtn.textContent = 'Create Event';
+                    createBtn.classList.remove('cancel-btn');
+                    // Reset to original green color
+                    createBtn.style.backgroundColor = '#4CAF50';
+                }
+            });
+        }
+        // Preview button click handler
+        const previewBtn = document.getElementById('previewBtn');
+        if (previewBtn) {
+            previewBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+
+                // Get form data
+                const formData = new FormData(eventForm);
+
+                // Validate required fields
+                const eventName = formData.get('event_name');
+                const location = formData.get('location');
+                const eventDate = formData.get('event_date');
+
+                if (!eventName || !location || !eventDate) {
+                    alert('Please fill in Event Name, Location, and Date/Time.');
+                    return;
+                }
+
+                // Show loading state
+                previewBtn.disabled = true;
+                previewBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Previewing...';
+
+                // Send preview request
+                fetch('/preview_event', {
+                    method: 'POST',
+                    body: formData
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            const event = data.event;
+
+                            // Populate modal with event details
+                            document.getElementById('previewEventName').textContent = event.event_name;
+                            document.getElementById('previewLocation').textContent = event.location;
+                            document.getElementById('previewDate').textContent = event.event_date;
+                            document.getElementById('previewMaxParticipants').textContent = event.max_participants;
+                            document.getElementById('previewOrganizer').textContent = event.organizer;
+
+                            // Handle optional fields
+                            const durationRow = document.getElementById('durationRow');
+                            if (event.event_duration) {
+                                document.getElementById('previewDuration').textContent = `${event.event_duration} minutes`;
+                                durationRow.style.display = 'flex';
+                            } else {
+                                durationRow.style.display = 'none';
+                            }
+
+                            const itineraryRow = document.getElementById('itineraryRow');
+                            if (event.event_itinerary && event.event_itinerary.trim()) {
+                                document.getElementById('previewItinerary').textContent = event.event_itinerary;
+                                itineraryRow.style.display = 'flex';
+                            } else {
+                                itineraryRow.style.display = 'none';
+                            }
+
+                            // Show modal
+                            $('#confirmEventModal').modal('show');
+                        } else {
+                            alert('Error: ' + (data.error || 'Failed to preview event'));
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Error previewing event. Please try again.');
+                    })
+                    .finally(() => {
+                        previewBtn.disabled = false;
+                        previewBtn.textContent = 'Preview Event';
+                    });
+            });
+        }
+
+        // Confirm submit button
+        const confirmBtn = document.getElementById('confirmSubmitBtn');
+        if (confirmBtn) {
+            confirmBtn.addEventListener('click', function () {
+                // Submit the form
+                eventForm.submit();
+            });
+        }
+
+        // Reset form when modal is closed
+        $('#confirmEventModal').on('hidden.bs.modal', function () {
+            // No need to reset, just close
+        });
+    });
+</script>
+{% endblock %}

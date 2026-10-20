@@ -1,0 +1,1664 @@
+{% extends "base.html" %}
+{% block title %}Bond Buddies - Home{% endblock %}
+{% block content %}
+<div class="container-fluid px-0">
+    <header class="nav-bar">
+        <div class="container-fluid px-0">
+            <div class="d-flex align-items-center justify-content-between nav-inner mt-2">
+                <!-- Logo -->
+                <a href="{{ url_for('home') }}" class="logo-link"><img
+                        src="{{ url_for('static', filename='img/Logo.png') }}" alt="Logo" class="logo-img" /></a>
+
+                <!-- Search -->
+                <div class="search-container">
+                    <form class="form-inline m-0" action="{{ url_for('search') }}" method="GET">
+                        <div class="input-group">
+                            <input type="search" name="query" placeholder="Search" class="form-control"
+                                value="{{ query if query is defined else '' }}" />
+                            <div class="input-group-append">
+                                <button class="btn btn-outline-light" type="submit">🔍</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- RIGHT SIDE BUTTON GROUP -->
+                <div class="d-flex align-items-center">
+
+                    <!-- Tutorial Button (same design as hamburger) -->
+                    <button type="button"
+  class="btn btn-dark btn-size mr-2 d-flex align-items-center justify-content-center p-0 tutorial-btn"
+  data-toggle="modal"
+  data-target="#tutorialModal"
+  data-page="home"
+  title="Tutorial">
+
+                        <!-- Tutorial Icon -->
+                        <svg width="18" height="18" viewBox="0 0 64 64" fill="none" stroke="white" stroke-width="2.6"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M6 14h18a6 6 0 0 1 6 6v28H12a6 6 0 0 0-6 6V14z" />
+                            <path d="M58 14H40a6 6 0 0 0-6 6v28h18a6 6 0 0 1 6 6V14z" />
+                            <line x1="16" y1="22" x2="24" y2="22" />
+                            <line x1="16" y1="28" x2="24" y2="28" />
+                            <line x1="16" y1="34" x2="24" y2="34" />
+                            <line x1="40" y1="22" x2="48" y2="22" />
+                            <line x1="40" y1="28" x2="48" y2="28" />
+                            <line x1="40" y1="34" x2="48" y2="34" />
+                            <path d="M44 46v-14" />
+                            <path d="M48 48v-12" />
+                            <path d="M52 50v-10" />
+                            <path d="M44 46c-3-6 8-8 8 0" />
+                        </svg>
+                    </button>
+
+                    <!-- Hamburger -->
+                    <button class="btn btn-dark hamburger-btn btn-size" type="button">☰</button>
+
+                </div>
+
+            </div>
+        </div>
+    </header>
+</div>
+
+<!-- Overlay -->
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<!-- Sidebar -->
+<nav id="mobile-nav" aria-label="Main navigation">
+    <button class="menu-close-btn" aria-label="Close menu">&times;</button>
+    <ul class="nav-list list-unstyled mb-0">
+        <li><a href="{{ url_for('home') }}" class="nav-link text-white active">Home</a></li>
+        <li><a href=" {{ url_for('explore') }}" class="nav-link text-white">Explore</a></li>
+        <li><a href="{{ url_for('createPost') }}" class="nav-link text-white">Create</a></li>
+        <li><a href="{{ url_for('events') }}" class="nav-link text-white">Events</a></li>
+        <li><a href="{{ url_for('profile', user_id=session['user_id']) }}" class="nav-link text-white">Profile</a></li>
+        <li>
+            <hr class="bg-light my-3">
+        </li>
+        <!-- Additional Links -->
+        <li><a href="{{ url_for('logout') }}" class="nav-link text-danger">Logout</a></li>
+    </ul>
+</nav>
+
+<!-- ===================== HOME FEED (SINGLE COLUMN WITH EVENTS) ===================== -->
+<main class="home-feed container py-4">
+
+    <!-- Page Heading -->
+    <h1 class="display-4 text-center mb-4">Intergeneration Connection</h1>
+
+    <div class="row">
+
+        <!-- ===================== EVENTS SECTION (Left Column) ===================== -->
+        <div class="col-lg-4 mb-4">
+            <div class="d-flex align-items-center justify-content-between section-header mb-4">
+                <h3 class="mb-0">Events</h3>
+                <a class="btn view-all-btn" href="{{ url_for('events') }}">Create Event</a>
+            </div>
+
+            {% if events and events|length > 0 %}
+            {% for event in events %}
+            <div class="card feed-card mb-3 shadow-sm" id="event-{{ event.event_id }}">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h5 class="mb-1">{{ event.event_name }}</h5>
+                            <small class="text-muted">Organiser: {{ event.organizer }}</small>
+                        </div>
+                        <small class="text-muted">
+                            {% if event.event_date %}
+                            {{ event.event_date }}
+                            {% endif %}
+                        </small>
+                    </div>
+
+                    {% if event.location %}
+                    <div class="mt-2"><strong>📍</strong> {{ event.location }}</div>
+                    {% endif %}
+
+                    {% if event.event_duration %}
+                    <div class="mt-1"><strong>⏱</strong> {{ event.event_duration }} mins</div>
+                    {% endif %}
+
+                    {% if event.game_type %}
+                    <div class="mt-1"><strong>🎮</strong> {{ event.game_type }}</div>
+                    {% endif %}
+
+                    {% if event.event_itinerary %}
+                    <p class="mt-2 mb-0 text-muted small">{{ event.event_itinerary[:100] }}{% if
+                        event.event_itinerary|length > 100 %}...{% endif %}</p>
+                    {% endif %}
+
+                    {% if event.max_participants %}
+                    <div class="mt-2">
+                        <small class="text-muted">
+                            <strong>Participants:</strong>
+                            <span id="participant-count-{{ event.event_id }}">
+                                {{ event.participants_count if event.participants_count else 0 }}
+                            </span>/{{ event.max_participants }}
+                        </small>
+                    </div>
+                    {% endif %}
+
+                    <div class="mt-3">
+                        <button class="btn btn-sm btn-outline-primary view-details-btn"
+                            data-event-id="{{ event.event_id }}" data-event-name="{{ event.event_name }}"
+                            data-event-location="{{ event.location }}" data-event-date="{{ event.event_date }}"
+                            data-event-duration="{{ event.event_duration }}"
+                            data-event-max-participants="{{ event.max_participants }}"
+                            data-event-organizer="{{ event.organizer }}"
+                            data-event-itinerary="{{ event.event_itinerary }}"
+                            data-event-game-type="{{ event.game_type }}" data-event-game-rules="{{ event.game_rules }}">
+                            View Details
+                        </button>
+                        {% if session.user_id != event.user_id %}
+                        {% if event.has_joined %}
+                        <button class="btn btn-sm btn-success joined-btn" data-event-id="{{ event.event_id }}"
+                            style="margin-left: 10px;" disabled>
+                            Joined ✓
+                        </button>
+                        {% else %}
+                        <button class="btn btn-sm btn-outline-success join-event-btn"
+                            data-event-id="{{ event.event_id }}" style="margin-left: 10px;">
+                            Join Event
+                        </button>
+                        {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            {% else %}
+            <div class="alert alert-light border">
+                No events yet.
+                <a href="{{ url_for('events') }}" class="alert-link">Create your first event!</a>
+            </div>
+            {% endif %}
+
+            <!-- Upcoming Events Section -->
+            {% if upcoming_events and upcoming_events|length > 0 %}
+            <div class="d-flex align-items-center justify-content-between section-header mt-5">
+                <h4 class="mb-0">Upcoming Events</h4>
+                <a class="btn btn-sm view-all-btn" href="{{ url_for('events') }}">View All</a>
+            </div>
+
+            {% for event in upcoming_events %}
+            <div class="card feed-card mb-3 shadow-sm">
+                <div class="card-body">
+                    <h6 class="mb-1">{{ event.event_name }}</h6>
+                    <small class="text-muted">
+                        {{ event.event_date }} @ {{ event.location }}
+                    </small>
+                    <div class="mt-2">
+                        <button class="btn btn-sm btn-outline-primary view-details-btn"
+                            data-event-id="{{ event.event_id }}" data-event-name="{{ event.event_name }}"
+                            data-event-location="{{ event.location }}" data-event-date="{{ event.event_date }}"
+                            data-event-organizer="{{ event.organizer }}">
+                            View Details
+                        </button>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            {% endif %}
+        </div>
+
+        <!-- ===================== SINGLE SCROLLABLE POSTS FEED (Right Column) ===================== -->
+        <div class="col-lg-8 mb-4">
+            <!-- Posts Section Header -->
+            <div class="d-flex align-items-center justify-content-between section-header mb-4">
+                <h3 class="mb-0">Home Feed</h3>
+                <div class="d-flex align-items-center gap-2">
+                    <small class="text-muted">
+                        <span class="badge badge-primary">Following</span> posts appear first
+                    </small>
+                    <a class="btn view-all-btn btn-sm ml-2" href="{{ url_for('explore') }}">
+                        Explore All
+                    </a>
+                </div>
+            </div>
+
+            <!-- Posts Container with Infinite Scroll -->
+            <div id="posts-container">
+                {% if feed_posts %}
+                {% for post in feed_posts %}
+                <div class="card feed-card mb-4 shadow-sm" data-post-id="{{ post.post_id }}"
+                    data-is-followed="{{ 1 if post.is_followed else 0 }}">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="mr-3">
+                                <a href="{{ url_for('profile', user_id=post.user_id) }}">
+                                    <img {% if post.avatar_url %}
+                                        src="{{ url_for('static', filename='uploads/' + post.avatar_url) }}" {% else %}
+                                        src="https://ui-avatars.com/api/?name={{ post.username }}&background=random&size=40"
+                                        {% endif %} alt="{{ post.username }} avatar" class="rounded-circle post-avatar"
+                                        onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name={{ post.username }}&background=random&size=40'">
+                                </a>
+                            </div>
+
+                            <div class="flex-grow-1">
+                                <h6 class="mb-0 post-username">
+                                    <a href="{{ url_for('profile', user_id=post.user_id) }}" class="text-dark">
+                                        {{ post.username }}
+                                        {% if post.is_followed %}
+                                        <span class="badge badge-primary badge-sm ml-2">Following</span>
+                                        {% endif %}
+                                    </a>
+                                </h6>
+                                <small class="text-muted">{{ post.timestamp }}</small>
+                            </div>
+
+                            {% if post.category %}
+                            <span class="badge badge-info ml-2 text-uppercase">
+                                {{ post.category }}
+                            </span>
+                            {% endif %}
+                        </div>
+
+                        <p class="card-text post-content">
+                            {{ post.content }}
+                        </p>
+
+                        {% if post.image_url %}
+                        <div class="mt-3 text-center">
+                            <img src="{{ url_for('static', filename='uploads/' + post.image_url) }}"
+                                class="img-fluid rounded feed-image" alt="Post image"
+                                onclick="openImageModal(this.src)">
+                        </div>
+                        {% endif %}
+
+                        <div class="mt-3 pt-3 border-top">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center gap-3">
+                                    <button
+                                        class="btn btn-sm like-btn mr-2 {% if post.user_has_liked %}btn-danger{% else %}btn-outline-primary{% endif %}"
+                                        data-post-id="{{ post.post_id }}"
+                                        data-liked="{{ 'true' if post.user_has_liked else 'false' }}"
+                                        aria-label="Like post">
+                                        <span class="mr-1 heart-icon" {% if post.user_has_liked
+                                            %}style="color: #dc3545;" {% else %}style="color: #0d6efd;" {% endif %}>
+                                            {% if post.user_has_liked %}❤️{% else %}🤍{% endif %}
+                                        </span>
+                                        {% if post.likes >= 0 %}
+                                        <span class="like-count">{{ post.likes }}</span>
+                                        {% endif %}
+                                    </button>
+
+                                    <button class="btn btn-sm btn-outline-secondary ml-2 open-comment-modal-btn"
+                                          data-post-id="{{ feed_posts.post_id }}" data-username="{{ username }}"
+                                          data-user-initial="{{ username[0]|upper if username else '?' }}"
+                                          data-timestamp="{{ feed_posts.timestamp }}"
+                                          data-content="{{ feed_posts.content or '' }}" data-likes="{{ feed_posts.likes }}"
+                                          data-comments="{{ comment_count }}" data-category="{{ feed_posts.category or '' }}"
+                                          data-liked="{{ 'true' if feed_posts.user_has_liked else 'false' }}" {% if image_url %}
+                                          data-image="{{ url_for('static', filename='uploads/' + image_url) }}" {% else %} data-image=""
+                                          {% endif %}>
+                                          <span class="mr-1">💬</span> <span class="comment-count">{{ comment_count }}</span>
+                                    </button>
+                                </div>
+
+                                <div>
+                                    <a href="{{ url_for('profile', user_id=post.user_id) }}"
+                                        class="btn btn-sm btn-outline-primary">
+                                        View Profile
+                                    </a>
+                                </div>
+                            </div>
+
+                            {% if post.likes > 0 %}
+                            <div class="mt-2">
+                                <small class="text-muted like-count-display">
+                                    ❤️ Liked by {{ post.likes }} {{ 'person' if post.likes == 1 else 'people' }}
+                                </small>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="alert alert-light border text-center py-5 no-posts-message">
+                    <h5>No posts yet</h5>
+                    <p class="mb-3">Follow users to see their posts here, or explore all posts!</p>
+                    <a href="{{ url_for('explore') }}" class="btn btn-primary">
+                        Explore Posts
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+
+            <div id="loading-spinner" class="text-center my-4">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="sr-only">Loading more posts...</span>
+                </div>
+                <p class="text-muted mt-2">Loading more posts...</p>
+            </div>
+
+            <div id="end-of-posts" class="text-center my-4">
+                <p class="text-muted">You've reached the end of posts for now!</p>
+                <a href="{{ url_for('createPost') }}" class="btn btn-primary">Create a Post</a>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Image Modal -->
+<div class="modal fade" id="imageModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Image Preview</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body text-center">
+                <img id="modalImage" src="" class="img-fluid" alt="Full size image">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Image Modal - FIXED MOBILE RESPONSIVENESS (ALL CONTENT VISIBLE) -->
+<div class="modal fade" id="imageModal" tabindex="-1" role="dialog" aria-labelledby="imageModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-body p-0">
+                <button type="button" class="btn-close position-absolute" data-dismiss="modal" aria-label="Close"
+                    style="top: 15px; right: 15px; z-index: 1000; background-color: rgba(0,0,0,0.5); color: white; border: none; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+                    <span aria-hidden="true" style="font-size: 1.5rem;">×</span>
+                </button>
+
+                <div class="row no-gutters h-100">
+                    <!-- Image Section -->
+                    <div class="col-md-8 col-lg-8 bg-dark d-flex align-items-center justify-content-center image-section">
+                        <img id="modalImage" src="" alt="Full size image" class="img-fluid w-100 h-auto"
+                            style="max-height: 85vh; object-fit: contain;">
+                    </div>
+
+                    <!-- Post Details -->
+                    <div class="col-md-4 col-lg-4 d-flex flex-column post-details" style="max-height: 85vh;">
+                        <!-- User Info - Fixed at top -->
+                        <div class="p-3 border-bottom user-info-section">
+                            <div class="d-flex align-items-center">
+                                <div class="mr-2">
+                                    <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center"
+                                        style="width: 40px; height: 40px;" id="modalUserInitial"></div>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-0 font-weight-bold" id="modalUsername"></h6>
+                                    <span class="badge badge-info" id="modalCategory"></span>
+                                    <small class="text-muted" id="modalTimestamp"></small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Content - Small fixed section -->
+                        <div class="px-3 py-2 content-section border-bottom">
+                            <p class="mb-0 small" id="modalContent" style="max-height: 60px; overflow-y: auto;"></p>
+                        </div>
+
+                        <!-- Comments - Scrollable but limited height -->
+                        <div class="flex-grow-1 px-3 py-2 overflow-auto comments-section" style="min-height: 0;">
+                            <div id="modalCommentsSection">
+                                <div class="text-center text-muted py-2" id="noCommentsMessage">
+                                    <small>No comments yet. Be the first to comment!</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Stats - Compact -->
+                        <div class="px-3 py-2 border-top border-bottom stats-section">
+                            <div class="d-flex align-items-center small">
+                                <span class="font-weight-bold mr-3">
+                                    <span id="modalLikes">0</span> likes
+                                </span>
+                                <span class="font-weight-bold">
+                                    <span id="modalCommentsCount">0</span> comments
+                                </span>
+                                <span class="ml-auto text-muted">
+                                    <span id="modalTimeAgo"></span>
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons - Always visible -->
+                        <div class="px-3 py-2 action-buttons-section">
+                            <div class="d-flex align-items-center">
+                                <button class="btn btn-link text-dark p-1 mr-3 modal-like-btn" data-post-id=""
+                                    style="font-size: 1.3rem; text-decoration: none;">
+                                    <span id="modalLikeIcon">🤍</span>
+                                </button>
+                                <button class="btn btn-link text-dark p-1 modal-comment-btn"
+                                    style="font-size: 1.3rem; text-decoration: none;">
+                                    <span>💬</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Comment Form - Always visible at bottom -->
+                        <div class="p-3 border-top comment-form-section">
+                            <form id="commentForm" class="comment-form">
+                                <div class="input-group input-group-sm">
+                                    <input type="text" id="commentInput" class="form-control form-control-sm border-0 bg-light"
+                                        placeholder="Add a comment..." aria-label="Add a comment" required>
+                                    <div class="input-group-append">
+                                        <button class="btn btn-link text-primary btn-sm" type="submit"
+                                            id="commentSubmitBtn" disabled style="text-decoration: none;">Post</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Comments Modal - Updated with Reply Functionality -->
+<!-- Comments Modal - Updated with Reply Functionality -->
+<div class="modal fade" id="commentsModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Comments
+                    <span id="modalCommentsCount" style="font-size: 0.9rem; color: #6c757d; margin-left: 8px;"></span>
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="commentsContainer" style="max-height: 60vh; overflow-y: auto;">
+                <!-- Comments will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <div class="w-100">
+                    <form id="commentForm">
+                        <div class="input-group">
+                            <input type="text" class="form-control" placeholder="Add a comment..." id="commentInput"
+                                maxlength="1000">
+                            <div class="input-group-append">
+                                <button class="btn btn-primary" type="submit" id="commentSubmitBtn"
+                                    disabled>Post</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Event Details Modal -->
+<div class="modal fade" id="eventDetailsModal" tabindex="-1" role="dialog" aria-labelledby="eventDetailsModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="eventDetailsModalLabel">Event Details</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="event-preview-card">
+                    <h4 class="event-preview-title" id="detailsEventName"></h4>
+                    <div class="event-preview-details">
+                        <div class="detail-row">
+                            <span class="detail-label">📍 Location:</span>
+                            <span class="detail-value" id="detailsLocation"></span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">📅 Date & Time:</span>
+                            <span class="detail-value" id="detailsDate"></span>
+                        </div>
+                        <div class="detail-row" id="detailsDurationRow">
+                            <span class="detail-label">⏱ Duration:</span>
+                            <span class="detail-value" id="detailsDuration"></span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">👥 Max Participants:</span>
+                            <span class="detail-value" id="detailsMaxParticipants"></span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">👤 Organizer:</span>
+                            <span class="detail-value" id="detailsOrganizer"></span>
+                        </div>
+                        <div class="detail-row" id="detailsGameTypeRow">
+                            <span class="detail-label">🎮 Game Type:</span>
+                            <span class="detail-value" id="detailsGameType"></span>
+                        </div>
+                        <div class="detail-row" id="detailsGameRulesRow">
+                            <span class="detail-label">📋 Game Rules:</span>
+                            <p class="detail-value itinerary-text" id="detailsGameRules"></p>
+                        </div>
+                        <div class="detail-row itinerary-row" id="detailsItineraryRow">
+                            <span class="detail-label">📝 Itinerary:</span>
+                            <p class="detail-value itinerary-text" id="detailsItinerary"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="detailsJoinBtn">Join Event</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tutorial Prompt Modal -->
+<div class="modal fade" id="tutorialPromptModal" tabindex="-1" role="dialog" aria-labelledby="tutorialPromptLabel"
+    aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header justify-content-center text-center">
+
+                <h5 class="modal-title" id="tutorialPromptLabel">Want a tutorial?</h5>
+            </div>
+            <div class="modal-body text-center">
+
+                <strong>This tutorial shows you how to use Home, Explore, Posts, Comments, and other app
+                    features.</strong><br><br>
+                <strong>You can view the tutorials anytime from the book icon on the top-right of your Profile
+                    page.</strong>
+
+            </div>
+            <div class="modal-footer justify-content-center">
+
+                <button type="button" class="btn btn-outline-secondary" id="tutorialNoBtn">No thanks</button>
+                <button type="button" class="btn btn-primary" id="tutorialYesBtn">Yes, show me</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<script>
+    // ============================================
+    // GLOBAL VARIABLES
+    // ============================================
+    let currentPage = 1;
+    let isLoading = false;
+    let hasMorePosts = true;
+    const postsPerPage = 10;
+    let replyingToCommentId = null;
+    let replyingToUsername = null;
+    let currentPostId = null;
+    const currentUsername = "{{ session.get('username') }}";
+
+    // ============================================
+    // LIKE FUNCTIONALITY
+    // ============================================
+    function handleLike(postId, button) {
+        const isLiked = button.getAttribute('data-liked') === 'true';
+        button.disabled = true;
+
+        fetch(`/like_post/${postId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const newIsLiked = data.liked;
+                    const likeCount = data.like_count;
+
+                    button.setAttribute('data-liked', newIsLiked.toString());
+
+                    const heartSpan = button.querySelector('.heart-icon');
+                    const likeCountSpan = button.querySelector('.like-count');
+
+                    if (newIsLiked) {
+                        button.classList.remove('btn-outline-primary');
+                        button.classList.add('btn-danger');
+                        heartSpan.textContent = '❤️';
+                        heartSpan.style.color = '#dc3545'; // Force red
+                    } else {
+                        button.classList.remove('btn-danger');
+                        button.classList.add('btn-outline-primary');
+                        heartSpan.textContent = '🤍';
+                        heartSpan.style.color = '#0d6efd'; // Force blue
+                    }
+
+                    if (likeCount > 0) {
+                        if (!likeCountSpan) {
+                            button.appendChild(document.createTextNode(' '));
+                            const newSpan = document.createElement('span');
+                            newSpan.className = 'like-count';
+                            newSpan.textContent = likeCount;
+                            button.appendChild(newSpan);
+                        } else {
+                            likeCountSpan.textContent = likeCount;
+                        }
+                    } else {
+                        if (likeCountSpan) likeCountSpan.remove();
+                    }
+
+                    // Update like count display
+                    const likeCountDisplay = button.closest('.card-body')?.querySelector('.like-count-display');
+                    if (likeCountDisplay) {
+                        if (likeCount > 0) {
+                            likeCountDisplay.innerHTML = `❤️ Liked by ${likeCount} ${likeCount === 1 ? 'person' : 'people'}`;
+                            likeCountDisplay.style.display = 'block';
+                        } else {
+                            likeCountDisplay.style.display = 'none';
+                        }
+                    } // ⭐ ADD THIS HERE
+                    if (data.badge_unlocked) {
+                        showBadgeUnlocked({
+                            title: data.title,
+                            subtitle: data.subtitle
+                        });
+                    }
+                }
+            })
+            .catch(error => console.error('Error:', error))
+            .finally(() => {
+                button.disabled = false;
+            });
+    }
+
+    // ============================================
+    // INFINITE SCROLL
+    // ============================================
+    function handleScroll() {
+        if (isLoading || !hasMorePosts) return;
+
+        const scrollPosition = window.innerHeight + window.scrollY;
+        const pageHeight = document.documentElement.scrollHeight;
+        const threshold = 100;
+
+        if (scrollPosition >= pageHeight - threshold) {
+            loadMorePosts();
+        }
+    }
+
+    function checkScrollPosition() {
+        const pageHeight = document.documentElement.scrollHeight;
+        const windowHeight = window.innerHeight;
+
+        if (pageHeight < windowHeight * 1.5 && hasMorePosts && !isLoading) {
+            loadMorePosts();
+        }
+    }
+
+    function loadMorePosts() {
+        if (isLoading || !hasMorePosts) return;
+
+        isLoading = true;
+        currentPage++;
+
+        const loadingSpinner = document.getElementById('loading-spinner');
+        if (loadingSpinner) loadingSpinner.style.display = 'block';
+
+        fetch(`/api/home_posts?page=${currentPage}&per_page=${postsPerPage}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const postsContainer = document.getElementById('posts-container');
+
+                    if (data.posts.length > 0) {
+                        data.posts.forEach(post => {
+                            const postElement = createPostElement(post);
+                            postsContainer.appendChild(postElement);
+                        });
+                    }
+
+                    if (data.posts.length < postsPerPage) {
+                        hasMorePosts = false;
+                        const endOfPosts = document.getElementById('end-of-posts');
+                        if (endOfPosts) endOfPosts.style.display = 'block';
+                    }
+                } else {
+                    hasMorePosts = false;
+                }
+            })
+            .catch(error => {
+                console.error('Error loading more posts:', error);
+                hasMorePosts = false;
+            })
+            .finally(() => {
+                isLoading = false;
+                const loadingSpinner = document.getElementById('loading-spinner');
+                if (loadingSpinner) loadingSpinner.style.display = 'none';
+            });
+    }
+
+    function createPostElement(post) {
+    const div = document.createElement('div');
+    div.className = 'card feed-card mb-4 shadow-sm';
+    div.dataset.postId = post.post_id;
+    div.dataset.isFollowed = post.is_followed ? '1' : '0';
+
+    const likeButtonClass = post.user_has_liked ? 'btn-danger' : 'btn-outline-primary';
+    const likedAttribute = post.user_has_liked ? 'true' : 'false';
+    const heartIcon = post.user_has_liked ? '❤️' : '🤍';
+    const heartColor = post.user_has_liked ? '#dc3545' : '#0d6efd';
+    const likeCountHtml = post.likes > 0 ? `<span class="like-count">${post.likes}</span>` : '';
+
+    const likeCountDisplay = post.likes > 0 ?
+        `<div class="mt-2">
+            <small class="text-muted like-count-display">
+                ❤️ Liked by ${post.likes} ${post.likes === 1 ? 'person' : 'people'}
+            </small>
+        </div>` : '';
+
+    div.innerHTML = `
+        <div class="card-body">
+            <div class="d-flex align-items-center mb-3">
+                <div class="mr-3">
+                    <a href="/profile/${post.user_id}">
+                        <img src="${post.avatar_url ? '/static/uploads/' + post.avatar_url : `https://ui-avatars.com/api/?name=${encodeURIComponent(post.username)}&background=random&size=40`}"
+                             alt="${post.username} avatar"
+                             class="rounded-circle post-avatar"
+                             onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(post.username)}&background=random&size=40'">
+                    </a>
+                </div>
+                <div class="flex-grow-1">
+                    <h6 class="mb-0 post-username">
+                        <a href="/profile/${post.user_id}" class="text-dark">
+                            ${post.username}
+                        </a>
+                    </h6>
+                    <small class="text-muted">${post.timestamp}</small>
+                </div>
+                ${post.category ? `<span class="badge badge-info ml-2 text-uppercase">${post.category}</span>` : ''}
+            </div>
+            
+            <p class="card-text post-content">
+                ${post.content}
+            </p>
+            
+            ${post.image_url ?
+                `<div class="mt-3 text-center">
+                    <img src="/static/uploads/${post.image_url}"
+                         class="img-fluid rounded feed-image"
+                         alt="Post image"
+                         onclick="openImageModal(this.src)">
+                </div>` : ''}
+            
+            <div class="mt-3 pt-3 border-top">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center gap-3">
+                        <button class="btn btn-sm like-btn ${likeButtonClass}"
+                                data-post-id="${post.post_id}"
+                                data-liked="${likedAttribute}"
+                                aria-label="Like post">
+                            <span class="mr-1 heart-icon" style="color: ${heartColor};">${heartIcon}</span>
+                            ${likeCountHtml}
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary comment-btn"
+                                data-post-id="${post.post_id}"
+                                onclick="openCommentsModal(${post.post_id})">
+                            💬 Comment
+                        </button>
+                    </div>
+                    <div>
+                        <a href="/profile/${post.user_id}"
+                           class="btn btn-sm btn-outline-primary">
+                            View Profile
+                        </a>
+                    </div>
+                    </div>
+                    ${likeCountDisplay}
+                </div>
+            </div>
+        `;
+
+        const likeBtn = div.querySelector('.like-btn');
+        likeBtn.addEventListener('click', function () {
+            handleLike(post.post_id, this);
+        });
+
+        return div;
+    }
+
+    // ============================================
+    // EVENT JOIN FUNCTIONALITY
+    // ============================================
+    function joinEvent(eventId, button) {
+        fetch(`/api/join_event/${eventId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    button.innerHTML = 'Joined ✓';
+                    button.classList.remove('btn-outline-success');
+                    button.classList.add('btn-success');
+                    button.disabled = true;
+
+                    const participantCountSpan = document.getElementById(`participant-count-${eventId}`);
+                    if (participantCountSpan && data.participant_count !== undefined) {
+                        participantCountSpan.textContent = data.participant_count;
+                    }
+
+                    const alert = document.createElement('div');
+                    alert.className = 'alert alert-success alert-dismissible fade show mt-2';
+                    alert.innerHTML = `
+                Successfully joined the event!
+                <button type="button" class="close" data-dismiss="alert">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            `;
+                    button.parentNode.insertBefore(alert, button.nextSibling);
+
+                    setTimeout(() => {
+                        alert.classList.remove('show');
+                        setTimeout(() => alert.remove(), 300);
+                    }, 3000);
+                } else {
+                    alert('Failed to join event: ' + (data.error || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error joining event');
+            });
+    }
+
+    // ============================================
+    // IMAGE MODAL
+    // ============================================
+    function openImageModal(imageSrc) {
+        const modalImage = document.getElementById('modalImage');
+        if (modalImage) {
+            modalImage.src = imageSrc;
+            $('#imageModal').modal('show');
+        }
+    }
+
+    // ============================================
+    // COMMENT REPLY SYSTEM - MATCHING EXPLORE.HTML
+    // ============================================
+
+    function formatTimeAgo(timestamp) {
+        try {
+            const now = new Date();
+            const commentTime = new Date(timestamp);
+            const diffMs = now - commentTime;
+            const diffSec = Math.floor(diffMs / 1000);
+            const diffMin = Math.floor(diffSec / 60);
+            const diffHour = Math.floor(diffMin / 60);
+            const diffDay = Math.floor(diffHour / 24);
+            const diffMonth = Math.floor(diffDay / 30);
+            const diffYear = Math.floor(diffDay / 365);
+
+            if (diffYear > 0) return `${diffYear}y ago`;
+            if (diffMonth > 0) return `${diffMonth}mo ago`;
+            if (diffDay > 0) return `${diffDay}d ago`;
+            if (diffHour > 0) return `${diffHour}h ago`;
+            if (diffMin > 0) return `${diffMin}m ago`;
+            return 'Just now';
+        } catch (e) {
+            return 'Recently';
+        }
+    }
+
+    function addCharCounter(textarea) {
+        const counter = document.createElement('div');
+        counter.className = 'char-counter small text-muted text-end mt-1';
+        textarea.parentNode.insertBefore(counter, textarea.nextSibling);
+
+        function updateCounter() {
+            const length = textarea.value.length;
+            counter.textContent = `${length}/1000`;
+            counter.classList.remove('text-warning', 'text-danger');
+            if (length > 800 && length <= 950) {
+                counter.classList.add('text-warning');
+            } else if (length > 950) {
+                counter.classList.add('text-danger');
+            }
+        }
+
+        textarea.addEventListener('input', updateCounter);
+        updateCounter();
+    }
+
+    function renderComments(comments) {
+        const commentsSection = document.getElementById('commentsContainer');
+
+        if (!comments || !Array.isArray(comments) || comments.length === 0) {
+            commentsSection.innerHTML = `
+            <div class="text-center text-muted py-4">
+                <small>No comments yet. Be the first to comment!</small>
+            </div>
+        `;
+            return;
+        }
+
+        let commentsHTML = '';
+
+        function renderComment(comment, depth = 0) {
+            const timeAgo = comment.formatted_time || formatTimeAgo(comment.timestamp);
+            const avatarInitial = comment.username ? comment.username[0].toUpperCase() : '?';
+            const isCommentOwner = comment.username === currentUsername;
+            const indentClass = depth > 0 ? `ml-${Math.min(depth * 2, 8)}` : '';
+
+            let commentHTML = `
+            <div class="comment-item mb-2 ${indentClass}" data-comment-id="${comment.comment_id}" data-depth="${depth}">
+                <div class="d-flex">
+                    <div class="mr-2 flex-shrink-0">
+                        <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center" 
+                            style="width: ${32 - depth * 4}px; height: ${32 - depth * 4}px; font-size: ${0.8 - depth * 0.1}rem;">
+                            ${avatarInitial}
+                        </div>
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="bg-light rounded p-2">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <span class="font-weight-bold small">${comment.username || 'Unknown User'}</span>
+                                <span class="text-muted comment-time" style="font-size: 0.7rem;">${timeAgo}</span>
+                            </div>
+                            
+                            <p class="mb-0 small comment-content" style="white-space: pre-wrap;">${comment.content}</p>
+                            
+                            <div class="edit-comment-form d-none mt-2">
+                                <textarea class="form-control form-control-sm edit-comment-textarea" rows="2" maxlength="1000">${comment.content}</textarea>
+                                <div class="d-flex justify-content-end mt-2">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary cancel-edit-btn mr-1">Cancel</button>
+                                    <button type="button" class="btn btn-sm btn-primary save-edit-btn" data-comment-id="${comment.comment_id}">Save</button>
+                                </div>
+                            </div>
+                            
+                            <div class="comment-actions mt-2">
+                                <button class="btn btn-link btn-sm p-0 text-muted reply-btn" 
+                                    style="font-size: 0.7rem;" 
+                                    data-comment-id="${comment.comment_id}"
+                                    data-username="${comment.username}">
+                                    Reply
+                                </button>
+                                
+                                ${isCommentOwner ? `
+                                    <button class="btn btn-link btn-sm p-0 text-muted ml-2 edit-comment-btn" 
+                                        style="font-size: 0.7rem;" data-comment-id="${comment.comment_id}">
+                                        Edit
+                                    </button>
+                                    <button class="btn btn-link btn-sm p-0 text-danger ml-2 delete-comment-btn" 
+                                        style="font-size: 0.7rem;" data-comment-id="${comment.comment_id}">
+                                        Delete
+                                    </button>
+                                ` : ''}
+                                
+                                ${comment.reply_count > 0 ? `
+                                    <button class="btn btn-link btn-sm p-0 text-primary ml-2 view-replies-btn" 
+                                        style="font-size: 0.7rem;" 
+                                        data-comment-id="${comment.comment_id}"
+                                        data-expanded="false">
+                                        ${comment.reply_count} ${comment.reply_count === 1 ? 'reply' : 'replies'} ▼
+                                    </button>
+                                    <div id="replies-${comment.comment_id}" class="replies-container"></div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+            return commentHTML;
+        }
+
+        function buildCommentThread(comment, depth = 0) {
+            let html = renderComment(comment, depth);
+
+            if (comment.replies && comment.replies.length > 0) {
+                html += '<div class="replies-container">';
+                comment.replies.forEach(reply => {
+                    html += buildCommentThread(reply, depth + 1);
+                });
+                html += '</div>';
+            }
+
+            return html;
+        }
+
+        comments.forEach(comment => {
+            commentsHTML += buildCommentThread(comment);
+        });
+
+        commentsSection.innerHTML = commentsHTML;
+        attachCommentEventListeners();
+    }
+
+    function attachCommentEventListeners() {
+        document.querySelectorAll('.edit-comment-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const commentId = this.getAttribute('data-comment-id');
+                enableCommentEdit(commentId);
+            });
+        });
+
+        document.querySelectorAll('.delete-comment-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const commentId = this.getAttribute('data-comment-id');
+                if (confirm('Are you sure you want to delete this comment?')) {
+                    deleteComment(commentId);
+                }
+            });
+        });
+
+        document.querySelectorAll('.reply-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const commentId = this.getAttribute('data-comment-id');
+                const username = this.getAttribute('data-username');
+                setReplyMode(commentId, username);
+            });
+        });
+
+        document.querySelectorAll('.view-replies-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const commentId = this.getAttribute('data-comment-id');
+                const expanded = this.getAttribute('data-expanded') === 'true';
+
+                if (!expanded) {
+                    loadReplies(commentId, this);
+                } else {
+                    const repliesContainer = document.getElementById(`replies-${commentId}`);
+                    repliesContainer.innerHTML = '';
+                    this.setAttribute('data-expanded', 'false');
+                    this.innerHTML = this.innerHTML.replace('▲', '▼');
+                }
+            });
+        });
+
+        document.querySelectorAll('.cancel-edit-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const commentItem = this.closest('.comment-item');
+                disableCommentEdit(commentItem);
+            });
+        });
+
+        document.querySelectorAll('.save-edit-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const commentId = this.getAttribute('data-comment-id');
+                const commentItem = this.closest('.comment-item');
+                const textarea = commentItem.querySelector('.edit-comment-textarea');
+                const newContent = textarea.value.trim();
+
+                if (newContent) {
+                    updateComment(commentId, newContent, commentItem);
+                } else {
+                    alert('Comment cannot be empty');
+                }
+            });
+        });
+    }
+
+    function setReplyMode(commentId, username) {
+        replyingToCommentId = commentId;
+        replyingToUsername = username;
+
+        const commentInput = document.getElementById('commentInput');
+        commentInput.placeholder = `Replying to ${username}...`;
+        commentInput.focus();
+
+        const replyIndicator = document.createElement('div');
+        replyIndicator.id = 'replyIndicator';
+        replyIndicator.className = 'alert alert-info alert-dismissible fade show py-1 px-2 mb-2';
+        replyIndicator.innerHTML = `
+        <small>Replying to <strong>${username}</strong></small>
+        <button type="button" class="close p-1 cancel-reply-btn" aria-label="Cancel reply">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    `;
+
+        const commentForm = document.getElementById('commentForm');
+        commentForm.parentNode.insertBefore(replyIndicator, commentForm);
+
+        document.querySelector('.cancel-reply-btn').addEventListener('click', cancelReplyMode);
+    }
+
+    function cancelReplyMode() {
+        replyingToCommentId = null;
+        replyingToUsername = null;
+
+        const replyIndicator = document.getElementById('replyIndicator');
+        if (replyIndicator) {
+            replyIndicator.remove();
+        }
+
+        const commentInput = document.getElementById('commentInput');
+        commentInput.placeholder = 'Add a comment...';
+        commentInput.value = '';
+    }
+
+    function enableCommentEdit(commentId) {
+        const commentItem = document.querySelector(`.comment-item[data-comment-id="${commentId}"]`);
+        if (!commentItem) return;
+
+        const contentElement = commentItem.querySelector('.comment-content');
+        const editForm = commentItem.querySelector('.edit-comment-form');
+        const textarea = commentItem.querySelector('.edit-comment-textarea');
+
+        contentElement.classList.add('d-none');
+        editForm.classList.remove('d-none');
+
+        if (!textarea.nextElementSibling || !textarea.nextElementSibling.classList.contains('char-counter')) {
+            addCharCounter(textarea);
+        }
+
+        textarea.focus();
+        textarea.select();
+    }
+
+    function disableCommentEdit(commentItem) {
+        const contentElement = commentItem.querySelector('.comment-content');
+        const editForm = commentItem.querySelector('.edit-comment-form');
+
+        contentElement.classList.remove('d-none');
+        editForm.classList.add('d-none');
+    }
+
+    function updateComment(commentId, newContent, commentItem) {
+        if (newContent.length > 1000) {
+            alert('Comment is too long (max 1000 characters)');
+            return;
+        }
+
+        const saveBtn = commentItem.querySelector('.save-edit-btn');
+        const originalText = saveBtn.textContent;
+        saveBtn.textContent = 'Saving...';
+        saveBtn.disabled = true;
+
+        fetch(`/update_comment/${commentId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({ content: newContent })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const contentElement = commentItem.querySelector('.comment-content');
+                    contentElement.textContent = newContent;
+                    disableCommentEdit(commentItem);
+
+                    const timeElement = commentItem.querySelector('.comment-time');
+                    if (timeElement && data.comment && data.comment.formatted_time) {
+                        timeElement.textContent = data.comment.formatted_time;
+                    }
+
+                    const successMsg = document.createElement('div');
+                    successMsg.className = 'alert alert-success alert-dismissible fade show py-1 px-2 mt-2';
+                    successMsg.innerHTML = `
+                <small>Comment updated successfully!</small>
+                <button type="button" class="close p-1" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            `;
+                    commentItem.querySelector('.comment-actions').before(successMsg);
+
+                    setTimeout(() => {
+                        if (successMsg.parentNode) {
+                            successMsg.remove();
+                        }
+                    }, 3000);
+                } else {
+                    alert('Failed to update comment: ' + (data.error || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Error updating comment:', error);
+                alert('An error occurred while updating comment');
+            })
+            .finally(() => {
+                saveBtn.textContent = originalText;
+                saveBtn.disabled = false;
+            });
+    }
+
+    function loadReplies(parentCommentId, buttonElement) {
+        const repliesContainer = document.getElementById(`replies-${parentCommentId}`);
+        repliesContainer.innerHTML = '<div class="text-center py-2"><div class="spinner-border spinner-border-sm text-secondary" role="status"><span class="sr-only">Loading...</span></div><small class="text-muted ml-2">Loading replies...</small></div>';
+
+        fetch(`/get_replies/${parentCommentId}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.replies.length > 0) {
+                    let repliesHTML = '';
+                    data.replies.forEach(reply => {
+                        reply.formatted_time = formatTimeAgo(reply.timestamp);
+                        repliesHTML += renderComment(reply, 1);
+                    });
+                    repliesContainer.innerHTML = repliesHTML;
+                    attachCommentEventListeners();
+
+                    buttonElement.setAttribute('data-expanded', 'true');
+                    buttonElement.innerHTML = buttonElement.innerHTML.replace('▼', '▲');
+                } else {
+                    repliesContainer.innerHTML = `
+                <div class="text-center text-muted py-2">
+                    <small>No replies found</small>
+                </div>
+            `;
+                }
+            })
+            .catch(error => {
+                console.error('Error loading replies:', error);
+                repliesContainer.innerHTML = `
+            <div class="text-center text-danger py-2">
+                <small>Error loading replies</small>
+            </div>
+        `;
+            });
+    }
+
+    function deleteComment(commentId) {
+        fetch(`/delete_comment/${commentId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const commentElement = document.querySelector(`.comment-item[data-comment-id="${commentId}"]`);
+                    if (commentElement) commentElement.remove();
+
+                    // Update comment count in modal
+                    const commentCountSpan = document.getElementById('modalCommentsCount');
+                    if (commentCountSpan) {
+                        const currentText = commentCountSpan.textContent;
+                        let currentCount = 0;
+                        if (currentText.includes('(')) {
+                            currentCount = parseInt(currentText.match(/\d+/)[0]) || 0;
+                        }
+                        const newCount = currentCount - 1;
+                        commentCountSpan.textContent = newCount > 0 ? `(${newCount})` : '';
+                    }
+
+                    const commentsContainer = document.getElementById('commentsContainer');
+                    if (commentsContainer.querySelectorAll('.comment-item').length === 0) {
+                        commentsContainer.innerHTML = `
+                    <div class="text-center text-muted py-4">
+                        <small>No comments yet. Be the first to comment!</small>
+                    </div>
+                `;
+                    }
+                } else {
+                    alert('Failed to delete comment: ' + (data.error || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Error deleting comment:', error);
+                alert('An error occurred while deleting comment');
+            });
+    }
+    function addComment(postId, content) {
+        const url = replyingToCommentId ?
+            `/add_reply/${postId}/${replyingToCommentId}` :
+            `/add_comment/${postId}`;
+
+        const commentSubmitBtn = document.getElementById('commentSubmitBtn');
+        const commentInput = document.getElementById('commentInput');
+        const originalText = commentSubmitBtn.textContent;
+
+        commentSubmitBtn.disabled = true;
+        commentInput.disabled = true;
+        commentSubmitBtn.textContent = replyingToCommentId ? 'Replying...' : 'Posting...';
+
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify({ content: content })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    openCommentsModal(postId);
+                    cancelReplyMode();// ✅ Comment badge popup
+                    if (data.badge_unlocked) {
+                        showBadgeUnlocked({
+                            iconSrc: data.iconSrc,
+                            title: data.title,
+                            subtitle: data.subtitle
+                        });
+                    }
+
+                } else {
+                    alert('Failed to post: ' + (data.error || 'Unknown error'));
+                }
+            })
+            .catch(error => console.error('Error:', error))
+            .finally(() => {
+                commentSubmitBtn.disabled = false;
+                commentInput.disabled = false;
+                commentSubmitBtn.textContent = originalText;
+            });
+    }
+
+    function openCommentsModal(postId) {
+        currentPostId = postId;
+
+        fetch(`/get_comments/${postId}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const container = document.getElementById('commentsContainer');
+                    renderComments(data.comments);
+
+                    // Update comment count in modal
+                    const commentCountSpan = document.getElementById('modalCommentsCount');
+                    if (commentCountSpan) {
+                        commentCountSpan.textContent = data.comment_count > 0 ? `(${data.comment_count})` : '';
+                    }
+
+                    // Set up comment form - Remove any existing listeners first
+                    const commentForm = document.getElementById('commentForm');
+                    const newCommentForm = commentForm.cloneNode(true);
+                    commentForm.parentNode.replaceChild(newCommentForm, commentForm);
+
+                    // Get fresh references to the new form elements
+                    const commentInput = document.getElementById('commentInput');
+                    const commentSubmitBtn = document.getElementById('commentSubmitBtn');
+
+                    // Add input validation listener
+                    commentInput.addEventListener('input', function () {
+                        commentSubmitBtn.disabled = this.value.trim() === '';
+                    });
+
+                    // Add fresh submit listener
+                    newCommentForm.addEventListener('submit', function (e) {
+                        e.preventDefault();
+                        const content = commentInput.value.trim();
+
+                        if (content) {
+                            addComment(postId, content);
+                            commentInput.value = '';
+                            commentSubmitBtn.disabled = true;
+                        }
+                    });
+
+                    // Reset comment input
+                    commentInput.value = '';
+                    commentInput.placeholder = 'Add a comment...';
+                    commentInput.disabled = false;
+
+                    commentSubmitBtn.disabled = true;
+                    commentSubmitBtn.textContent = 'Post';
+
+                    // Clear reply mode
+                    cancelReplyMode();
+
+                    $('#commentsModal').modal('show');
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    }
+    // ============================================
+    // DOM CONTENT LOADED
+    // ============================================
+    document.addEventListener('DOMContentLoaded', function () {
+        // Mobile menu functionality
+        const hamburgerBtn = document.querySelector('.hamburger-btn');
+        const closeMenuBtn = document.querySelector('.menu-close-btn');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+        const mobileNav = document.getElementById('mobile-nav');
+
+        if (hamburgerBtn) {
+            hamburgerBtn.addEventListener('click', function () {
+                mobileNav.classList.add('active');
+                sidebarOverlay.classList.add('active');
+                this.setAttribute('aria-expanded', 'true');
+            });
+        }
+        if (closeMenuBtn) {
+            closeMenuBtn.addEventListener('click', function () {
+                mobileNav.classList.remove('active');
+                sidebarOverlay.classList.remove('active');
+                hamburgerBtn.setAttribute('aria-expanded', 'false');
+            });
+        }
+
+        if (sidebarOverlay) {
+            sidebarOverlay.addEventListener('click', function () {
+                mobileNav.classList.remove('active');
+                sidebarOverlay.classList.remove('active');
+                hamburgerBtn.setAttribute('aria-expanded', 'false');
+            });
+        }
+
+        // Hide loading spinner and end message initially
+        const loadingSpinner = document.getElementById('loading-spinner');
+        const endOfPosts = document.getElementById('end-of-posts');
+
+        if (loadingSpinner) loadingSpinner.style.display = 'none';
+        if (endOfPosts) endOfPosts.style.display = 'none';
+
+        // Set up infinite scroll
+        window.addEventListener('scroll', handleScroll);
+        setTimeout(checkScrollPosition, 1000);
+
+        // Like button listeners
+        document.querySelectorAll('.like-btn').forEach(button => {
+            button.addEventListener('click', function () {
+                const postId = this.getAttribute('data-post-id');
+                handleLike(postId, this);
+            });
+        });
+
+        // Join event button listeners
+        document.querySelectorAll('.join-event-btn').forEach(button => {
+            button.addEventListener('click', function () {
+                const eventId = this.getAttribute('data-event-id');
+                joinEvent(eventId, this);
+            });
+        });
+
+        // View Details button listeners
+        document.querySelectorAll('.view-details-btn').forEach(button => {
+            button.addEventListener('click', function (e) {
+                e.preventDefault();
+
+                const eventName = this.getAttribute('data-event-name');
+                const location = this.getAttribute('data-event-location');
+                const eventDate = this.getAttribute('data-event-date');
+                const eventDuration = this.getAttribute('data-event-duration');
+                const maxParticipants = this.getAttribute('data-event-max-participants');
+                const organizer = this.getAttribute('data-event-organizer');
+                const itinerary = this.getAttribute('data-event-itinerary');
+                const gameType = this.getAttribute('data-event-game-type');
+                const gameRules = this.getAttribute('data-event-game-rules');
+                const eventId = this.getAttribute('data-event-id');
+
+                document.getElementById('detailsEventName').textContent = eventName || 'Untitled Event';
+                document.getElementById('detailsLocation').textContent = location || 'Location not specified';
+                document.getElementById('detailsDate').textContent = eventDate || 'Date not specified';
+                document.getElementById('detailsMaxParticipants').textContent = maxParticipants || '10';
+                document.getElementById('detailsOrganizer').textContent = organizer || 'Unknown';
+
+                const durationRow = document.getElementById('detailsDurationRow');
+                if (eventDuration && eventDuration !== 'None' && eventDuration !== '') {
+                    document.getElementById('detailsDuration').textContent = `${eventDuration} minutes`;
+                    durationRow.style.display = 'flex';
+                } else {
+                    durationRow.style.display = 'none';
+                }
+
+                const itineraryRow = document.getElementById('detailsItineraryRow');
+                if (itinerary && itinerary.trim() !== '' && itinerary !== 'None') {
+                    document.getElementById('detailsItinerary').textContent = itinerary;
+                    itineraryRow.style.display = 'flex';
+                } else {
+                    itineraryRow.style.display = 'none';
+                }
+
+                const gameTypeRow = document.getElementById('detailsGameTypeRow');
+                if (gameType && gameType !== 'None' && gameType !== '') {
+                    document.getElementById('detailsGameType').textContent = gameType;
+                    gameTypeRow.style.display = 'flex';
+                } else {
+                    gameTypeRow.style.display = 'none';
+                }
+
+                const gameRulesRow = document.getElementById('detailsGameRulesRow');
+                if (gameRules && gameRules.trim() !== '' && gameRules !== 'None') {
+                    document.getElementById('detailsGameRules').textContent = gameRules;
+                    gameRulesRow.style.display = 'flex';
+                } else {
+                    gameRulesRow.style.display = 'none';
+                }
+
+                const joinBtn = document.getElementById('detailsJoinBtn');
+                joinBtn.setAttribute('data-event-id', eventId);
+
+                const isOrganizer = (organizer === currentUsername);
+
+                if (isOrganizer) {
+                    joinBtn.disabled = true;
+                    joinBtn.textContent = 'Your Event';
+                    joinBtn.classList.remove('btn-primary');
+                    joinBtn.classList.add('btn-secondary');
+                } else {
+                    const joinedBtn = document.querySelector(`.joined-btn[data-event-id="${eventId}"]`);
+                    if (joinedBtn) {
+                        joinBtn.disabled = true;
+                        joinBtn.textContent = 'Already Joined ✓';
+                        joinBtn.classList.remove('btn-primary');
+                        joinBtn.classList.add('btn-success');
+                    } else {
+                        joinBtn.disabled = false;
+                        joinBtn.textContent = 'Join Event';
+                        joinBtn.classList.remove('btn-secondary', 'btn-success');
+                        joinBtn.classList.add('btn-primary');
+                    }
+                }
+
+                $('#eventDetailsModal').modal('show');
+            });
+        });
+
+        // Handle join button inside the modal
+        const detailsJoinBtn = document.getElementById('detailsJoinBtn');
+        if (detailsJoinBtn) {
+            detailsJoinBtn.addEventListener('click', function () {
+                const eventId = this.getAttribute('data-event-id');
+                const joinBtn = document.querySelector(`.join-event-btn[data-event-id="${eventId}"]`);
+                if (joinBtn) {
+                    joinBtn.click();
+                    $('#eventDetailsModal').modal('hide');
+                } else {
+                    window.location.href = "{{ url_for('events') }}";
+                }
+            });
+        }
+    });
+
+    // ============================================
+    // ADD CSS STYLES
+    // ============================================
+    const style = document.createElement('style');
+    style.textContent = `
+    .comment-item.ml-2 { margin-left: 0.5rem; }
+    .comment-item.ml-4 { margin-left: 1rem; }
+    .comment-item.ml-6 { margin-left: 1.5rem; }
+    .comment-item.ml-8 { margin-left: 2rem; }
+    .reply-indicator {
+        border-left: 3px solid #007bff;
+        padding-left: 10px;
+        margin-left: 5px;
+    }
+    .char-counter.text-warning {
+        color: #ffc107 !important;
+    }
+    .char-counter.text-danger {
+        color: #dc3545 !important;
+        font-weight: bold;
+    }
+    .edit-comment-textarea {
+        resize: vertical;
+        min-height: 80px;
+        max-height: 200px;
+    }
+    .replies-container {
+        margin-left: 20px;
+        border-left: 2px solid #dee2e6;
+        padding-left: 10px;
+    }
+    .comment-avatar {
+        width: 32px;
+        height: 32px;
+        object-fit: cover;
+    }
+`;
+    document.head.appendChild(style);
+
+
+
+
+
+
+</script>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const shouldPrompt = {{ show_tutorial_prompt|tojson }};
+    
+    if (!shouldPrompt) {
+        return;
+    }
+
+    $('#tutorialPromptModal').modal('show');
+
+    async function sendChoice(choice) {
+        const res = await fetch('/api/tutorial_choice', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ choice: choice })
+        });
+        return res.json();
+    }
+
+    const yesBtn = document.getElementById("tutorialYesBtn");
+    const noBtn = document.getElementById("tutorialNoBtn");
+
+    if (yesBtn) {
+        yesBtn.addEventListener("click", async function() {
+            await sendChoice("yes");
+            $('#tutorialPromptModal').modal('hide');
+            $('#tutorialModal').modal('show');
+        });
+    }
+
+    if (noBtn) {
+        noBtn.addEventListener("click", async function() {
+            await sendChoice("no");
+            $('#tutorialPromptModal').modal('hide');
+        });
+    }
+});
+
+
+</script>
+
+
+
+
+
+{% endblock %}
